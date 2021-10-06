@@ -1,0 +1,23 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+samples-test-dev,giis.demo.util,DbUtil,371,0,34,0,82,0,28,0,11,0
+samples-test-dev,giis.demo.util,TableColumnAdjuster.new Runnable() {...},63,0,8,0,13,0,6,0,2,0
+samples-test-dev,giis.demo.util,Database,65,0,8,0,20,0,9,0,5,0
+samples-test-dev,giis.demo.util,Util,265,0,22,0,47,0,21,0,10,0
+samples-test-dev,giis.demo.util,SwingUtil,234,0,16,0,55,0,17,0,9,0
+samples-test-dev,giis.demo.util,SwingMain,96,0,0,0,21,0,4,0,4,0
+samples-test-dev,giis.demo.util,TableColumnAdjuster.ToggleAction,41,0,8,0,11,0,6,0,2,0
+samples-test-dev,giis.demo.util,SwingMain.new Runnable() {...},16,0,0,0,7,0,2,0,2,0
+samples-test-dev,giis.demo.util,SwingMain.new ActionListener() {...},19,0,0,0,4,0,2,0,2,0
+samples-test-dev,giis.demo.util,SwingMain.new ActionListener() {...},14,0,0,0,4,0,2,0,2,0
+samples-test-dev,giis.demo.util,SwingMain.new ActionListener() {...},16,0,0,0,5,0,2,0,2,0
+samples-test-dev,giis.demo.util,ApplicationException,8,0,0,0,4,0,2,0,2,0
+samples-test-dev,giis.demo.util,TableColumnAdjuster.ColumnAction,56,0,8,0,15,0,6,0,2,0
+samples-test-dev,giis.demo.util,UnexpectedException,8,0,0,0,4,0,2,0,2,0
+samples-test-dev,giis.demo.tkrun,CarrerasModel,274,0,14,0,40,0,16,0,9,0
+samples-test-dev,giis.demo.tkrun,CarrerasView,296,0,0,0,59,0,11,0,11,0
+samples-test-dev,giis.demo.tkrun,CarreraDisplayDTO,36,0,0,0,12,0,8,0,8,0
+samples-test-dev,giis.demo.tkrun,CarreraEntity,38,0,0,0,11,0,11,0,11,0
+samples-test-dev,giis.demo.tkrun,CarrerasController.new MouseAdapter() {...},14,0,0,0,3,0,3,0,3,0
+samples-test-dev,giis.demo.tkrun,CarrerasController,198,0,2,0,40,0,9,0,8,0
+samples-test-dev,giis.demo.jdbc,DemoJdbc,568,0,46,0,100,0,29,0,6,0
+samples-test-dev,giis.demo.jdbc,Entity,24,0,0,0,7,0,7,0,7,0

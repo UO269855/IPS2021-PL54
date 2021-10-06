@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CarrerasModel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">samples-test-dev</a> &gt; <a href="index.source.html" class="el_package">giis.demo.tkrun</a> &gt; <span class="el_source">CarrerasModel.java</span></div><h1>CarrerasModel.java</h1><pre class="source lang-java linenums">package giis.demo.tkrun;
+
+import java.util.*;
+import giis.demo.util.Util;
+import giis.demo.util.ApplicationException;
+import giis.demo.util.Database;
+/**
+ * Acceso a los datos de carreras e inscripciones, 
+ * utilizado como modelo para el ejemplo de swing y para las pruebas unitarias y de interfaz de usuario.
+ * 
+ * &lt;br/&gt;En los metodos de este ejemplo toda la logica de negocio se realiza mediante una unica query sql por lo que siempre
+ * se utilizan los metodos de utilidad en la clase Database que usan apache commons-dbutils y controlan la conexion. 
+ * En caso de que en un mismo metodo se realicen diferentes queries se deberia controlar la conexion desde esta clase 
+ * (ver como ejemplo la implementacion en Database).
+ * 
+ * &lt;br/&gt;Si utilizase algún otro framework para manejar la persistencia, la funcionalidad proporcionada por esta clase sería la asignada
+ * a los Servicios, Repositorios y DAOs.
+ */
+<span class="nc" id="L19">public class CarrerasModel {</span>
+	private static final String MSG_FECHA_INSCRIPCION_NO_NULA = &quot;La fecha de inscripcion no puede ser nula&quot;;
+
+<span class="nc" id="L22">	private Database db=new Database();</span>
+	
+	//SQL para obtener la lista de carreras activas para una fecha dada,
+	//se incluye aqui porque se usara en diferentes versiones de los metodos bajo prueba
+	public static final String SQL_LISTA_CARRERAS=
+			&quot;SELECT id,descr,&quot;
+			+&quot; case when ?&lt;inicio then ''&quot; //antes de inscripcion
+			+&quot;   when ?&lt;=fin then '(Abierta)'&quot; //fase 1
+			+&quot;   when ?&lt;fecha then '(Abierta)'&quot; //fase 2
+			+&quot;   when ?=fecha then '(Abierta)'&quot; //fase 3
+			+&quot;   else '' &quot; //despues de fin carrera
+			+&quot; end as abierta&quot;
+			+&quot; from carreras  where fecha&gt;=? order by id&quot;;
+	/**
+	 * Obtiene la lista de carreras futuras (posteriores a una fecha dada) con el id, descripcion
+	 * y la indicacion de si tienen inscripcion abierta.
+	 * Implementacion usando la utilidad que obtiene una lista de arrays de objetos 
+	 * resultado de la ejecucion de una query sql
+	 */
+	public List&lt;Object[]&gt; getListaCarrerasArray(Date fechaInscripcion) {
+<span class="nc" id="L42">		validateNotNull(fechaInscripcion,MSG_FECHA_INSCRIPCION_NO_NULA);</span>
+		//concatena los campos deseados en una unica columna pues el objetivo es devolver una lista de strings
+<span class="nc" id="L44">		String sql=&quot;SELECT id || '-' || descr || ' ' || abierta as item from (&quot; + SQL_LISTA_CARRERAS + &quot;)&quot;;</span>
+<span class="nc" id="L45">		String d=Util.dateToIsoString(fechaInscripcion);</span>
+<span class="nc" id="L46">		return db.executeQueryArray(sql, d, d, d, d, d);</span>
+	}
+	/**
+	 * Obtiene la lista de carreras activas en forma objetos para una fecha de inscripcion dada
+	 */
+	public List&lt;CarreraDisplayDTO&gt; getListaCarreras(Date fechaInscripcion) {
+<span class="nc" id="L52">		validateNotNull(fechaInscripcion,MSG_FECHA_INSCRIPCION_NO_NULA);</span>
+<span class="nc" id="L53">		String sql=</span>
+				 &quot;SELECT id,descr,&quot;
+				+&quot; case when ?&lt;inicio then ''&quot; //antes de inscripcion
+				+&quot;   when ?&lt;=fin then '(Abierta)'&quot; //fase 1
+				+&quot;   when ?&lt;fecha then '(Abierta)'&quot; //fase 2
+				+&quot;   when ?=fecha then '(Abierta)'&quot; //fase 3
+				+&quot;   else '' &quot; //despues de fin carrera
+				+&quot; end as abierta&quot;
+				+&quot; from carreras  where fecha&gt;=? order by id&quot;;
+<span class="nc" id="L62">		String d=Util.dateToIsoString(fechaInscripcion);</span>
+<span class="nc" id="L63">		return db.executeQueryPojo(CarreraDisplayDTO.class, sql, d, d, d, d, d);</span>
+	}
+	/** 
+	 * Obtiene el porcentaje de descuento (valor negativo) o recargo aplicable a una carrera dada por su id cuando se
+	 * realiza la inscripcion en una fecha dada.
+	 * Causa excepcion si no esta abierta la inscripcion.
+	 * Implementacion usando la utilidad que obtiene una lista de arrays de objetos 
+	 * restultado de la ejecucion de una query sql
+	 */
+	public int getDescuentoRecargo(long idCarrera, Date fechaInscripcion) {
+<span class="nc" id="L73">		validateNotNull(fechaInscripcion,MSG_FECHA_INSCRIPCION_NO_NULA);</span>
+<span class="nc" id="L74">		String sql=</span>
+				 &quot;SELECT &quot;
+				+&quot; case when ?&lt;inicio then NULL&quot; //antes de inscripcion
+				+&quot;   when ?&lt;=fin then -30&quot; //fase 1
+				+&quot;   when ?&lt;fecha then 0&quot; //fase 2
+				+&quot;   when ?=fecha then 50&quot; //fase 3
+				+&quot;   else NULL &quot;
+				+&quot; end as descuentoRecargo&quot;
+				+&quot; from carreras where id=? order by id&quot;;			
+<span class="nc" id="L83">		String d=Util.dateToIsoString(fechaInscripcion);</span>
+<span class="nc" id="L84">		List&lt;Object[]&gt;rows=db.executeQueryArray(sql, d, d, d, d, idCarrera);</span>
+		//determina el valor a devolver o posibles excepciones
+<span class="nc bnc" id="L86" title="All 2 branches missed.">		if (rows.isEmpty())</span>
+<span class="nc" id="L87">			throw new ApplicationException(&quot;Id de carrera no encontrado: &quot;+idCarrera);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">		else if (rows.get(0)[0]==null)</span>
+<span class="nc" id="L89">			throw new ApplicationException(&quot;No es posible la inscripcion en esta fecha&quot;);</span>
+		else
+<span class="nc" id="L91">			return (int)rows.get(0)[0];</span>
+	}
+	
+	/**
+	 * Obtiene todos los datos de la carrera con el id indicado
+	 */
+	public CarreraEntity getCarrera(int id) {
+<span class="nc" id="L98">		String sql=&quot;SELECT id,inicio,fin,fecha,descr from carreras where id=?&quot;;</span>
+<span class="nc" id="L99">		List&lt;CarreraEntity&gt; carreras=db.executeQueryPojo(CarreraEntity.class, sql, id);</span>
+<span class="nc bnc" id="L100" title="All 2 branches missed.">		validateCondition(!carreras.isEmpty(),&quot;Id de carrera no encontrado: &quot;+id);</span>
+<span class="nc" id="L101">		return carreras.get(0);</span>
+	}
+
+	/**
+	 * Actualiza las fechas de inscripcion de una carrera
+	 */
+	public void updateFechasInscripcion(int id, Date inicio, Date fin) {
+<span class="nc" id="L108">		CarreraEntity carrera=this.getCarrera(id);</span>
+<span class="nc" id="L109">		validateFechasInscripcion(inicio, fin, Util.isoStringToDate(carrera.getFecha()));</span>
+<span class="nc" id="L110">		String sql=&quot;UPDATE carreras SET inicio=?, fin=? WHERE id=?&quot;;</span>
+<span class="nc" id="L111">		db.executeUpdate(sql, Util.dateToIsoString(inicio), Util.dateToIsoString(fin), id);</span>
+<span class="nc" id="L112">	}</span>
+	private void validateFechasInscripcion(Date inicio, Date fin, Date fecha) {
+<span class="nc" id="L114">		validateNotNull(inicio,&quot;La fecha de inicio de inscripcion no puede ser nula&quot;);</span>
+<span class="nc" id="L115">		validateNotNull(fin,&quot;La fecha de fin de inscripcion no puede ser nula&quot;);</span>
+<span class="nc" id="L116">		validateNotNull(fecha,&quot;La fecha de fin de carrera no puede ser nula&quot;);</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">		validateCondition(inicio.compareTo(fin)&lt;=0, &quot;La fecha de inicio no puede ser posterior a la de fin&quot;);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">		validateCondition(fin.compareTo(fecha)&lt;=0, &quot;La fecha de fin no puede ser posterior a la de la carrera&quot;);</span>
+<span class="nc" id="L119">	}</span>
+
+	/* De uso general para validacion de objetos */
+	private void validateNotNull(Object obj, String message) {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">		if (obj==null)</span>
+<span class="nc" id="L124">			throw new ApplicationException(message);</span>
+<span class="nc" id="L125">	}</span>
+	private void validateCondition(boolean condition, String message) {
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		if (!condition)</span>
+<span class="nc" id="L128">			throw new ApplicationException(message);</span>
+<span class="nc" id="L129">	}</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

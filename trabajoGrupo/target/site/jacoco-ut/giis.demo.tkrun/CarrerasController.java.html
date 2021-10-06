@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CarrerasController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">samples-test-dev</a> &gt; <a href="index.source.html" class="el_package">giis.demo.tkrun</a> &gt; <span class="el_source">CarrerasController.java</span></div><h1>CarrerasController.java</h1><pre class="source lang-java linenums">package giis.demo.tkrun;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+import javax.swing.ComboBoxModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+
+import giis.demo.util.ApplicationException;
+import giis.demo.util.SwingUtil;
+import giis.demo.util.Util;
+
+/**
+ * Controlador para la funcionalidad de visualizacion de carreras para la inscripcion.
+ * Es el punto de entrada de esta pantalla que se invocará:
+ * -instanciando el controlador con la vista y el modelo
+ * -ejecutando initController que instalara los manejadores de eventos
+ */
+public class CarrerasController {
+	private CarrerasModel model;
+	private CarrerasView view;
+<span class="nc" id="L23">	private String lastSelectedKey=&quot;&quot;; //recuerda la ultima fila seleccionada para restaurarla cuando cambie la tabla de carreras</span>
+
+<span class="nc" id="L25">	public CarrerasController(CarrerasModel m, CarrerasView v) {</span>
+<span class="nc" id="L26">		this.model = m;</span>
+<span class="nc" id="L27">		this.view = v;</span>
+		//no hay inicializacion especifica del modelo, solo de la vista
+<span class="nc" id="L29">		this.initView();</span>
+<span class="nc" id="L30">	}</span>
+	/**
+	 * Inicializacion del controlador: anyade los manejadores de eventos a los objetos del UI.
+	 * Cada manejador de eventos se instancia de la misma forma, para que invoque un metodo privado
+	 * de este controlador, encerrado en un manejador de excepciones generico para mostrar ventanas
+	 * emergentes cuando ocurra algun problema o excepcion controlada.
+	 */
+	public void initController() {
+		//ActionListener define solo un metodo actionPerformed(), es un interfaz funcional que se puede invocar de la siguiente forma:
+		//view.getBtnTablaCarreras().addActionListener(e -&gt; getListaCarreras());
+		//ademas invoco el metodo que responde al listener en el exceptionWrapper para que se encargue de las excepciones
+<span class="nc" id="L41">		view.getBtnTablaCarreras().addActionListener(e -&gt; SwingUtil.exceptionWrapper(() -&gt; getListaCarreras()));</span>
+	
+		//En el caso del mouse listener (para detectar seleccion de una fila) no es un interfaz funcional puesto que tiene varios metodos
+		//ver discusion: https://stackoverflow.com/questions/21833537/java-8-lambda-expressions-what-about-multiple-methods-in-nested-class
+<span class="nc" id="L45">		view.getTablaCarreras().addMouseListener(new MouseAdapter() {</span>
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				//no usa mouseClicked porque al establecer seleccion simple en la tabla de carreras
+				//el usuario podria arrastrar el raton por varias filas e interesa solo la ultima
+<span class="nc" id="L50">				SwingUtil.exceptionWrapper(() -&gt; updateDetail());</span>
+<span class="nc" id="L51">			}</span>
+		});
+<span class="nc" id="L53">	}</span>
+	
+	public void initView() {
+		//Inicializa la fecha de hoy a un valor que permitira mostrar carreras en diferentes fases 
+		//y actualiza los datos de la vista
+<span class="nc" id="L58">		view.setFechaHoy(&quot;2016-11-10&quot;);</span>
+<span class="nc" id="L59">		this.getListaCarreras();</span>
+		
+		//Abre la ventana (sustituye al main generado por WindowBuilder)
+<span class="nc" id="L62">		view.getFrame().setVisible(true); </span>
+<span class="nc" id="L63">	}</span>
+	/**
+	 * La obtencion de la lista de carreras solo necesita obtener la lista de objetos del modelo 
+	 * y usar metodo de SwingUtil para crear un tablemodel que se asigna finalmente a la tabla.
+	 */
+	public void getListaCarreras() {
+<span class="nc" id="L69">		List&lt;CarreraDisplayDTO&gt; carreras=model.getListaCarreras(Util.isoStringToDate(view.getFechaHoy()));</span>
+<span class="nc" id="L70">		TableModel tmodel=SwingUtil.getTableModelFromPojos(carreras, new String[] {&quot;id&quot;, &quot;descr&quot;, &quot;estado&quot;});</span>
+<span class="nc" id="L71">		view.getTablaCarreras().setModel(tmodel);</span>
+<span class="nc" id="L72">		SwingUtil.autoAdjustColumns(view.getTablaCarreras());</span>
+		
+		//Como se guarda la clave del ultimo elemento seleccionado, restaura la seleccion de los detalles
+<span class="nc" id="L75">		this.restoreDetail();</span>
+
+		//A modo de demo, se muestra tambien la misma informacion en forma de lista en un combobox
+<span class="nc" id="L78">		List&lt;Object[]&gt; carrerasList=model.getListaCarrerasArray(Util.isoStringToDate(view.getFechaHoy()));</span>
+<span class="nc" id="L79">		ComboBoxModel&lt;Object&gt; lmodel=SwingUtil.getComboModelFromList(carrerasList);</span>
+<span class="nc" id="L80">		view.getListaCarreras().setModel(lmodel);</span>
+<span class="nc" id="L81">	}</span>
+	/**
+	 * Restaura la informacion del detalle de la carrera para visualizar los valores correspondientes
+	 * a la ultima clave almacenada.
+	 */
+	public void restoreDetail() {
+		//Utiliza la ultimo valor de la clave (que se reiniciara si ya no existe en la tabla)
+<span class="nc" id="L88">		this.lastSelectedKey=SwingUtil.selectAndGetSelectedKey(view.getTablaCarreras(), this.lastSelectedKey);</span>
+		//Si hay clave para seleccionar en la tabla muestra el detalle, si no, lo reinicia
+<span class="nc bnc" id="L90" title="All 2 branches missed.">		if (&quot;&quot;.equals(this.lastSelectedKey)) { </span>
+<span class="nc" id="L91">			view.setDescuentoNoAplicable();</span>
+<span class="nc" id="L92">			view.getDetalleCarrera().setModel(new DefaultTableModel());		</span>
+		} else {
+<span class="nc" id="L94">			this.updateDetail();</span>
+		}
+<span class="nc" id="L96">	}</span>
+	/**
+	 * Al seleccionar un item de la tabla muestra el detalle con el valor del porcentaje de descuento
+	 * de la carrera seleccinada y los valores de esta entidad
+	 */
+	public void updateDetail() {
+		//Obtiene la clave seleccinada y la guarda para recordar la seleccion en futuras interacciones
+<span class="nc" id="L103">		this.lastSelectedKey=SwingUtil.getSelectedKey(view.getTablaCarreras());</span>
+<span class="nc" id="L104">		int idCarrera=Integer.parseInt(this.lastSelectedKey);</span>
+		
+		//Detalle de descuento/recargo:
+		//Controla excepcion porque el modelo causa excepcion cuando no se puede calcular el descuento
+		//y debe indicarse esto en la vista para evitar mostrar datos falsos que se veian antes
+		try { 
+<span class="nc" id="L110">			int descuento=model.getDescuentoRecargo(idCarrera, Util.isoStringToDate(view.getFechaHoy()));</span>
+<span class="nc" id="L111">			view.setDescuento(String.valueOf(descuento));</span>
+<span class="nc" id="L112">		} catch (ApplicationException e) {</span>
+<span class="nc" id="L113">			view.setDescuentoNoAplicable();</span>
+<span class="nc" id="L114">		}</span>
+		
+		//Detalles de la carrera seleccionada
+<span class="nc" id="L117">		CarreraEntity carrera=model.getCarrera(idCarrera);</span>
+<span class="nc" id="L118">		TableModel tmodel=SwingUtil.getRecordModelFromPojo(carrera, new String[] {&quot;id&quot;, &quot;inicio&quot;, &quot;fin&quot;, &quot;fecha&quot;, &quot;descr&quot;});</span>
+<span class="nc" id="L119">		view.getDetalleCarrera().setModel(tmodel);</span>
+<span class="nc" id="L120">		SwingUtil.autoAdjustColumns(view.getDetalleCarrera());</span>
+<span class="nc" id="L121">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

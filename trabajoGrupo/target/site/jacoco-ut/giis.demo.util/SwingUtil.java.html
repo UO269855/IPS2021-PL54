@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SwingUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">samples-test-dev</a> &gt; <a href="index.source.html" class="el_package">giis.demo.util</a> &gt; <span class="el_source">SwingUtil.java</span></div><h1>SwingUtil.java</h1><pre class="source lang-java linenums">package giis.demo.util;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import org.apache.commons.beanutils.PropertyUtils;
+
+/**
+ * Metodos de utilidad para interfaces de usuario con swing (poblar tablas a partir de un objeto POJO
+ * que ha sido obtenido desde la base de datos, manejo de excepciones para metodos del 
+ * controlador, autoajuste de la dimension de columnas, etc)
+ */
+public class SwingUtil {
+<span class="nc" id="L21">	private SwingUtil() {</span>
+<span class="nc" id="L22">		throw new IllegalStateException(&quot;Utility class&quot;);</span>
+	}
+
+	/**
+	 * Ejecuta un metodo en respuesta a un evento envolviendolo en un manejador de excepciones estandar
+	 * que muestra un mensaje informativo o mensaje de error en funcion de la excepcion producida
+	 * (utilizado en el Controlador al instalar los handlers en respuesta a los eventos de swing)
+	 * NOTA: Si devolviese parametros utilizar Consumer en vez de Runnable: http://www.baeldung.com/java-lambda-exceptions
+	 * @param consumer Metodo a ejecutar (sin parametros de entrada ni valores de salida)
+	 */
+	public static void exceptionWrapper(Runnable consumer) {
+		try {
+<span class="nc" id="L34">			consumer.run();</span>
+<span class="nc" id="L35">		} catch (ApplicationException e) { //excepcion controlada de la que se puede recuperar la aplicacion</span>
+<span class="nc" id="L36">			showMessage(e.getMessage(), &quot;Informacion&quot;,JOptionPane.INFORMATION_MESSAGE);</span>
+<span class="nc" id="L37">		} catch (RuntimeException e) { //resto de excepciones, ademas de la ventana informativa muestra el stacktrace</span>
+<span class="nc" id="L38">			e.printStackTrace(); //NOSONAR</span>
+<span class="nc" id="L39">			showMessage(e.toString(), &quot;Excepcion no controlada&quot;,JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L40">		}</span>
+<span class="nc" id="L41">	}	 </span>
+	private static void showMessage(String message, String title, int type) {
+		//Como este metodo no recibe el contexto de la ventana de la aplicacion, 
+		//no usa el metodo estatico showMessageDialog de JOptionPane 
+		//y establece la posicion para que no aparezca en el centro de la pantalla
+<span class="nc" id="L46">	    JOptionPane pane = new JOptionPane(message,type,JOptionPane.DEFAULT_OPTION);</span>
+<span class="nc" id="L47">	    pane.setOptions(new Object[] {&quot;ACEPTAR&quot;}); //fija este valor para que no dependa del idioma</span>
+<span class="nc" id="L48">	    JDialog d = pane.createDialog(pane, title);</span>
+<span class="nc" id="L49">	    d.setLocation(200,200);</span>
+<span class="nc" id="L50">	    d.setVisible(true);</span>
+<span class="nc" id="L51">	}</span>
+	
+	/**
+	 * Ajusta todas las columnas de la tabla al tamanyo correspondiente al contenido del tablemodel
+	 */
+	public static void autoAdjustColumns(JTable table) {
+<span class="nc" id="L57">		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); //si se usa ON la ultima columna se expandra en el panel</span>
+<span class="nc" id="L58">		TableColumnAdjuster tca=new TableColumnAdjuster(table);</span>
+<span class="nc" id="L59">		tca.adjustColumns();</span>
+<span class="nc" id="L60">	}</span>
+
+	/** 
+	 * Obtiene la key (primera columna) de la fila seleccionada en la tabla de carreras o string vacio (si no existe)
+	 */
+	public static String getSelectedKey(JTable table) {
+<span class="nc" id="L66">		int row=table.getSelectedRow(); //el item de primera columna es el id de carrera</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">		if (row&gt;=0)</span>
+<span class="nc" id="L68">			return (String)table.getModel().getValueAt(row,0);</span>
+		else //no hay filas seleccionadas
+<span class="nc" id="L70">			return &quot;&quot;;</span>
+	}
+	
+	/** 
+	 * Selecciona la fila de la tabla con la clave indicada y devuelve el valor la clave de la fila seleccionada resultante
+	 * (la misma clave o string vacio si no existe la fila)
+	 */
+	public static String selectAndGetSelectedKey(JTable table, String key) {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">		for (int i=0; i&lt;table.getModel().getRowCount(); i++)</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">			if (table.getModel().getValueAt(i, 0).equals(key)) {</span>
+<span class="nc" id="L80">				table.setRowSelectionInterval(i, i);</span>
+<span class="nc" id="L81">				return key;</span>
+			}
+<span class="nc" id="L83">		return &quot;&quot;; //ya no existe esta clave</span>
+	}
+
+	//http://www.baeldung.com/apache-commons-beanutils
+	//http://commons.apache.org/proper/commons-beanutils/javadocs/v1.8.2/apidocs/org/apache/commons/beanutils/PropertyUtilsBean.html
+
+	/**
+	 * Crea un tablemodel a partir de una lista de objetos POJO con las columnas que se indican.
+	 * @param pojos Lista de objetos cuyos atributos se utilizaran para crear el tablemodel
+	 * (utiliza apache commons beanutils). Si es null solamente crea el tablemodel con las cabeceras de columna
+	 * @param colProperties Los nombres de atributo de los objetos (ordenados) que se incluiran en el tablemodel
+	 * (cada uno debe disponer del correspondiente getter)
+	 */
+	public static &lt;E&gt; TableModel getTableModelFromPojos(List&lt;E&gt; pojos, String[] colProperties) {
+		//Creacion inicial del tablemodel y dimensionamiento
+		//tener en cuenta que para que la tabla pueda mostrar las columnas debera estar dentro de un JScrollPane
+		TableModel tm;
+<span class="nc bnc" id="L100" title="All 2 branches missed.">		if (pojos==null) //solo las columnas (p.e. para inicializaciones)</span>
+<span class="nc" id="L101">			return new DefaultTableModel(colProperties,0);</span>
+		else
+<span class="nc" id="L103">			tm=new DefaultTableModel(colProperties, pojos.size());</span>
+		//carga cada uno de los valores de pojos usando PropertyUtils (de apache coommons beanutils)
+<span class="nc bnc" id="L105" title="All 2 branches missed.">		for (int i=0; i&lt;pojos.size(); i++) {</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">			for (int j=0; j&lt;colProperties.length; j++) {</span>
+				try {
+<span class="nc" id="L108">					Object pojo=pojos.get(i);</span>
+<span class="nc" id="L109">					Object value=PropertyUtils.getSimpleProperty(pojo, colProperties[j]);</span>
+<span class="nc" id="L110">					tm.setValueAt(value, i, j);</span>
+<span class="nc" id="L111">				} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {</span>
+<span class="nc" id="L112">					throw new UnexpectedException(e);</span>
+<span class="nc" id="L113">				}</span>
+			}
+		}
+<span class="nc" id="L116">		return tm;</span>
+	}
+	public static &lt;E&gt; TableModel getRecordModelFromPojo(E pojo, String[] colProperties) {
+		//Creacion inicial del tablemodel y dimensionamiento
+		//como solo habra dos columnas pongo una cabecera con dos valores vacios, de forma que 
+		//aparezca muy reducida pero con el handler necesario para poder redimensionarla
+		TableModel tm;
+<span class="nc" id="L123">		tm=new DefaultTableModel(new String[] {&quot;&quot;,&quot;&quot;}, colProperties.length);</span>
+		//carga cada uno de los valores de pojos usando PropertyUtils (de apache coommons beanutils)
+<span class="nc bnc" id="L125" title="All 2 branches missed.">			for (int j=0; j&lt;colProperties.length; j++) {</span>
+				try {
+<span class="nc" id="L127">					tm.setValueAt(colProperties[j], j, 0);</span>
+<span class="nc" id="L128">					Object value=PropertyUtils.getSimpleProperty(pojo, colProperties[j]);</span>
+<span class="nc" id="L129">					tm.setValueAt(value, j, 1);</span>
+<span class="nc" id="L130">				} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {</span>
+<span class="nc" id="L131">					throw new UnexpectedException(e);</span>
+<span class="nc" id="L132">				}</span>
+			}
+<span class="nc" id="L134">		return tm;</span>
+	}
+	
+	/**
+	 * Crea un Comboboxmodel a partir de una lista de objetos.
+	 * @param lst Lista de arrays de objetos de los cuales se usara el primero de cada uno de ellos para poblar el combo
+	 */
+	public static ComboBoxModel&lt;Object&gt; getComboModelFromList(List&lt;Object[]&gt; lst) {
+<span class="nc" id="L142">		DefaultComboBoxModel&lt;Object&gt; cm=new DefaultComboBoxModel&lt;&gt;();</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">		for (int i=0; i&lt;lst.size(); i++) {</span>
+<span class="nc" id="L144">			Object value=lst.get(i)[0];</span>
+<span class="nc" id="L145">			cm.addElement(value);</span>
+		}
+<span class="nc" id="L147">		return cm;</span>
+	}
+	
+	
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CarreraEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">samples-test-dev</a> &gt; <a href="index.source.html" class="el_package">giis.demo.tkrun</a> &gt; <span class="el_source">CarreraEntity.java</span></div><h1>CarreraEntity.java</h1><pre class="source lang-java linenums">package giis.demo.tkrun;
+
+/**
+ * Datos del modelo de dominio de cada una de las carreras
+ * IMPORTANTE: Cuando se usan los componentes de Apache Commons DbUtils debe
+ * mantenerse de forma estricta el convenio de capitalización de Java:
+ *  - Capitalizar todas las palabras que forman un identificador 
+ *    excepto la primera letra de nombres de métodos y variables.
+ *  - No utilizar subrayados
+ * Seguir tambien estos mismos criterios en los nombres de tablas y campos de la BD
+ */
+<span class="nc" id="L12">public class CarreraEntity {</span>
+	private String id;
+	private String inicio; //las fechas son string (vienen de sqlite)
+	private String fin;
+	private String fecha;
+	private String descr;
+
+<span class="nc" id="L19">	public String getId() { return this.id; }</span>
+<span class="nc" id="L20">	public String getInicio() { return this.inicio; }</span>
+<span class="nc" id="L21">	public String getFin() { return this.fin; }</span>
+<span class="nc" id="L22">	public String getFecha() { return this.fecha; }</span>
+<span class="nc" id="L23">	public String getDescr() { return this.descr; }</span>
+<span class="nc" id="L24">	public void setId(String value) { this.id=value; }</span>
+<span class="nc" id="L25">	public void setInicio(String value) { this.inicio=value; }</span>
+<span class="nc" id="L26">	public void setFin(String value) { this.fin=value; }</span>
+<span class="nc" id="L27">	public void setFecha(String value) { this.fecha=value; }</span>
+<span class="nc" id="L28">	public void setDescr(String value) { this.descr=value; }</span>
+	//NOTA: se pueden generar getters y setters de forma automatica usando lombok:  
+	//https://www.sitepoint.com/declutter-pojos-with-lombok-tutorial/
+	//http://www.baeldung.com/intro-to-project-lombok
+	//En un fichero con este mismo nombre, pero con extension .txt se muestra un ejemplo
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>
