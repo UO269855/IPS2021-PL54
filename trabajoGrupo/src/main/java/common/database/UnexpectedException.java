@@ -1,4 +1,4 @@
-package giis.demo.util;
+package common.database;
 
 /**
  * Excepcion producida por la aplicacion antes situaciones incontroladas

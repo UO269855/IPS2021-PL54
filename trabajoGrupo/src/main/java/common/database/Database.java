@@ -1,10 +1,18 @@
-package giis.demo.util;
+package common.database;
 import java.io.FileInputStream;
 import java.io.IOException;
-
+import java.rmi.UnexpectedException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanHandler;
+
+import common.modelo.Producto;
 
 /**
  * Encapsula los datos de acceso JDBC, lectura de la configuracion
@@ -56,6 +64,29 @@ public class Database extends DbUtil {
 	 */
 	public void loadDatabase() {
 		executeScript(SQL_LOAD);
+	}
+	
+	// Devuelve un producto de la BD con su ID
+	public Producto getProducto(int id_producto) throws UnexpectedException {
+
+		Connection conn = null;
+		Producto producto = null;
+
+		try {
+			conn = DriverManager.getConnection(getUrl());
+			ResultSetHandler<Producto> resultHandler = new BeanHandler<Producto>(Producto.class);
+
+			String sql = String.format("SELECT * FROM Producto WHERE IdProducto= %d;", id_producto);
+			producto = new QueryRunner().query(conn, sql, resultHandler);
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+
+		return producto;
 	}
 	
 }
