@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DbUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">samples-test-dev</a> &gt; <a href="index.source.html" class="el_package">giis.demo.util</a> &gt; <span class="el_source">DbUtil.java</span></div><h1>DbUtil.java</h1><pre class="source lang-java linenums">package giis.demo.util;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ArrayListHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+
+/**
+ * Metodos de utilidad para simplificar las queries realizadas en las clases 
+ * que implementan la logica de negocio:
+ * Se implementa como una clase abstracta para que la clase derivada implemente los detalles
+ * relativos a la conexion y a la estructura de la base de datos a crear, y a la vez
+ * pueda usar los metodos que se definen aqui.
+ * 
+ * &lt;br&gt;La mayoria de los metodos de utilidad utilizan apache commons-dbutils que gestiona todo el manejo
+ * de resultsets, su mapeo a objetos y las excepciones permitiendo un codigo mucho mas limpio 
+ * en las clases de la capa de negocio y DAOs.
+ */
+<span class="nc" id="L32">public abstract class DbUtil {</span>
+	/** Obtencion de la url de conexion que debe implementarse en la subclase */
+	public abstract String getUrl();
+	
+	/** Obtiene un objeto conexion para esta base de datos */
+	public Connection getConnection() throws SQLException {
+<span class="nc" id="L38">		return DriverManager.getConnection(getUrl());</span>
+	}
+
+	//Documentacion de apache dbutils:
+	//https://commons.apache.org/proper/commons-dbutils/apidocs/index.html
+	//https://commons.apache.org/proper/commons-dbutils/examples.html
+	
+	/**
+	 * Ejecuta una query sql con los parametros especificados mapeando el resultet en una lista de objetos 
+	 * de la clase indicada en pojoClass;
+	 * Utiliza apache commons-dbutils para realizar el mapeo y el manejo del resto de aspectos de jdbc
+	 */
+	public &lt;T&gt; List&lt;T&gt; executeQueryPojo(Class&lt;T&gt; pojoClass, String sql, Object... params) {
+<span class="nc" id="L51">		Connection conn=null;</span>
+		try {
+<span class="nc" id="L53">			conn=this.getConnection();</span>
+<span class="nc" id="L54">			BeanListHandler&lt;T&gt; beanListHandler=new BeanListHandler&lt;&gt;(pojoClass);</span>
+<span class="nc" id="L55">			QueryRunner runner=new QueryRunner();</span>
+<span class="nc" id="L56">			return runner.query(conn, sql, beanListHandler, params);</span>
+<span class="nc" id="L57">		} catch (SQLException e) {</span>
+<span class="nc" id="L58">			throw new UnexpectedException(e);</span>
+		} finally {
+<span class="nc" id="L60">			DbUtils.closeQuietly(conn);</span>
+		}
+	}
+	/**
+	 * Ejecuta una query sql con los parametros especificados mapeando el resultet en una lista de arrays de objetos;
+	 * Utiliza apache commons-dbutils para relizar el mapeo y el manejo del resto de aspectos de jdbc
+	 */
+	public List&lt;Object[]&gt; executeQueryArray(String sql, Object... params) {
+<span class="nc" id="L68">		Connection conn=null;</span>
+		try {
+<span class="nc" id="L70">			conn=this.getConnection();</span>
+			//Como no hay una clase especificada para realizar el mapeo, utiliza el ArrayListHandler
+<span class="nc" id="L72">			ArrayListHandler beanListHandler=new ArrayListHandler();</span>
+<span class="nc" id="L73">			QueryRunner runner=new QueryRunner();</span>
+<span class="nc" id="L74">			return runner.query(conn, sql, beanListHandler, params);</span>
+<span class="nc" id="L75">		} catch (SQLException e) {</span>
+<span class="nc" id="L76">			throw new UnexpectedException(e);</span>
+		} finally {
+<span class="nc" id="L78">			DbUtils.closeQuietly(conn);</span>
+		}
+	}
+	public List&lt;Map&lt;String,Object&gt;&gt; executeQueryMap(String sql, Object... params) {
+<span class="nc" id="L82">		Connection conn=null;</span>
+		try {
+<span class="nc" id="L84">			conn=this.getConnection();</span>
+<span class="nc" id="L85">			MapListHandler beanListHandler=new MapListHandler();</span>
+<span class="nc" id="L86">			QueryRunner runner=new QueryRunner();</span>
+<span class="nc" id="L87">			return runner.query(conn, sql, beanListHandler, params);</span>
+<span class="nc" id="L88">		} catch (SQLException e) {</span>
+<span class="nc" id="L89">			throw new UnexpectedException(e);</span>
+		} finally {
+<span class="nc" id="L91">			DbUtils.closeQuietly(conn);</span>
+		}
+	}
+	/**
+	 * Ejecuta una sentencia sql de actualizacion con los parametros especificados;
+	 * Utiliza apache commons-dbutils para manejar todos los aspectos de jdbc
+	 */
+	public void executeUpdate(String sql, Object... params) {
+<span class="nc" id="L99">		Connection conn=null;</span>
+		try {
+<span class="nc" id="L101">			conn=this.getConnection();</span>
+<span class="nc" id="L102">			QueryRunner runner=new QueryRunner();</span>
+<span class="nc" id="L103">			runner.update(conn, sql, params);</span>
+<span class="nc" id="L104">		} catch (SQLException e) {</span>
+<span class="nc" id="L105">			throw new UnexpectedException(e);</span>
+		} finally {
+<span class="nc" id="L107">			DbUtils.closeQuietly(conn);</span>
+		}
+<span class="nc" id="L109">	}</span>
+	
+	/**
+	 * Metodo simple para ejecutar todas las sentencias sql que se encuentran en un archivo, teniendo en cuenta:
+	 * &lt;br/&gt;- Cada sentencia DEBE finalizar en ; pudiendo ocupar varias lineas
+	 * &lt;br/&gt;- Se permiten comentarios de linea (--)
+	 * &lt;br/&gt;- Todas las sentencias drop se ejecutan al principio, 
+	 * y se ignoran los fallos en caso de que no exista la tabla (solo para drop)
+	 */
+	public void executeScript(String fileName) {
+		List&lt;String&gt; lines;
+		try {
+<span class="nc" id="L121">			lines=Files.readAllLines(Paths.get(fileName));</span>
+<span class="nc" id="L122">		} catch (IOException e) {</span>
+<span class="nc" id="L123">			throw new ApplicationException(e);</span>
+<span class="nc" id="L124">		}</span>
+		//separa las sentencias sql en dos listas, una para drop y otra para el resto pues se ejecutaran de forma diferente
+<span class="nc" id="L126">		List&lt;String&gt; batchUpdate=new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L127">		List&lt;String&gt; batchDrop=new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L128">		StringBuilder previousLines=new StringBuilder(); //guarda lineas anteriores al separador (;)</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">		for (String line : lines) {</span>
+<span class="nc" id="L130">			line=line.trim();</span>
+<span class="nc bnc" id="L131" title="All 4 branches missed.">			if (line.length()==0 || line.startsWith(&quot;--&quot;)) //ignora lineas vacias comentarios de linea</span>
+<span class="nc" id="L132">				continue;</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">			if (line.endsWith(&quot;;&quot;)) {</span>
+<span class="nc" id="L134">				String sql=previousLines.toString()+line;</span>
+				//separa drop del resto
+<span class="nc bnc" id="L136" title="All 2 branches missed.">				if (line.toLowerCase().startsWith(&quot;drop&quot;))</span>
+<span class="nc" id="L137">					batchDrop.add(sql);</span>
+				else
+<span class="nc" id="L139">					batchUpdate.add(sql);</span>
+				//nueva linea
+<span class="nc" id="L141">				previousLines=new StringBuilder();</span>
+<span class="nc" id="L142">			} else {</span>
+<span class="nc" id="L143">				previousLines.append(line+&quot; &quot;);</span>
+			}
+<span class="nc" id="L145">		}</span>
+		//Ejecuta todas las sentencias, primero los drop (si existen)
+<span class="nc bnc" id="L147" title="All 2 branches missed.">		if (!batchDrop.isEmpty())</span>
+<span class="nc" id="L148">			this.executeBatchNoFail(batchDrop);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">		if (!batchUpdate.isEmpty())</span>
+<span class="nc" id="L150">			this.executeBatch(batchUpdate);</span>
+<span class="nc" id="L151">	}</span>
+	/**
+	 * Ejecuta un conjunto de sentencias sql de actualizacion en un unico batch
+	 */
+	public void executeBatch(String[] sqls) {
+<span class="nc" id="L156">		executeBatch(Arrays.asList(sqls));</span>
+<span class="nc" id="L157">	}</span>
+	/**
+	 * Ejecuta un conjunto de sentencias sql de actualizacion en un unico batch
+	 */
+	public void executeBatch(List&lt;String&gt; sqls) {
+<span class="nc bnc" id="L162" title="All 4 branches missed.">		try (Connection cn=DriverManager.getConnection(getUrl());</span>
+<span class="nc" id="L163">			Statement stmt = cn.createStatement()) {</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">				for (String sql : sqls)</span>
+<span class="nc" id="L165">					stmt.addBatch(sql);</span>
+<span class="nc" id="L166">				stmt.executeBatch();</span>
+<span class="nc bnc" id="L167" title="All 4 branches missed.">		} catch (SQLException e) {</span>
+			//Ojo, no dejar pasar las excepciones (no limitarse a dejar el codigo autoegenerado por Eclipse con printStackTrace)
+<span class="nc" id="L169">			throw new UnexpectedException(e);</span>
+<span class="nc" id="L170">		}</span>
+<span class="nc" id="L171">	}</span>
+	/**
+	 * Ejecuta un conjunto de sentencias sql de actualizacion en un unico batch, sin causar excepcion cuando falla la ejecucion
+	 * (usado normalmente para borrar tablas de la bd, que fallarian si no existen)
+	 */
+	public void executeBatchNoFail(List&lt;String&gt; sqls) {
+<span class="nc bnc" id="L177" title="All 4 branches missed.">		try (Connection cn=DriverManager.getConnection(getUrl());</span>
+<span class="nc" id="L178">			Statement stmt = cn.createStatement()) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">				for (String sql : sqls)</span>
+<span class="nc" id="L180">					executeWithoutException(stmt,sql);</span>
+<span class="nc bnc" id="L181" title="All 4 branches missed.">		} catch (SQLException e) {</span>
+<span class="nc" id="L182">			throw new UnexpectedException(e);</span>
+<span class="nc" id="L183">		}</span>
+<span class="nc" id="L184">	}</span>
+	private void executeWithoutException(Statement stmt, String sql) {
+		try {
+<span class="nc" id="L187">			stmt.executeUpdate(sql);</span>
+<span class="nc" id="L188">		} catch (SQLException e) {</span>
+			//no causa excepcion intencionaamente
+<span class="nc" id="L190">		}		</span>
+<span class="nc" id="L191">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>

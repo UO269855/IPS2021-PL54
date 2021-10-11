@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CarrerasView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">samples-test-dev</a> &gt; <a href="index.source.html" class="el_package">giis.demo.tkrun</a> &gt; <span class="el_source">CarrerasView.java</span></div><h1>CarrerasView.java</h1><pre class="source lang-java linenums">package giis.demo.tkrun;
+
+import javax.swing.JFrame;
+import net.miginfocom.swing.MigLayout;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+
+import java.awt.Dimension;
+import java.awt.SystemColor;
+import javax.swing.UIManager;
+
+/**
+ * Vista de la pantalla que muestra las carreras activas y permite interactuar con ellas.
+ * &lt;br/&gt;Se ha generado con WindowBulder y modificado para ser conforme a MVC teniendo en cuenta:
+ * - Se elimina main (es invocada desde CarrerasMain) y se incluye Title en el frame
+ * - No se incluye ningun handler de eventos pues estos van en el controlador
+ * - Las tablas se encierran en JOptionPane para que se puedan visualizar las cabeceras
+ * - Se asinga nombre a las tablas si se van a automatizar la ejecucion de pruebas
+ * - Incluye al final los metodos adicionales necesarios para acceder al UI desde el controlador
+ */
+public class CarrerasView {
+
+	private JFrame frame;
+	private JTextField txtFechaHoy;
+	private JButton btnTabCarreras;
+	private JTable tabCarreras;
+	private JComboBox&lt;Object&gt; lstCarreras;
+	private JLabel descuento;
+	private JTable tabDetalle;
+
+	/**
+	 * Create the application.
+	 */
+<span class="nc" id="L39">	public CarrerasView() {</span>
+<span class="nc" id="L40">		initialize();</span>
+<span class="nc" id="L41">	}</span>
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+<span class="nc" id="L47">		frame = new JFrame();</span>
+<span class="nc" id="L48">		frame.setTitle(&quot;Carreras&quot;);</span>
+<span class="nc" id="L49">		frame.setName(&quot;Carreras&quot;);</span>
+<span class="nc" id="L50">		frame.setBounds(0, 0, 492, 422);</span>
+<span class="nc" id="L51">		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);</span>
+<span class="nc" id="L52">		frame.getContentPane().setLayout(new MigLayout(&quot;&quot;, &quot;[grow]&quot;, &quot;[][][grow][][][][][][][][]&quot;));</span>
+		
+		final JLabel lblSimulacion;
+		final JLabel lblFechaHoy;
+		final JLabel lblLstCarreras;
+
+<span class="nc" id="L58">		lblSimulacion = new JLabel(&quot;Simulación de la fecha de hoy para mostrar las carreras&quot;);</span>
+<span class="nc" id="L59">		frame.getContentPane().add(lblSimulacion, &quot;cell 0 1&quot;);</span>
+		
+<span class="nc" id="L61">		lblFechaHoy = new JLabel(&quot;Fecha de hoy (formato ISO):&quot;);</span>
+<span class="nc" id="L62">		frame.getContentPane().add(lblFechaHoy, &quot;flowx,cell 0 3&quot;);</span>
+		
+<span class="nc" id="L64">		txtFechaHoy = new JTextField();</span>
+<span class="nc" id="L65">		txtFechaHoy.setName(&quot;txtFechaHoy&quot;);</span>
+<span class="nc" id="L66">		frame.getContentPane().add(txtFechaHoy, &quot;cell 0 3,growx&quot;);</span>
+<span class="nc" id="L67">		txtFechaHoy.setColumns(10);</span>
+		
+<span class="nc" id="L69">		btnTabCarreras = new JButton(&quot;Ver carreras en esta tabla&quot;);</span>
+<span class="nc" id="L70">		lblFechaHoy.setLabelFor(btnTabCarreras);</span>
+<span class="nc" id="L71">		frame.getContentPane().add(btnTabCarreras, &quot;cell 0 3&quot;);</span>
+		
+<span class="nc" id="L73">		JLabel lblLbltable = new JLabel(&quot;Proximas carreras:&quot;);</span>
+<span class="nc" id="L74">		frame.getContentPane().add(lblLbltable, &quot;cell 0 4&quot;);</span>
+		
+		//Incluyo la tabla en un JScrollPane y anyado este en vez de la tabla para poder ver los headers de la tabla
+<span class="nc" id="L77">		tabCarreras = new JTable();</span>
+<span class="nc" id="L78">		tabCarreras.setName(&quot;tabCarreras&quot;);</span>
+<span class="nc" id="L79">		tabCarreras.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);</span>
+<span class="nc" id="L80">		tabCarreras.setDefaultEditor(Object.class, null); //readonly</span>
+<span class="nc" id="L81">		JScrollPane tablePanel = new JScrollPane(tabCarreras);</span>
+<span class="nc" id="L82">		frame.getContentPane().add(tablePanel, &quot;cell 0 5,grow&quot;);</span>
+		
+<span class="nc" id="L84">		lblLstCarreras = new JLabel(&quot;La misma informacion que en la tabla, pero en forma de lista/combo&quot;);</span>
+<span class="nc" id="L85">		frame.getContentPane().add(lblLstCarreras, &quot;cell 0 6&quot;);</span>
+		
+<span class="nc" id="L87">		lstCarreras = new JComboBox&lt;&gt;();</span>
+<span class="nc" id="L88">		frame.getContentPane().add(lstCarreras, &quot;cell 0 7,growx&quot;);</span>
+		
+<span class="nc" id="L90">		JLabel lblAlSeleccionarLa = new JLabel(&quot;Al seleccionar la tabla (no el combo) muestra detalles&quot;);</span>
+<span class="nc" id="L91">		frame.getContentPane().add(lblAlSeleccionarLa, &quot;cell 0 8&quot;);</span>
+		
+<span class="nc" id="L93">		JLabel lblPorcentajeDescuento = new JLabel(&quot;Porcentaje de descuento: &quot;);</span>
+<span class="nc" id="L94">		frame.getContentPane().add(lblPorcentajeDescuento, &quot;flowx,cell 0 9&quot;);</span>
+		
+<span class="nc" id="L96">		descuento = new JLabel(&quot;##&quot;);</span>
+<span class="nc" id="L97">		descuento.setName(&quot;descuento&quot;);</span>
+<span class="nc" id="L98">		descuento.setFont(UIManager.getFont(&quot;TextField.font&quot;));</span>
+<span class="nc" id="L99">		frame.getContentPane().add(descuento, &quot;cell 0 9&quot;);</span>
+
+<span class="nc" id="L101">		tabDetalle = new JTable();</span>
+<span class="nc" id="L102">		tabDetalle.setName(&quot;tabDetalle&quot;);</span>
+<span class="nc" id="L103">		tabDetalle.setRowSelectionAllowed(false);</span>
+<span class="nc" id="L104">		tabDetalle.setDefaultEditor(Object.class, null); //readonly</span>
+<span class="nc" id="L105">		tabDetalle.setBackground(SystemColor.control);</span>
+<span class="nc" id="L106">		JScrollPane tableDetallePanel = new JScrollPane(tabDetalle);</span>
+<span class="nc" id="L107">		tableDetallePanel.setMinimumSize(new Dimension(200,95));</span>
+<span class="nc" id="L108">		tableDetallePanel.setPreferredSize(new Dimension(300,95));</span>
+<span class="nc" id="L109">		frame.getContentPane().add(tableDetallePanel, &quot;cell 0 10&quot;);</span>
+<span class="nc" id="L110">	}</span>
+
+	//Getters y Setters anyadidos para acceso desde el controlador (repersentacion compacta)
+<span class="nc" id="L113">	public JFrame getFrame() { return this.frame; }</span>
+<span class="nc" id="L114">	public String getFechaHoy()  { return this.txtFechaHoy.getText(); }</span>
+<span class="nc" id="L115">	public void setFechaHoy(String fechaIso)  { this.txtFechaHoy.setText(fechaIso); }</span>
+<span class="nc" id="L116">	public JButton getBtnTablaCarreras() { return this.btnTabCarreras; }</span>
+<span class="nc" id="L117">	public JTable getTablaCarreras() { return this.tabCarreras; }</span>
+<span class="nc" id="L118">	public JComboBox&lt;Object&gt; getListaCarreras() { return this.lstCarreras; }</span>
+<span class="nc" id="L119">	public void setDescuento(String descuento) { this.descuento.setText(descuento+&quot;%&quot;); }</span>
+<span class="nc" id="L120">	public void setDescuentoNoAplicable() { this.descuento.setText(&quot;N/A&quot;); }</span>
+<span class="nc" id="L121">	public JTable getDetalleCarrera() { return this.tabDetalle; }</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.1.201803210924</span></div></body></html>
