@@ -1,9 +1,5 @@
 package common.modelo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class Producto {
 	
 	private int idProducto;
@@ -43,7 +39,7 @@ public class Producto {
 	}
 
 	public void setIdProducto(int idProducto) {
-		idProducto = idProducto;
+		this.idProducto = idProducto;
 	}
 
 	public String getNombre() {
