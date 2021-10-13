@@ -236,15 +236,15 @@ public class DatabaseWrapper {
 		return productos;
 	}
 	
-	public static List<Producto> getProductos() throws UnexpectedException {
-		Connection conn = null;
+	public static List<Producto> getProductos() throws UnexpectedException, SQLException {
+		Connection conn = Jdbc.getConnection();
 		List<Producto> productos;
 		
 		try {
-			conn = DriverManager.getConnection(URL);
+			conn = Jdbc.getConnection();
 			BeanListHandler<Producto> beanListHandler = new BeanListHandler<Producto>(Producto.class);
 
-			String sql = "SELECT * FROM Producto";
+			String sql = "SELECT * FROM PRODUCTO";
 			productos = new QueryRunner().query(conn, sql, beanListHandler);
 
 		} catch (SQLException e) {

@@ -5,10 +5,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.UnexpectedException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +29,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
-import common.database.Database;
 import common.database.DatabaseWrapper;
 import common.modelo.Producto;
 
@@ -38,7 +40,6 @@ public class VentanaPrincipal {
 	private JPanel panelCarrito;
 	private JLabel lblVentanaPrincipal;
 	private RestarBoton rb;
-	private Database database = new Database();
 	private List<Producto> productos = new ArrayList<Producto>();
 	private List<Producto> carrito = new ArrayList<Producto>();
 	private JPanel panelFinalizar;
@@ -75,7 +76,7 @@ public class VentanaPrincipal {
 	}
 
 	protected void setVisible(boolean b) {
-		this.setVisible(b);
+		//this.setVisible(b);
 	}
 
 	public VentanaPrincipal() {
@@ -98,7 +99,7 @@ public class VentanaPrincipal {
 		this.frame.setMinimumSize(new Dimension(1000, 600));
 
 		try {
-			creaBotonesTablero();
+			creaTablero();
 		} catch (UnexpectedException e) {
 			e.printStackTrace();
 		}
@@ -151,18 +152,26 @@ public class VentanaPrincipal {
 		return lblVentanaPrincipal;
 	}
 
-	private void creaBotonesTablero() throws UnexpectedException {
-		productos = DatabaseWrapper.getProductos();
-		JPanel p = new JPanel();
-		p.setLayout(new GridLayout(0, 1, 0, 0));
-		for (int i = 0; i < productos.size(); i++) {
-			p.add((nuevoPanel(productos.get(i))));
+	private void creaTablero() throws UnexpectedException {
+		try {
+			productos = DatabaseWrapper.getProductos();
+		} catch (UnexpectedException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-		JScrollPane pane = new JScrollPane(p, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER,
-				ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-		pane.setPreferredSize(new Dimension(600, 600));
-		frame.add(pane);
-		// getPanelArticulos().setViewportView(p);
+		JPanel p = new JPanel(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        
+		for (int i = 0; i < productos.size(); i++) {
+			p.add((nuevoPanel(p,productos.get(i))), gbc);
+		}
+		getPanelArticulos().setViewportView(p);
 
 	}
 
@@ -194,9 +203,9 @@ public class VentanaPrincipal {
 		}
 	}
 
-	private JPanel nuevoPanel(Producto pr) {
+	private JPanel nuevoPanel(JPanel p, Producto pr) {
 		JPanel panel = new JPanel();
-		panel.setPreferredSize(new Dimension(200, 600));
+		panel.setSize(new Dimension(200, 600));
 		JPanel panel2 = new JPanel();
 		JSpinner spinner = new JSpinner();
 		spinner.setValue(1);
@@ -208,6 +217,13 @@ public class VentanaPrincipal {
 		panel2.add(nuevoBotonSumar(pr, sb));
 		panel2.add(nuevoBotonRestar(pr));
 		panel.add(panel2, BorderLayout.EAST);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        p.add(panel, gbc, 0);
+        
 		panel.setVisible(true);
 		panel.validate();
 		panel.repaint();
