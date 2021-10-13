@@ -44,7 +44,6 @@ public class VentanaPrincipal {
 	private List<Producto> carrito = new ArrayList<Producto>();
 	private JPanel panelFinalizar;
 	private JButton btnSiguiente;
-	private JLabel lblCarritoTitulo;
 	private JLabel lblCarrito;
 	private JTable listaCarrito;
 	private JTextField textFieldTotal;
@@ -310,17 +309,17 @@ public class VentanaPrincipal {
 		setModelLista();
 	}
 
-	public void setModelLista() {
-		DefaultTableModel lista = new DefaultTableModel();
-		Object[] tableHeaders = new Object[] { "Producto", "Unidades", "Precio sin Iva", "Precio con Iva" };
-		lista.addRow(tableHeaders);
-		Object[] row = new Object[4];
+	public void setModelLista() {	
+		Object[] tableHeaders = new Object[] { "Producto", "Unidades", "Precio" };
+		DefaultTableModel lista = new DefaultTableModel(tableHeaders, getCarrito().size());
+		Object[] row = new Object[3];
 		double total = 0;
 		for (int i = 0; i < getCarrito().size(); i++) {
 			total += getCarrito().get(i).getPrecio() * getCarrito().get(i).getUnidades();
 			row[0] = getCarrito().get(i).getNombre();
 			row[1] = getCarrito().get(i).getUnidades();
-			row[3] = getPrecio(getCarrito().get(i));
+			row[2] = getPrecio(getCarrito().get(i)) * getCarrito().get(i).getUnidades() + " €";
+			lista.removeRow(0);
 			lista.addRow(row);
 		}
 		listaCarrito.setModel(lista);
@@ -400,7 +399,7 @@ public class VentanaPrincipal {
 				public void actionPerformed(ActionEvent e) {
 					carrito = new ArrayList<>();
 					listaCarrito.setModel(new DefaultTableModel());
-					textFieldTotal.setText("0.0 €");
+					textFieldTotal.setText("0 €");
 					getBtnTramitar().setEnabled(false);
 					getBtnSiguiente().setEnabled(false);
 				}
