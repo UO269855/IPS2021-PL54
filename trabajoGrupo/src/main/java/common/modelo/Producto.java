@@ -1,81 +1,105 @@
 package common.modelo;
 
-import java.rmi.UnexpectedException;
-import java.util.List;
-
-//import common.database.DatabaseWrapper;
-
 public class Producto {
-	private int IdOrden;
-    private int UnidadesTotales;
-    private double PrecioTotal;
-    private String Fecha;
-    private List<Producto> Productos;
-    private boolean Valido;
-    private String Nombre;
-    
-	public Producto(int idOrden, int unidadesTotales, double precioTotal, String fecha, List<Producto> productos, boolean valido, String Nombre) {
-		IdOrden = idOrden;
-		UnidadesTotales = unidadesTotales;
-		PrecioTotal = precioTotal;
-		Fecha = fecha;
-		Productos = productos;
-		Valido = valido;
-		this.setNombre(Nombre);
+	
+	private int idProducto;
+	private String nombre;
+	private String descripcion;
+	private double precio;
+	private int unidades;
+	private int stock;
+	
+	public Producto() { /* Required by JDBC */ }
+	
+	
+	public Producto(int idProducto, String nombre, String descripcion, double precio) {
+		this.idProducto = idProducto;
+		this.nombre = nombre;
+		this.descripcion = descripcion;
+		this.precio = precio;
 	}
 	
-	public Producto() {/**/}
-
-	public Producto(int i, int calculateUnits, double parseDouble, String format, boolean b) {
-		
+	public Producto(String nombre, String descripcion, double precio,
+			int unidades, int stock) {
+		this.nombre = nombre;
+		this.descripcion = descripcion;
+		this.precio = precio;
+		this.unidades = unidades;
+		this.stock = stock;
 	}
 
-	public int getIdOrden() {
-		return IdOrden;
+
+	public Producto(String nombre, String descripcion, double precio) {
+		this(nombre, descripcion, precio, 0, 10);
 	}
-	public void setIdOrden(int idOrden) {
-		IdOrden = idOrden;
+
+
+	public int getIdProducto() {
+		return idProducto;
 	}
-	public int getUnidadesTotales() {
-		return UnidadesTotales;
-	}
-	public void setUnidadesTotales(int unidadesTotales) {
-		UnidadesTotales = unidadesTotales;
-	}
-	public double getPrecioTotal() {
-		return PrecioTotal;
-	}
-	public void setPrecioTotal(double precioTotal) {
-		PrecioTotal = precioTotal;
-	}
-	public String getFecha() {
-		return Fecha;
-	}
-	public void setFecha(String fecha) {
-		Fecha = fecha;
-	}
-//	 public List<Producto> getProductos() throws UnexpectedException {
-//			return DatabaseWrapper.getProductosPedido(this.IdOrden); // TODO: usar un método específico para las ordenes
-//	}
-	public void setProductos(List<Producto> productos) {
-		Productos = productos;
-	}
-	public boolean isValido() {
-		return Valido;
-	}
-	public void setValido(boolean valido) {
-		Valido = valido;
+
+	public void setIdProducto(int idProducto) {
+		this.idProducto = idProducto;
 	}
 
 	public String getNombre() {
-		return Nombre;
+		return nombre;
 	}
+
 
 	public void setNombre(String nombre) {
-		Nombre = nombre;
+		this.nombre = nombre;
+	}
+
+
+	public String getDescripcion() {
+		return this.descripcion;
+	}
+
+
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
+
+	public double getPrecio() {
+		return precio;
+	}
+
+
+	public void setPrecio(double precio) {
+		this.precio = precio;
+	}
+
+	public void setUnidades(int unidades) {
+		this.unidades = unidades;
+	}	
+	
+
+	public void restaUnidades() {
+		if (unidades > 0) {
+			unidades--;
+		}
+	}
+
+	public int getUnidades() {
+		return unidades;
+	}
+	
+	public String toString() {
+		return getNombre() + " Unidades: " + getUnidades() + " Total: " + String.valueOf(getPrecio() * getUnidades()) + "€";
+		
+	}
+
+	public void addUnidades(int increment) {
+		this.unidades += increment;
+	}
+	
+	public int getStock() {
+		return stock;
+	}
+
+
+	public void setStock(int stock) {
+		this.stock = stock;
 	}
 }
-
-/*
-
- */

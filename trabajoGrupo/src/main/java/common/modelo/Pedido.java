@@ -1,26 +1,33 @@
 package common.modelo;
 
+import java.sql.Date;
+
 public class Pedido {
 	private int IdPedido;
 	private int IdOrden;
 	private int UnidadesTotales;
 	private double PrecioTotal;
-	private String Fecha;
+//	private String Fecha;
+	private Date Fecha;
 	private String MetodoPago;
 	private String Nombre;
 	//private String TipoUsuario;
 
-	public Pedido(int idPedido, int idOrden, int unidadesTotales, double precioTotal, String fecha, String MetodoPago, String Nombre /*String TipoUsuario*/) {
+	public Pedido(int idPedido, int idOrden, int unidadesTotales, double precioTotal, Date fecha, String MetodoPago, String Nombre /*String TipoUsuario*/) {
 		super();
 		IdPedido = idPedido;
 		IdOrden = idOrden;
 		UnidadesTotales = unidadesTotales;
 		PrecioTotal = precioTotal;
-		Fecha = fecha;
+		Fecha = fecha; //DD/MM/AAAA
 		this.MetodoPago = MetodoPago;
 		this.Nombre = Nombre;
 		//this.TipoUsuario = TipoUsuario;
-		
+	}
+	
+	public Pedido (int idPedido, Date fecha) {
+		this.IdPedido = idPedido;
+		this.Fecha = fecha;
 	}
 	
 	public Pedido() {/**/}
@@ -49,10 +56,10 @@ public class Pedido {
 	public void setPrecioTotal(double precioTotal) {
 		PrecioTotal = precioTotal;
 	}
-	public String getFecha() {
+	public Date getFecha() {
 		return Fecha;
 	}
-	public void setFecha(String fecha) {
+	public void setFecha(Date fecha) {
 		Fecha = fecha;
 	}
 	
@@ -72,6 +79,12 @@ public class Pedido {
 		Nombre = nombre;
 	}
 
+	@Override
+	public String toString() {
+		return "Pedido [IdPedido=" + IdPedido + ", UnidadesTotales=" + UnidadesTotales + ", Fecha=" + Fecha + "]";
+	}
+
+
 	/*
 	public String getTipoUsuario() {
 		return TipoUsuario;
@@ -81,4 +94,6 @@ public class Pedido {
 		TipoUsuario = tipoUsuario;
 	}
 	*/
+	
+	
 }
