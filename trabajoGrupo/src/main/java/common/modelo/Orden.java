@@ -3,8 +3,6 @@ package common.modelo;
 import java.rmi.UnexpectedException;
 import java.util.List;
 
-import common.database.DatabaseWrapper;
-
 public class Orden {
 	private int IdOrden;
     private int UnidadesTotales;
