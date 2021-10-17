@@ -1,17 +1,16 @@
 package usuario.controllers;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import javax.swing.JFrame;
 import javax.swing.ListModel;
 import javax.swing.table.TableModel;
 
-import common.modelo.Orden;
+import common.modelo.Pedido;
 import common.modelo.Producto;
 
 public class BusinessLogicUtil {
@@ -33,29 +32,15 @@ public class BusinessLogicUtil {
 		}
 		return String.format(Locale.US, "%.2f", res);
 	}
-	
-	public static Orden createOrden(TableModel modelo, List<Producto> carrito) {
-		List<Producto> productos = new ArrayList<>();
-		List<Producto> model = parseTable(modelo, carrito);
-		for(int i = 0; i< model.size(); i++) {
-			Producto current = model.get(i);
-			productos.add(new Producto(current.getIdProducto(), current.getNombre(), current.getDescripcion(), current.getPrecio()));
-		}
-		
-		Orden myOrden = null;
-        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-		myOrden = new Orden(0, calculateUnits(model), Double.parseDouble(calculateSubtotal(modelo)), formatter.format(new Date()), false);
-		
-		return myOrden;
-	}
+
 	
 
 	public static int getUnidades(TableModel table, Producto p) {
 		int res = 0;
 		
 		for(int i = 0; i< table.getRowCount(); i++) {
-			if(((int)table.getValueAt(i, 0)) == p.getIdProducto())
-				res = (int) table.getValueAt(i, 3);
+			if((table.getValueAt(i, 0)) == p.getNombre())
+				res = (int) table.getValueAt(i, 1);
 		}
 		return res;
 	}
@@ -79,7 +64,7 @@ public class BusinessLogicUtil {
 		return res;
 	}
 
-	public static List<Producto> getOrderProducts(TableModel tableModel, List<Producto> carrito) {
+	public static List<Producto> getPedidoProductos(TableModel tableModel, List<Producto> carrito) {
 		List<Producto> productos = new ArrayList<>();
 		List<Producto> model = parseTable(tableModel, carrito);
 		for(int i = 0; i< model.size(); i++) {
@@ -114,5 +99,24 @@ public class BusinessLogicUtil {
 			result+= producto.getPrecio();
 		}
 		return result;
+	}
+
+	public static Pedido createPedido(TableModel tableModel, List<Producto> carrito, int value) {
+		Pedido pedido = new Pedido();
+		List<Producto> productos = new ArrayList<>();
+		List<Producto> model = parseTable(tableModel, carrito);
+		for(int i = 0; i< model.size(); i++) {
+			Producto current = model.get(i);
+			productos.add(new Producto(current.getIdProducto(), current.getNombre(), current.getDescripcion(), current.getPrecio()));
+		}
+		int number= UUID.randomUUID().hashCode();
+		if (number <= 0) {
+			number *= -1;
+		}
+		pedido.setIdPedido(number);
+		pedido.setPrecioTotal(value);
+		pedido.setFecha(LocalDate.now().toString());
+		pedido.setAlbaran(null);
+		return pedido;
 	}
 }

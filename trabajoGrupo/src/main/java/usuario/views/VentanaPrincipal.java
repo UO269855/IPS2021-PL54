@@ -30,7 +30,9 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import common.database.DatabaseWrapper;
+import common.modelo.Pedido;
 import common.modelo.Producto;
+import usuario.controllers.BusinessLogicUtil;
 
 public class VentanaPrincipal {
 
@@ -411,10 +413,30 @@ public class VentanaPrincipal {
 	private JButton getBtnTramitar() {
 		if (btnTramitar == null) {
 			btnTramitar = new JButton("Tramitar");
+			btnTramitar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					tramitar();
+				}
+			});
 			btnTramitar.setEnabled(false);
 			
 		}
 		return btnTramitar;
+	}
+
+	protected void tramitar() {
+		try {
+			String value = textFieldTotal.getText().substring(0, textFieldTotal.getText().length() - 1);
+			int number = (int) (Double.parseDouble(value));
+			Pedido pedido = BusinessLogicUtil.createPedido(getListaCarrito().getModel(), new ArrayList<>(getCarrito()), number);
+			DatabaseWrapper.createPedido(pedido, new ArrayList<>(getCarrito()), getListaCarrito().getModel());
+		} catch (UnexpectedException e) {
+			System.err.println(e);
+		}
+		JOptionPane.showMessageDialog(this.frame, "Se ha realizado su compra");
+		getListaCarrito().setModel(new DefaultTableModel());
+		getCarrito().clear();
+		limpiarCarrito();	
 	}
 
 	public void limpiarCarrito() {

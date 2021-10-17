@@ -1,84 +1,45 @@
 package common.modelo;
 
 public class Pedido {
-	private int IdPedido;
-	private int IdOrden;
-	private int UnidadesTotales;
-	private double PrecioTotal;
-	private String Fecha;
-	private String MetodoPago;
-	private String Nombre;
-	//private String TipoUsuario;
+	private int idPedido;
+	private int precioTotal;
+	private String fecha;
+	private String albaran;
 
-	public Pedido(int idPedido, int idOrden, int unidadesTotales, double precioTotal, String fecha, String MetodoPago, String Nombre /*String TipoUsuario*/) {
+	public Pedido(int idPedido, int precioTotal, String fecha, String albaran /*String TipoUsuario*/) {
 		super();
-		IdPedido = idPedido;
-		IdOrden = idOrden;
-		UnidadesTotales = unidadesTotales;
-		PrecioTotal = precioTotal;
-		Fecha = fecha;
-		this.MetodoPago = MetodoPago;
-		this.Nombre = Nombre;
-		//this.TipoUsuario = TipoUsuario;
-		
+		this.idPedido = idPedido;
+		this.precioTotal = precioTotal;
+		this.fecha = fecha;
+		this.albaran = albaran;
 	}
 	
 	public Pedido() {/**/}
 	
 	public int getIdPedido() {
-		return IdPedido;
+		return idPedido;
 	}
 	public void setIdPedido(int idPedido) {
-		IdPedido = idPedido;
+		this.idPedido = idPedido;
 	}
-	public int getIdOrden() {
-		return IdOrden;
+	public int getPrecioTotal() {
+		return precioTotal;
 	}
-	public void setIdOrden(int idOrden) {
-		IdOrden = idOrden;
-	}
-	public int getUnidadesTotales() {
-		return UnidadesTotales;
-	}
-	public void setUnidadesTotales(int unidadesTotales) {
-		UnidadesTotales = unidadesTotales;
-	}
-	public double getPrecioTotal() {
-		return PrecioTotal;
-	}
-	public void setPrecioTotal(double precioTotal) {
-		PrecioTotal = precioTotal;
+	public void setPrecioTotal(int precioTotal) {
+		this.precioTotal = precioTotal;
 	}
 	public String getFecha() {
-		return Fecha;
+		return fecha;
 	}
 	public void setFecha(String fecha) {
-		Fecha = fecha;
-	}
-	
-	public String getMetodoPago() {
-		return MetodoPago;
+		this.fecha = fecha;
 	}
 
-	public void setMetodoPago(String metodoPago) {
-		MetodoPago = metodoPago;
+	public String getAlbaran() {
+		return albaran;
 	}
 
-	public String getNombre() {
-		return Nombre;
+	public void setAlbaran(String albaran) {
+		this.albaran = albaran;
 	}
-
-	public void setNombre(String nombre) {
-		Nombre = nombre;
-	}
-
-	/*
-	public String getTipoUsuario() {
-		return TipoUsuario;
-	}
-
-	public void setTipoUsuario(String tipoUsuario) {
-		TipoUsuario = tipoUsuario;
-	}
-	*/
 }

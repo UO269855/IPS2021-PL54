@@ -1,11 +1,8 @@
 package common.modelo;
 
-import java.rmi.UnexpectedException;
 import java.util.List;
 
-import common.database.DatabaseWrapper;
-
-public class Orden {
+public class OrdenTrabajo {
 	private int IdOrden;
     private int UnidadesTotales;
     private double PrecioTotal;
@@ -14,7 +11,7 @@ public class Orden {
     private boolean Valido;
     private String Nombre;
     
-	public Orden(int idOrden, int unidadesTotales, double precioTotal, String fecha, List<Producto> productos, boolean valido, String Nombre) {
+	public OrdenTrabajo(int idOrden, int unidadesTotales, double precioTotal, String fecha, List<Producto> productos, boolean valido, String Nombre) {
 		IdOrden = idOrden;
 		UnidadesTotales = unidadesTotales;
 		PrecioTotal = precioTotal;
@@ -24,9 +21,9 @@ public class Orden {
 		this.setNombre(Nombre);
 	}
 	
-	public Orden() {/**/}
+	public OrdenTrabajo() {/**/}
 
-	public Orden(int i, int calculateUnits, double parseDouble, String format, boolean b) {
+	public OrdenTrabajo(int i, int calculateUnits, double parseDouble, String format, boolean b) {
 		
 	}
 
