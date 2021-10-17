@@ -74,15 +74,15 @@ public class OrdenTrabajoController {
 			}
 		}));
 	
-//		view.getTabPedidos().addMouseListener(new MouseAdapter() {
-//			@Override
-//			public void mouseReleased(MouseEvent e) {
-//				//no usa mouseClicked porque al establecer seleccion simple en la tabla de carreras
-//				//el usuario podria arrastrar el raton por varias filas e interesa solo la ultima
-//				SwingUtil.exceptionWrapper(() -> asignarAlmacenero());//en lugar de updateDetail, 
-//				//al seleccionar un pedido de la OT, lo asignaria al almacenero
-//			}
-//		});
+		view.getTabPedidos().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				//no usa mouseClicked porque al establecer seleccion simple en la tabla de carreras
+				//el usuario podria arrastrar el raton por varias filas e interesa solo la ultima
+				SwingUtil.exceptionWrapper(() -> asignarAlmacenero());//en lugar de updateDetail, 
+				//al seleccionar un pedido de la OT, lo asignaria al almacenero
+			}
+		});
 		
 		view.getBtAlmacenero().addActionListener(e -> SwingUtil.exceptionWrapper(() -> confirmarAlmacenero()));
 	}
@@ -166,37 +166,43 @@ public class OrdenTrabajoController {
 	 * NOT: un almacenero tendrá varias OT
 	 * habrá una clase Almacenero que tendrá una FK IDOT
 	 */
-//	public void asignarAlmacenero() {
-//		//Obtiene la clave seleccinada y la guarda para recordar la seleccion en futuras interacciones
+	public void asignarAlmacenero() {
+		//Obtiene la clave seleccinada y la guarda para recordar la seleccion en futuras interacciones
 //		this.lastSelectedKey=SwingUtil.getSelectedKey(view.getTabPedidos());
-//		int idPedido =Integer.parseInt(this.lastSelectedKey);
-//		
-//		try { 
-//			//COMPLETAR
-//			
-//			if(almacenero == null)//significa que aun no se ha "iniciado sesion"
-//				JOptionPane.showInputDialog("Ingresa un IDAlmacenero válido");
-//			else
-//				//almacenero.addOT(model.getLastOT() + 1); recorriendo las Ot el rendimiento abja
-//				//almacenero.addOT(crearOrden(idPedido)); por ahora no se devolver el valor y tampoco hace falta, lo consulto en la BBDD, no en el almacenero
-//				crearYAsigna(idPedido, almacenero.getIDAlmacenero());
-//			//DUDA: no hace falta guardar en las OT el almacenero??
-//		} catch (ApplicationException e) { 
-//		}
-//		
-//		
-//	}
+		int idPedido =SwingUtil.getSelectedKeyInt(view.getTabPedidos());
+		
+		try { 
+			//COMPLETAR
+			
+			if(almacenero == null)//significa que aun no se ha "iniciado sesion"
+				JOptionPane.showInputDialog("Ingresa un IDAlmacenero válido");
+			else {
+				//almacenero.addOT(model.getLastOT() + 1); recorriendo las Ot el rendimiento abja
+				//almacenero.addOT(crearOrden(idPedido)); por ahora no se devolver el valor y tampoco hace falta, lo consulto en la BBDD, no en el almacenero
+				String id = almacenero.getIDAlmacenero();
+				crearYAsigna(idPedido,Integer.parseInt(id) );
+			}
+		} catch (ApplicationException e) { 
+			e.printStackTrace();
+		}
+		
+		
+	}
 	
-//	/**
-//	 * Crea una nueva orden de trabajo asociada con el IDPedido seleccionada
-//	 * Depsues asigna esta OT al almacenero
-//	 * @param idPedido
-//	 * @param idAlmacenero , idAlamacenero
-//	 */
-//	private void crearYAsigna(int idPedido, String idAlmacenero) {
-//		model.crearOrden(idPedido);
-//		model.asignarOrden(idAlmacenero);
-//	}
+	/**
+	 * Crea una nueva orden de trabajo asociada con el IDPedido seleccionada
+	 * Depsues asigna esta OT al almacenero
+	 * @param idPedido
+	 * @param idAlmacenero , idAlamacenero
+	 */
+	private void crearYAsigna(int idPedido, int idAlmacenero) {
+		try {
+			model.crearOrden(idPedido);
+			model.asignarOrden(idAlmacenero);
+		} catch (SQLException e) {
+		}
+		//NOTA: en la interfaz no se ve nigun cambio tras asignar el almacenero
+	}
 	
 	
 	

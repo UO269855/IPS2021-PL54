@@ -39,6 +39,5 @@
 	<classpathentry kind="lib" path="lib/mchange-commons-java-0.2.10.jar"/>
 	<classpathentry kind="lib" path="lib/ojdbc6.jar"/>
 	<classpathentry kind="lib" path="lib/ojdbc8.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Ali/Downloads/rs2xml.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

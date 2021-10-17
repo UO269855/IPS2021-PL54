@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.swing.table.TableModel;
 
+import com.mchange.v1.db.sql.PSManager;
+
 import common.database.DbUtil;
 import common.modelo.Pedido;
 import giis.demo.util.ApplicationException;
@@ -52,16 +54,9 @@ public class OrdenTrabajoModel {
 	 * ANTES "List<Object[]>"
 	 */
 	public ResultSet getListaPedidosArray() throws SQLException {
-//		String sql="SELECT p.idpedido, p.Fecha" //p.unidadesTotales no está en en bbd pero lo necesito
-//					+ " FROM pedido p"
-//					+ "LEFT JOIN ordentrabajo ot"
-//					+ " ON p.idpedido ==ot.idpedido"
-//					+ "WHERE ot.idpedido IS NULL "
-//					+ "ORDER BY p.Fecha";
-		
 		//IMPORTANTE: la historia pide que muestre el tamaño del pedido, pero 
 		//aun falta esa parte 
-		String sql="SELECT p.idpedido, p.Fecha " //p.unidadesTotales no está en en bbd pero lo necesito
+		String sql="SELECT p.idpedido, p.Fecha, p.unidadesTotales " //p.unidadesTotales no está en en bbd pero lo necesito
 				+ "FROM pedido p "
 				+ "LEFT JOIN ordentrabajo ot "
 				+ "ON p.idpedido = ot.fk_idpedido "
@@ -75,63 +70,62 @@ public class OrdenTrabajoModel {
 		return rs;
 	}
 	
-//	
-//	/**
-//	 * Obtiene la lista de peddios pendientes en forma objetos para una fecha de inscripcion dada
-//	 */
-//	public List<Pedido> getListaPedidos() {
-//		String sql="SELECT p.idpedido, p.Fecha, p.UnidadesTotales "
-//				+ " FROM pedido p"
-//				+ "LEFT JOIN ordentrabajo ot"
-//				+ " ON p.idpedido == ot.idpedido"
-//				+ "WHERE ot.idpedido IS NULL "
-//				+ "ORDER BY p.Fecha";
-//		return db.executeQueryPojo(Pedido.class, sql);
-//	}
-//	
-//	
-//	/**
-//	 * Devuelve el último ID de las ordenes de trabajo para saber como llamar
-//	 * a la siguiente que creamos.
-//	 * NOTA: Tuya me respondio que esta opción mejor no porque pierde rendimiento
-//	 * @return lastOT
-//	 */
-//	public int getLastOT() {
-//		String sql = "SELECT ot.idot"
-//				+ "FROM ordenTrabajo ot"
-//				+ "WHERE ot.idot = (SELECT max(ot.idot) FROM ordenTrabajo)" ;
-//		
-//		List<Object[]>rows=db.executeQueryArray(sql);
-//		//determina el valor a devolver o posibles excepciones
-//		if (rows.isEmpty())//si no hay ot
-//			return 0;
-//		else//devuelve el valor
-//			return (int)rows.get(0)[0];
-//	}
-//	
-//	/**
-//	 * Añada a la tabla OrdenTrabajo una fila con una nueva OT, que tendrá un IDOT
-//	 * generado incremental (por eso no aparece como param, ya que es el primer
-//	 * atributo), y el IDPedio con el que le acabamos de asociar
-//	 */
-//	public void crearOrden(int idPedido) {
-//		//LOS PARÁMETROS NO SE PONEN ASI
-////		db.executeQueryArray(sql, idPedido);
-////		db.executeUpdate("INSERT INTO ordenTrabajo (idOt, IDPedido) VALUES ('"+idPedido+"' )");
-//		db.executeUpdate("INSERT INTO ordenTrabajo (idOt, IDPedido) VALUES (%d)", idPedido);
-//
-//
-//		//ahora devuelve el valor de la IDOT que acabas de añadir:
-//		
-//		
-//	}
-//	
-//	public void asignarOrden(String idAlmacenero) {
-//		int lastOT = getLastOT();//aunque baje el rendimiento
-////		db.executeQueryArray(sql, idAlmacenero, lastOT);
-//		db.executeUpdate("INSERT INTO Almacenero (idAlmacenero, idOT) VALUES ('"+idAlmacenero+"','"+lastOT+"' )");
-//
-//		//nota: clave primaria idAlmacenero no se puede repetir
-//		//LOS PARÁMETROS NO SE PONEN ASI
-//	}
+
+	
+	/**
+	 * Añada a la tabla OrdenTrabajo una fila con una nueva OT, que tendrá un IDOT
+	 * generado incremental (por eso no aparece como param, ya que es el primer
+	 * atributo), y el IDPedido con el que le acabamos de asociar
+	 *
+	 * @throws SQLException 
+	 */
+	public void crearOrden(int idPedido) throws SQLException  {
+		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,incidencia,albaran)"
+				+ " VALUES (?,?,?)");
+		pstmt.setInt(1, idPedido);
+		pstmt.setNString(2, null);
+		pstmt.setNString(3, null);
+		pstmt.executeUpdate();
+	}
+	
+	
+	/**
+	 * Asigna al almacenero la orden de trabajo que se acaba de crear
+	 * @param idAlmacenero
+	 * @throws SQLException 
+	 */
+	public void asignarOrden(int idAlmacenero) throws SQLException {
+		int lastOT = getLastOT();//REVISAR ESTO
+		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero, idOT) VALUES (?,?)");
+		pstmt.setInt(1, idAlmacenero);
+		pstmt.setInt(2, lastOT);
+		pstmt.executeQuery();
+
+		//nota: clave primaria idAlmacenero no se puede repetir: cuando un almacenero tenga mas de un pedido tendré problema
+		//NOTA:se asigna la orden ya que la siguiente vez que abrimos la app y listamos, no aparece el pedido
+		//consultsta de prueba:
 }
+	
+	/*
+	 * Devuelve el último ID de las ordenes de trabajo para saber como llamar
+	 * a la siguiente que creamos.
+	 * NOTA: Tuya me respondio que esta opción mejor no porque pierde rendimiento
+	 * @return lastOT
+	 */
+	public int getLastOT() throws SQLException {
+//		String sql = "SELECT ot.idorden "
+//				+ "FROM ordenTrabajo ot "
+//				+ "WHERE ot.idorden = (SELECT max(ot.idorden) FROM ordenTrabajo)" ;
+		String sql ="SELECT max(idorden) FROM ordenTrabajo"; 
+		PreparedStatement pstmt=cn.prepareStatement(sql);
+		ResultSet rs = pstmt.executeQuery();
+		
+		return rs.getInt(1);
+		
+		//ERROR ACTUAL:estado del cursor incorrecto: cursor indicado no está 
+		//posicionado en una fila para sentencia UPDATE, DELETE, SET, o GET: ; 
+		//Posición actual del resultado de la consulta es antes del primer registro
+		
+	}
+}
+
