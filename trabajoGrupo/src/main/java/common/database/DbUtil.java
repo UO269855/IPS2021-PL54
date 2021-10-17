@@ -1,4 +1,4 @@
-package giis.demo.util;
+package common.database;
 
 import java.io.IOException;
 import java.nio.file.Files;
