@@ -12,6 +12,8 @@ public class Producto {
 	private double precio;
 	private int unidades;
 	private int stock;
+	private int posAlmacen;
+	private int columna;
 	
 	public Producto() { /* Required by JDBC */ }
 	
@@ -24,17 +26,26 @@ public class Producto {
 	}
 	
 	public Producto(String nombre, String descripcion, double precio,
-			int unidades, int stock) {
+			int unidades, int stock,int posAlmacen,int columna) {
 		this.nombre = nombre;
 		this.descripcion = descripcion;
 		this.precio = precio;
 		this.unidades = unidades;
 		this.stock = stock;
+		this.posAlmacen = posAlmacen;
+		this.columna = columna;
 	}
 
 
-	public Producto(String nombre, String descripcion, double precio) {
-		this(nombre, descripcion, precio, 0, 10);
+	public Producto(String nombre, String descripcion, double precio,int posAlmacen,int columna) {
+		this(nombre, descripcion, precio, 0, 10,posAlmacen,columna);
+	}
+	
+	public Producto(int posAlmacen,int columna,int idProducto, String descipccion ) {
+		this.posAlmacen = posAlmacen;
+		this.columna = columna;
+		this.idProducto = idProducto;
+		this.descripcion = descipccion;
 	}
 
 
@@ -106,4 +117,21 @@ public class Producto {
 	public void setStock(int stock) {
 		this.stock = stock;
 	}
+
+
+	public int getPosAlmacen() {
+		return posAlmacen;
+	}
+
+
+
+
+	public int getColumna() {
+		return columna;
+	}
+
+
+
+	
+	
 }
