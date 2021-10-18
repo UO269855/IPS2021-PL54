@@ -1,4 +1,4 @@
-package almacenero;
+package almacenero.controllers;
 
 
 

@@ -1,4 +1,4 @@
-package almacenero;
+package almacenero.controllers;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
