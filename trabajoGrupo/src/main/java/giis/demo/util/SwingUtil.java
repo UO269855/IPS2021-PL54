@@ -10,7 +10,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+
 import org.apache.commons.beanutils.PropertyUtils;
+
+import common.database.ApplicationException;
+import common.database.UnexpectedException;
 
 /**
  * Metodos de utilidad para interfaces de usuario con swing (poblar tablas a partir de un objeto POJO
