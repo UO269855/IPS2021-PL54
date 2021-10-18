@@ -9,12 +9,16 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
+import javax.swing.JButton;
+import javax.swing.JTextArea;
 
 public class ReferenciasQueFaltanView extends JFrame {
 
 	private JPanel contentPane;
 	private JLabel lbIDOrden;
 	private JTextField tfIDOrden;
+	private JButton btComprobar;
+	private JTextArea taIncidencias;
 
 	/**
 	 * Launch the application.
@@ -36,15 +40,26 @@ public class ReferenciasQueFaltanView extends JFrame {
 	 * Create the frame.
 	 */
 	public ReferenciasQueFaltanView() {
+		setTitle("comprobarUnidades");
+		initialize();
+	}
+
+		
+	
+	public void initialize(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 416, 297);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		contentPane.add(getLbIDOrden());
 		contentPane.add(getTfIDOrden());
+		contentPane.add(getBtComprobar());
+		contentPane.add(getTaIncidencias());
 	}
+	
+
 	private JLabel getLbIDOrden() {
 		if (lbIDOrden == null) {
 			lbIDOrden = new JLabel("idOrden:");
@@ -53,13 +68,29 @@ public class ReferenciasQueFaltanView extends JFrame {
 		}
 		return lbIDOrden;
 	}
-	private JTextField getTfIDOrden() {
+	public JTextField getTfIDOrden() {
 		if (tfIDOrden == null) {
 			tfIDOrden = new JTextField();
-			tfIDOrden.setEditable(false);
 			tfIDOrden.setBounds(89, 40, 50, 19);
 			tfIDOrden.setColumns(10);
 		}
 		return tfIDOrden;
+	}
+	public  JButton getBtComprobar() {
+		if (btComprobar == null) {
+			btComprobar = new JButton("Comprobar");
+			btComprobar.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			btComprobar.setBounds(152, 39, 96, 21);
+		}
+		return btComprobar;
+	}
+	public JTextArea getTaIncidencias() {
+		if (taIncidencias == null) {
+			taIncidencias = new JTextArea();
+			taIncidencias.setEditable(false);
+			taIncidencias.setFont(new Font("Monospaced", Font.PLAIN, 12));
+			taIncidencias.setBounds(34, 86, 358, 56);
+		}
+		return taIncidencias;
 	}
 }

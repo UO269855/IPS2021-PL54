@@ -48,15 +48,18 @@ public class OrdenTrabajoController {
 	private OrdenTrabajoView view;
 	private String lastSelectedKey=""; //recuerda la ultima fila seleccionada para restaurarla cuando cambie la tabla de carreras
 	
+	private ReferenciasQueFaltanView refView;
 	private Almacenero almacenero;//no estoy segura de si deberia estar ene sta clase
 
 	
 	
-	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v) throws SQLException {
+	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v, ReferenciasQueFaltanView refView) throws SQLException {
 		this.model = m;
 		this.view = v;
+		this.refView = refView;
 		//no hay inicializacion especifica del modelo, solo de la vista
 //		this.initView();
+		this.initRefView();
 	}
 	/**
 	 * Inicializacion del controlador: anyade los manejadores de eventos a los objetos del UI.
@@ -85,6 +88,15 @@ public class OrdenTrabajoController {
 		});
 		
 		view.getBtAlmacenero().addActionListener(e -> SwingUtil.exceptionWrapper(() -> confirmarAlmacenero()));
+		
+		refView.getBtComprobar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> {
+			try {
+				comprobarUnidades();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}));
 	}
 	
 	
@@ -94,6 +106,14 @@ public class OrdenTrabajoController {
 		//Abre la ventana (sustituye al main generado por WindowBuilder)
 		view.setVisible(true); 
 		view.initialize();
+	
+	}
+	
+	public void initRefView() throws SQLException {
+//		this.getListaPedidosPendientes();
+		//Abre la ventana (sustituye al main generado por WindowBuilder)
+		refView.setVisible(true); 
+		refView.initialize();
 	
 	}
 	
@@ -175,7 +195,7 @@ public class OrdenTrabajoController {
 			//COMPLETAR
 			
 			if(almacenero == null)//significa que aun no se ha "iniciado sesion"
-				JOptionPane.showInputDialog("Ingresa un IDAlmacenero válido");
+				JOptionPane.showMessageDialog(view,"Ingresa un IDAlmacenero válido");
 			else {
 				//almacenero.addOT(model.getLastOT() + 1); recorriendo las Ot el rendimiento abja
 				//almacenero.addOT(crearOrden(idPedido)); por ahora no se devolver el valor y tampoco hace falta, lo consulto en la BBDD, no en el almacenero
@@ -209,29 +229,39 @@ public class OrdenTrabajoController {
 	/**
 	 * @throws SQLException
 	 */
-	public void comprobarUnidades(int idOrden) throws SQLException {
+	public void comprobarUnidades() throws SQLException {
 //		int idOrden = 1; //para probar le paso la idOrden directamente
-		
-		//contiene: p.idproducto, p.nombre, pp.unidadespedido, p.unidades, ot.incidencia
-		ResultSet productosPedidos = model.getListaProductosPedidos(idOrden);
-		
-		while(productosPedidos.next()) {//iterar en cada producto de la lista
-		
-			int unidadesPedido = productosPedidos.getInt(3);
-			int unidadesProducto = productosPedidos.getInt(4);//el stock del producto
-			String incidencia = productosPedidos.getString(5);
-
+		int idOrden=0;
+		if(refView.getTfIDOrden().getText().equals(""))
+			JOptionPane.showMessageDialog(refView, "La orden de trabajo no puede ser vacío");
+		else {
+			idOrden = Integer.parseInt(refView.getTfIDOrden().getText());
+			//comprobar que exista la orden
 			
-			int res = unidadesPedido- unidadesProducto;
-			if(res >0) {//significa que falta stock
+			//contiene: p.idproducto, p.nombre, pp.unidadespedido, p.unidades, ot.incidencia
+			ResultSet productosPedidos = model.getListaProductosPedidos(idOrden);
+			
+			refView.getTaIncidencias().setText("REFERENCIAS QUE FALTAN PARA COMPLETAR LA ORDEN "+ idOrden + ":\n");
+			while(productosPedidos.next()) {//iterar en cada producto de la lista
+			
+				int unidadesPedido = productosPedidos.getInt(3);
+				int unidadesProducto = productosPedidos.getInt(4);//el stock del producto
+				String viejaIncidencia = productosPedidos.getString(5);
 
-				System.out.println("REFERENCIAS QUE FALTAN PARA IDORDEN: " + idOrden);
-				model.anotarIncidencia(productosPedidos.getString(2) ,res, idOrden,incidencia);//escribir en "incidencia" dentro de OrdenTrabajo la cantidad que falta y de qué
 				
+				int res = unidadesPedido- unidadesProducto;
+				if(res >0) {//significa que falta stock
+
+					System.out.println("REFERENCIAS QUE FALTAN PARA IDORDEN: " + idOrden);
+					String incidencia = model.anotarIncidencia(productosPedidos.getString(2) ,res, idOrden,viejaIncidencia);//escribir en "incidencia" dentro de OrdenTrabajo la cantidad que falta y de qué
+					refView.getTaIncidencias().setText(refView.getTaIncidencias().getText() + incidencia);
+				}
 			}
+			
+			
 		}
 		
-		//visualizar referencias que faltan
+		
 	}
 	
 	

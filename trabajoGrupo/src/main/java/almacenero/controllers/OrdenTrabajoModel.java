@@ -164,9 +164,9 @@ public class OrdenTrabajoModel {
 	 * @param viejaIncidencia, vacio si no hay incidencia, o con el mensaje de la anterior 
 	 * @throws SQLException 
 	 */
-	public void anotarIncidencia(String nombreProducto, int unidadesFaltan, int idOrden, String viejaIncidencia) throws SQLException {
+	public String anotarIncidencia(String nombreProducto, int unidadesFaltan, int idOrden, String viejaIncidencia) throws SQLException {
 		//guardar la incidencia actual y añadirle el nuevo mensaje
-		String incidencia = viejaIncidencia +"De "+ nombreProducto + " se necesita " + unidadesFaltan+ " unidades\n";
+		String incidencia = "De "+ nombreProducto + " se necesita " + unidadesFaltan+ " unidades\n";
 		//alterar el campo ot.incidencia que es un varchar
 		String sql = "UPDATE ordentrabajo "
 				+ "SET incidencia=? "
@@ -180,6 +180,7 @@ public class OrdenTrabajoModel {
 
 		pstmt.executeUpdate();
 		
+		return incidencia;
 		//NOTA: si en la misma OT dos productos tienen una incidencia, esta SQL 
 		//machaca la variable guardada antes
 		
