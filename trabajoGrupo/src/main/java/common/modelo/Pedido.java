@@ -5,6 +5,7 @@ public class Pedido {
 	private int precioTotal;
 	private String fecha;
 	private String albaran;
+	private int unidadesTotales;
 
 	public Pedido(int idPedido, int precioTotal, String fecha, String albaran /*String TipoUsuario*/) {
 		super();
@@ -41,5 +42,12 @@ public class Pedido {
 
 	public void setAlbaran(String albaran) {
 		this.albaran = albaran;
+	}
+	
+	public int getUnidadesTotales() {
+		return unidadesTotales;
+	}
+	public void setUnidadesTotales(int unidadesTotales) {
+		this.unidadesTotales = unidadesTotales;
 	}
 }

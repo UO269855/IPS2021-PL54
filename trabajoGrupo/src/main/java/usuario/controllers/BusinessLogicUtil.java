@@ -71,7 +71,7 @@ public class BusinessLogicUtil {
 		return result;
 	}
 
-	public static Pedido createPedido(int value) {
+	public static Pedido createPedido(int value, int total) {
 		Pedido pedido = new Pedido();
 		int number= UUID.randomUUID().hashCode();
 		if (number <= 0) {
@@ -81,6 +81,7 @@ public class BusinessLogicUtil {
 		pedido.setPrecioTotal(value);
 		pedido.setFecha(LocalDate.now().toString());
 		pedido.setAlbaran(null);
+		pedido.setUnidadesTotales(total);
 		return pedido;
 	}
 }

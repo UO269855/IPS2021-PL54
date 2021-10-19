@@ -410,7 +410,13 @@ public class VentanaPrincipal {
 		try {
 			String value = textFieldTotal.getText().substring(0, textFieldTotal.getText().length() - 1);
 			int number = (int) (Double.parseDouble(value));
-			Pedido pedido = BusinessLogicUtil.createPedido(number);
+			int total = 0;
+			for(Producto p: productos) {
+				if (getCarrito().containsKey(p)) {
+					total += getCarrito().get(p);
+				}
+			}
+			Pedido pedido = BusinessLogicUtil.createPedido(number, total);
 			DatabaseWrapper.createPedido(pedido, productos, new Hashtable<Producto, Integer>(getCarrito()), getListaCarrito().getModel());
 		} catch (UnexpectedException e) {
 			System.err.println(e);
