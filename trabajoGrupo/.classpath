@@ -34,7 +34,10 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Usuario/Desktop/UniTercero/RI/Workspace/CWS1/lib/hsqldb.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Usuario/Desktop/UniTercero/RI/Workspace/CWS1/lib/ojdbc8.jar"/>
+	<classpathentry kind="lib" path="lib/c3p0-0.9.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/hsqldb.jar"/>
+	<classpathentry kind="lib" path="lib/mchange-commons-java-0.2.10.jar"/>
+	<classpathentry kind="lib" path="lib/ojdbc6.jar"/>
+	<classpathentry kind="lib" path="lib/ojdbc8.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
