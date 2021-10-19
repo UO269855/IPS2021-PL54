@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.rmi.UnexpectedException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -25,6 +26,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
@@ -43,7 +45,7 @@ public class VentanaPrincipal {
 	private JLabel lblVentanaPrincipal;
 	private RestarBoton rb;
 	private List<Producto> productos = new ArrayList<Producto>();
-	private List<Producto> carrito = new ArrayList<Producto>();
+	private Hashtable<Producto, Integer> carrito = new Hashtable<>();
 	private JPanel panelFinalizar;
 	private JButton btnSiguiente;
 	private JLabel lblCarrito;
@@ -53,12 +55,11 @@ public class VentanaPrincipal {
 	private JButton btnClearPedido;
 	private JButton btnTramitar;
 	private JScrollPane panelArticulos;
-	private JPanel panelItems;
 	private JPanel panelCarritoCentro;
 	private JPanel pnProductButtons;
-	private JButton btnIncrementar;
-	private JButton btnDecrementar;
-	private JButton btnBorrar;
+//	private JButton btnIncrementar;
+//	private JButton btnDecrementar;
+//	private JButton btnBorrar;
 	
 	/**
 	 * Launch the application.
@@ -122,16 +123,6 @@ public class VentanaPrincipal {
 			panelCentral.add(getPanelArticulos(), BorderLayout.CENTER);
 		}
 		return panelCentral;
-	}
-
-	private JPanel getPanelItems() {
-		if (panelItems == null) {
-			panelItems = new JPanel();
-			panelItems.setLayout(new BorderLayout(0, 0));
-			panelItems.add(getPanelFinalizar(), BorderLayout.SOUTH);
-			panelItems.add(getPanelArticulos(), BorderLayout.CENTER);
-		}
-		return panelItems;
 	}
 
 	private JPanel getPanelCarrito() {
@@ -208,7 +199,8 @@ public class VentanaPrincipal {
 		JPanel panel = new JPanel();
 		panel.setSize(new Dimension(200, 600));
 		JPanel panel2 = new JPanel();
-		JSpinner spinner = new JSpinner();
+		SpinnerNumberModel model = new SpinnerNumberModel(1, 0, 9, 1); 
+		JSpinner spinner = new JSpinner(model);
 		spinner.setValue(1);
 		SumarBoton sb = new SumarBoton(spinner);
 		panel2.setLayout(new GridLayout(3, 1));
@@ -277,37 +269,27 @@ public class VentanaPrincipal {
 
 	public void añadirAPedido(int codigo, int unidades) {
 		Producto p = getProducto(codigo);
+		Integer value = 0;
+		if (getCarrito().get(p) != null) {
+			value = getCarrito().get(p);
+		}
 		
-		boolean status = true;
-		int i;
-		for (i = 0; i < getCarrito().size(); i++) {
-			if (p.getIdProducto() == getCarrito().get(i).getIdProducto()) {
-				if (unidades <= p.getStock()) {
-					JOptionPane.showMessageDialog(null, "Las unidades deben ser menores que el stock del producto");
-				}
-				getCarrito().get(i).addUnidades(unidades);
-				status = false;
-			}
-
-		}
-		if (status) {
-			getCarrito().add(p);
-			getCarrito().get(i).addUnidades(unidades);
-		}
+		
+		getCarrito().put(p, value + unidades);
 		setModelLista();
 	}
 
 	public void restarAPedido(int codigo) {
 		Producto p = getProducto(codigo);
-		int i;
-		for (i = 0; i < getCarrito().size(); i++) {
-			if (p.equals(getCarrito().get(i))) {
-				getCarrito().get(i).restaUnidades();
-			}
-			if (getCarrito().get(i).getUnidades() == 0) {
-				getCarrito().remove(i);
-			}
+		Integer value = getCarrito().get(p);
+		
+		if (getCarrito().containsKey(p)) {
+			getCarrito().put(p, value - 1);
 		}
+		if (getCarrito().get(p) == 0) {
+			getCarrito().remove(p);
+		}
+
 		setModelLista();
 	}
 
@@ -316,20 +298,20 @@ public class VentanaPrincipal {
 		DefaultTableModel lista = new DefaultTableModel(tableHeaders, getCarrito().size());
 		Object[] row = new Object[3];
 		double total = 0;
-		for (int i = 0; i < getCarrito().size(); i++) {
-			total += getCarrito().get(i).getPrecio() * getCarrito().get(i).getUnidades();
-			row[0] = getCarrito().get(i).getNombre();
-			row[1] = getCarrito().get(i).getUnidades();
-			row[2] = getPrecio(getCarrito().get(i)) * getCarrito().get(i).getUnidades() + " €";
-			lista.removeRow(0);
-			lista.addRow(row);
+
+		for (Producto p: productos) {
+			if (carrito.containsKey(p)) {
+				total += getCarrito().get(p) * p.getPrecio();
+				row[0] = p.getNombre();
+				row[1] = getCarrito().get(p);
+				row[2] = getCarrito().get(p) * p.getPrecio();
+				lista.removeRow(0);
+				lista.addRow(row);
+			}
+
 		}
 		listaCarrito.setModel(lista);
 		textFieldTotal.setText(String.valueOf(total) + "€");
-	}
-
-	private double getPrecio(Producto producto) {
-		return producto.getPrecio();
 	}
 
 	public Producto getProducto(int id) {
@@ -399,7 +381,7 @@ public class VentanaPrincipal {
 			btnClearPedido = new JButton("Limpiar Pedido");
 			btnClearPedido.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					carrito = new ArrayList<>();
+					carrito = new Hashtable<>();
 					listaCarrito.setModel(new DefaultTableModel());
 					textFieldTotal.setText("0 €");
 					getBtnTramitar().setEnabled(false);
@@ -428,8 +410,8 @@ public class VentanaPrincipal {
 		try {
 			String value = textFieldTotal.getText().substring(0, textFieldTotal.getText().length() - 1);
 			int number = (int) (Double.parseDouble(value));
-			Pedido pedido = BusinessLogicUtil.createPedido(getListaCarrito().getModel(), new ArrayList<>(getCarrito()), number);
-			DatabaseWrapper.createPedido(pedido, new ArrayList<>(getCarrito()), getListaCarrito().getModel());
+			Pedido pedido = BusinessLogicUtil.createPedido(number);
+			DatabaseWrapper.createPedido(pedido, productos, new Hashtable<Producto, Integer>(getCarrito()), getListaCarrito().getModel());
 		} catch (UnexpectedException e) {
 			System.err.println(e);
 		}
@@ -440,11 +422,11 @@ public class VentanaPrincipal {
 	}
 
 	public void limpiarCarrito() {
-		this.carrito = new ArrayList<>();
+		this.carrito = new Hashtable<>();
 
 	}
 
-	public List<Producto> getCarrito() {
+	public Hashtable<Producto, Integer> getCarrito() {
 		return carrito;
 	}
 
@@ -469,74 +451,73 @@ public class VentanaPrincipal {
 	private JPanel getPnProductButtons() {
 		if (pnProductButtons == null) {
 			pnProductButtons = new JPanel();
-			pnProductButtons.add(getBtnIncrementar());
-			pnProductButtons.add(getBtnDecrementar());
-			pnProductButtons.add(getBtnBorrar());
+//			pnProductButtons.add(getBtnIncrementar());
+//			pnProductButtons.add(getBtnDecrementar());
+//			pnProductButtons.add(getBtnBorrar());
 		}
 		return pnProductButtons;
 	}
 
-	private JButton getBtnIncrementar() {
-		if (btnIncrementar == null) {
-			btnIncrementar = new JButton("Incrementar");
-			btnIncrementar.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					int selectedRow = listaCarrito.getSelectedRow();
-					int quantity = ((int) listaCarrito.getModel().getValueAt(selectedRow, 1));
-
-					if (listaCarrito.getSelectedRow() >= 0) {
-						listaCarrito.getModel().setValueAt(quantity + 1, selectedRow, 1);
-						carrito.get(listaCarrito.getSelectedRow()).addUnidades(1);
-						// tProducts.clearSelection();
-					}
-				}
-			});
-			btnIncrementar.setMnemonic('i');
-			btnIncrementar.setEnabled(false);
-		}
-		return btnIncrementar;
-	}
-
-	private JButton getBtnDecrementar() {
-		if (btnDecrementar == null) {
-			btnDecrementar = new JButton("Decrementar");
-			btnDecrementar.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					int selectedRow = listaCarrito.getSelectedRow();
-					int quantity = ((int) listaCarrito.getModel().getValueAt(selectedRow, 1));
-
-					if (listaCarrito.getSelectedRow() >= 0) {
-						if (quantity > 1) {
-							listaCarrito.getModel().setValueAt(quantity - 1, selectedRow, 1);
-							carrito.get(listaCarrito.getSelectedRow()).restaUnidades();
-							// tProducts.clearSelection();
-						}
-					}
-				}
-			});
-			btnDecrementar.setMnemonic('d');
-			btnDecrementar.setEnabled(false);
-		}
-		return btnDecrementar;
-	}
-
-	private JButton getBtnBorrar() {
-		if (btnBorrar == null) {
-			btnBorrar = new JButton("Borrar");
-			btnBorrar.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if (listaCarrito.getSelectedRow() >= 0) {
-						((DefaultTableModel) listaCarrito.getModel()).removeRow(listaCarrito.getSelectedRow());
-						btnBorrar.setEnabled(false);
-						listaCarrito.clearSelection();
-						carrito.remove(listaCarrito.getSelectedRow() + 1);
-						setModelLista();
-					}
-				}
-			});
-			btnBorrar.setMnemonic('b');
-			btnBorrar.setEnabled(false);
-		}
-		return btnBorrar;
-	}
+//	private JButton getBtnIncrementar() {
+//		if (btnIncrementar == null) {
+//			btnIncrementar = new JButton("Incrementar");
+//			btnIncrementar.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					int selectedRow = listaCarrito.getSelectedRow();
+//					int quantity = ((int) listaCarrito.getModel().getValueAt(selectedRow, 1));
+//
+//					if (listaCarrito.getSelectedRow() >= 0) {
+//						listaCarrito.getModel().setValueAt(quantity + 1, selectedRow, 1);
+//						carrito.get(listaCarrito.getSelectedRow()).addUnidades(1);
+//					}
+//				}
+//			});
+//			btnIncrementar.setMnemonic('i');
+//			btnIncrementar.setEnabled(false);
+//		}
+//		return btnIncrementar;
+//	}
+//
+//	private JButton getBtnDecrementar() {
+//		if (btnDecrementar == null) {
+//			btnDecrementar = new JButton("Decrementar");
+//			btnDecrementar.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					int selectedRow = listaCarrito.getSelectedRow();
+//					int quantity = ((int) listaCarrito.getModel().getValueAt(selectedRow, 1));
+//
+//					if (listaCarrito.getSelectedRow() >= 0) {
+//						if (quantity > 1) {
+//							listaCarrito.getModel().setValueAt(quantity - 1, selectedRow, 1);
+//							carrito.get(listaCarrito.getSelectedRow()).restaUnidades();
+//							// tProducts.clearSelection();
+//						}
+//					}
+//				}
+//			});
+//			btnDecrementar.setMnemonic('d');
+//			btnDecrementar.setEnabled(false);
+//		}
+//		return btnDecrementar;
+//	}
+//
+//	private JButton getBtnBorrar() {
+//		if (btnBorrar == null) {
+//			btnBorrar = new JButton("Borrar");
+//			btnBorrar.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent e) {
+//					if (listaCarrito.getSelectedRow() >= 0) {
+//						((DefaultTableModel) listaCarrito.getModel()).removeRow(listaCarrito.getSelectedRow());
+//						btnBorrar.setEnabled(false);
+//						listaCarrito.clearSelection();
+//						carrito.remove(arg0)(listaCarrito.getSelectedRow() + 1);
+//						setModelLista();
+//					}
+//				}
+//			});
+//			btnBorrar.setMnemonic('b');
+//			btnBorrar.setEnabled(false);
+//		}
+//		return btnBorrar;
+//	}
 }

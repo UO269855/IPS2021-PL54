@@ -4,6 +4,7 @@ import java.rmi.UnexpectedException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 
@@ -14,11 +15,9 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
-import org.hsqldb.types.DateTimeType;
 
 import common.modelo.Pedido;
 import common.modelo.Producto;
-import usuario.controllers.BusinessLogicUtil;
 
 
 public class DatabaseWrapper {
@@ -54,7 +53,7 @@ public class DatabaseWrapper {
 	}
 
 	// Crea una orden nueva en la bd
-	public static void createPedido(Pedido pedido, List<Producto> productos, TableModel table) throws UnexpectedException {
+	public static void createPedido(Pedido pedido, List<Producto> productos, Hashtable<Producto, Integer> carrito, TableModel table) throws UnexpectedException {
 		Connection conn = null;
 
 		try {
@@ -66,10 +65,13 @@ public class DatabaseWrapper {
 			new QueryRunner().update(conn, sql);
 			
 			for(Producto p : productos) {
-				sql = String.format(
-						"INSERT INTO ProductoPedido(fk_IdProducto, fk_IdPedido, unidadespedido) VALUES (%d, %d, %d);",
-						p.getIdProducto(), pedido.getIdPedido(), BusinessLogicUtil.getUnidades(table, p) ); //Aquí queda contar productos
-				new QueryRunner().update(conn, sql);
+				if (carrito.containsKey(p)) {
+					sql = String.format(
+							"INSERT INTO ProductoPedido(fk_IdProducto, fk_IdPedido, unidadespedido) VALUES (%d, %d, %d);",
+							p.getIdProducto(), pedido.getIdPedido(), carrito.get(p) ); //Aquí queda contar productos
+					new QueryRunner().update(conn, sql);
+				}
+
 			}
 			
 
