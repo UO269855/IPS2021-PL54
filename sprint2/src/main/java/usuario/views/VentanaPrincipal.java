@@ -176,7 +176,7 @@ public class VentanaPrincipal {
 
 		public void actionPerformed(ActionEvent e) {
 			JButton bt = (JButton) e.getSource();
-			aÃ±adirAPedido(Integer.parseInt(bt.getActionCommand()), (int) spinner.getValue());
+			añadirAPedido(Integer.parseInt(bt.getActionCommand()), (int) spinner.getValue());
 			if (!carrito.isEmpty()) {
 				getBtnTramitar().setEnabled(true);
 				getBtnSiguiente().setEnabled(true);
@@ -267,7 +267,7 @@ public class VentanaPrincipal {
 		return panel;
 	}
 
-	public void aÃ±adirAPedido(int codigo, int unidades) {
+	public void añadirAPedido(int codigo, int unidades) {
 		Producto p = getProducto(codigo);
 		Integer value = 0;
 		if (getCarrito().get(p) != null) {
