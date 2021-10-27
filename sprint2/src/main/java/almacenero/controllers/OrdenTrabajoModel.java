@@ -5,6 +5,12 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+
+import common.database.Database;
+import common.database.DbUtil;
+import common.modelo.ProductoDisplayEscaner;
+import giis.demo.util.Util;
 /**
  * Acceso a los datos de OrdenTrabajo y Pedido
  * (en esta clase se hacen las consultas)
@@ -143,6 +149,27 @@ public class OrdenTrabajoModel {
 		return rs;
 	}
 
+
+	public List<ProductoDisplayEscaner> getListaProductosEscaner(int idOrden) throws SQLException{
+		String sql = "select p.idproducto,p.nombre, pp.unidadespedido "
+				+ "from producto p, ordentrabajo ot , pedido p "
+				+ "left join productoPedido pp "
+				+ "on p.idproducto = pp.fk_idproducto "
+				+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido AND ot.idorden=?";
+		return DbUtil.executeQueryPojo(ProductoDisplayEscaner.class, sql, idOrden);
+	}
+	
+//	public ResultSet getListaProductosEscaner(int idOrden) throws SQLException{
+//		String sql = "select p.idproducto,p.nombre, pp.unidadespedido "
+//				+ "from producto p, ordentrabajo ot , pedido p "
+//				+ "left join productoPedido pp "
+//				+ "on p.idproducto = pp.fk_idproducto "
+//				+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido AND ot.idorden=?";
+//		PreparedStatement pstmt=cn.prepareStatement(sql);
+//		pstmt.setInt(1, idOrden);
+//		ResultSet rs = pstmt.executeQuery();
+//		return rs;
+//	}
 
 	/** 
 	 * Escribe en la incidencia de la orden de trabajo lo que falta para completar

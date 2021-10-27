@@ -38,10 +38,12 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 public abstract class DbUtil {
 	/** Obtencion de la url de conexion que debe implementarse en la subclase */
 	public abstract String getUrl();
-	
+	private static String URL ="jdbc:hsqldb:hsql://localhost";
+	private static String username = "SA";
+	private static String password = "";
 	/** Obtiene un objeto conexion para esta base de datos */
-	public Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(getUrl());
+	public static Connection getConnection() throws SQLException {
+		return DriverManager.getConnection(URL, username, password);
 	}
 
 	//Documentacion de apache dbutils:
@@ -53,10 +55,10 @@ public abstract class DbUtil {
 	 * de la clase indicada en pojoClass;
 	 * Utiliza apache commons-dbutils para realizar el mapeo y el manejo del resto de aspectos de jdbc
 	 */
-	public <T> List<T> executeQueryPojo(Class<T> pojoClass, String sql, Object... params) {
+	public static <T> List<T> executeQueryPojo(Class<T> pojoClass, String sql, Object... params) {
 		Connection conn=null;
 		try {
-			conn=this.getConnection();
+			conn=getConnection();
 			BeanListHandler<T> beanListHandler=new BeanListHandler<>(pojoClass);
 			QueryRunner runner=new QueryRunner();
 			return runner.query(conn, sql, beanListHandler, params);

@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.JSpinner;
 
 /**
  * Clase que implementa la ventana donde se muestran los pedidos pendientes y se crea la OT
@@ -35,6 +36,11 @@ public class OrdenTrabajoView extends JFrame {
 	private JTable tabPedidos;
 	private JButton btAlmacenero;
 	private JButton btComprobarOrden;
+	private JTextField textField;
+	private JButton btEscaner;
+	private JSpinner spinner;
+	private JScrollPane spEscaner;
+	private JLabel lbProductosOT;
 	
 	
 	
@@ -72,7 +78,7 @@ public class OrdenTrabajoView extends JFrame {
 		
 		setTitle("AsignarPedido");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 403, 486);
+		setBounds(100, 100, 768, 551);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -115,6 +121,11 @@ public class OrdenTrabajoView extends JFrame {
 		});
 		btnObtenerReferencias.setBounds(23, 418, 166, 23);
 		contentPane.add(btnObtenerReferencias);
+		contentPane.add(getTextField());
+		contentPane.add(getBtEscaner());
+		contentPane.add(getSpinner());
+		contentPane.add(getSpEscaner());
+		contentPane.add(getLbProductosOT());
 	}
 	private JLabel getLblAlmacenero() {
 		if (lblAlmacenero == null) {
@@ -199,13 +210,48 @@ public class OrdenTrabajoView extends JFrame {
 	}
 	public JButton getBtComprobarOrden() {
 		if (btComprobarOrden == null) {
-			btComprobarOrden = new JButton("Comprobar orden");
+			btComprobarOrden = new JButton("Escaner");
+			btComprobarOrden.setEnabled(false);
 			btComprobarOrden.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			btComprobarOrden.setBounds(202, 418, 141, 21);
 		}
 		return btComprobarOrden;
 	}
-	
-	
-	
+	private JTextField getTextField() {
+		if (textField == null) {
+			textField = new JTextField();
+			textField.setColumns(10);
+			textField.setBounds(464, 431, 85, 19);
+		}
+		return textField;
+	}
+	private JButton getBtEscaner() {
+		if (btEscaner == null) {
+			btEscaner = new JButton("Escanear");
+			btEscaner.setBounds(589, 431, 105, 21);
+		}
+		return btEscaner;
+	}
+	private JSpinner getSpinner() {
+		if (spinner == null) {
+			spinner = new JSpinner();
+			spinner.setBounds(559, 432, 30, 20);
+		}
+		return spinner;
+	}
+	private JScrollPane getSpEscaner() {
+		if (spEscaner == null) {
+			spEscaner = new JScrollPane();
+			spEscaner.setBounds(390, 149, 270, 185);
+		}
+		return spEscaner;
+	}
+	private JLabel getLbProductosOT() {
+		if (lbProductosOT == null) {
+			lbProductosOT = new JLabel("Productos de la OT:");
+			lbProductosOT.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			lbProductosOT.setBounds(390, 127, 185, 13);
+		}
+		return lbProductosOT;
+	}
 }
