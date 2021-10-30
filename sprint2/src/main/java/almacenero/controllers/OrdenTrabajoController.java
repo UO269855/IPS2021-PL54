@@ -4,15 +4,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.table.TableModel;
 
 import common.database.DbUtil;
 import common.modelo.Almacenero;
-import common.modelo.ProductoDisplayEscaner;
 import common.database.SwingUtil;
 import giis.demo.util.ApplicationException;
 
@@ -32,7 +29,6 @@ public class OrdenTrabajoController {
 	private OrdenTrabajoView view;
 	private String lastSelectedKey=""; //recuerda la ultima fila seleccionada para restaurarla cuando cambie la tabla de carreras
 	
-	private EscanerView escanerView;
 	private Almacenero almacenero;//no estoy segura de si deberia estar ene sta clase
 
 	
@@ -43,10 +39,9 @@ public class OrdenTrabajoController {
 	 * @param refView, ventana donde se comprueban las OT
 	 * @throws SQLException
 	 */
-	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v, EscanerView escanerView) throws SQLException {
+	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v) throws SQLException {
 		this.model = m;
 		this.view = v;
-		this.escanerView = escanerView;
 		//no hay inicializacion especifica del modelo, solo de la vista
 		this.initView();
 //		this.initRefView(); ahora la inicializamos cuando pulsamos el botón
@@ -74,6 +69,8 @@ public class OrdenTrabajoController {
 				//el usuario podria arrastrar el raton por varias filas e interesa solo la ultima
 				SwingUtil.exceptionWrapper(() -> asignarAlmacenero());//en lugar de updateDetail, 
 				//al seleccionar un pedido de la OT, lo asignaria al almacenero
+				SwingUtil.exceptionWrapper(() -> mostrarReferencias());
+				
 			}
 		});
 		
@@ -81,10 +78,11 @@ public class OrdenTrabajoController {
 		
 			
 		
-		view.getBtComprobarOrden().addActionListener(e -> SwingUtil.exceptionWrapper(() -> initEscanerView()));
 		
-		escanerView.getBtIngresar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> mostrarReferencias() ));
-		escanerView.getBtEscaner().addActionListener(e -> SwingUtil.exceptionWrapper(() -> escanear()));
+//		view.getBtIngresar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> mostrarReferencias() ));
+//		AL CLICAR UN BOTÓN NO, SI NO AL DAR CLIC EN LA TABLA Y CREAR LA OT
+		
+		view.getBtEscaner().addActionListener(e -> SwingUtil.exceptionWrapper(() -> escanear()));
 	}
 	
 	
@@ -108,14 +106,7 @@ public class OrdenTrabajoController {
 //	
 //	}
 	
-	/**
-	 * Inicializa la ventana que comprueba las ordenes de trabajo
-	 */
-	public void initEscanerView()  {
-		escanerView.setVisible(true); 
-		escanerView.initialize();
 	
-	}
 	
 	
 	/**
@@ -123,11 +114,12 @@ public class OrdenTrabajoController {
 	 * lo guardará para asignarle a él la ot que elija
 	 */
 	public void confirmarAlmacenero() {
-		if(view.getTfAlmacenero().getText() != ""){
-			almacenero = new Almacenero(view.getTfAlmacenero().getText());
+		try{
+			almacenero = new Almacenero(Integer.parseInt(view.getTfAlmacenero().getText()));
+		} catch(NumberFormatException e) {
+			JOptionPane.showMessageDialog(null,"El IdAlmacenero solo está formado por números", "IdAlmacenero inválido", JOptionPane.INFORMATION_MESSAGE);
+
 		}
-		else//avisar de que debe ser un ID valido y pedir que reescriba
-			JOptionPane.showInputDialog("El ID no puede ser vacío");
 		
 	}
 	
@@ -195,8 +187,8 @@ public class OrdenTrabajoController {
 			else {
 				//almacenero.addOT(model.getLastOT() + 1); recorriendo las Ot el rendimiento abja
 				//almacenero.addOT(crearOrden(idPedido)); por ahora no se devolver el valor y tampoco hace falta, lo consulto en la BBDD, no en el almacenero
-				String id = almacenero.getIDAlmacenero();
-				crearYAsigna(idPedido,Integer.parseInt(id) );
+				int id = almacenero.getIDAlmacenero();
+				crearYAsigna(idPedido,id );
 			}
 		} catch (ApplicationException e) { 
 			e.printStackTrace();
@@ -212,19 +204,29 @@ public class OrdenTrabajoController {
 	 * @throws SQLException 
 	 */
 	public void mostrarReferencias()  {
-		 List<ProductoDisplayEscaner> pojo = null;
+		int idOrden = 1;
 		try {
-			pojo = model.getListaProductosEscaner(1);
+			idOrden = model.getLastOT();
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		//CONSEGUIR LA ULTIMA IDORDEN CREADA
+		ResultSet listPEscaner = null;
+		try {
+			listPEscaner = model.getListaProductosEscaner(idOrden);
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		String[] campos = new String[3];
-		campos[0] = "idProducto";
-		campos[1] = "nombre";
-		campos[2] = "unidadesPedido";
-		campos[3] = "unidadesPorRecoger";
-		escanerView.getTabEscaner().setModel(SwingUtil.getRecordModelFromPojo(pojo, campos));
+		TableModel tmodel = DbUtil.resultSetToTableModel(listPEscaner);
+		view.getTabEscaner().setModel(tmodel);
+//		TableModel tmodel=SwingUtil.getTableModelFromPojos(listPEscaner, new String[] {"idProducto", "nombre", "unidadesPedido"}); //añadir unidadesPorRecoger
+//		view.getTabEscaner().setModel(tmodel);
+//		SwingUtil.autoAdjustColumns(view.getTabEscaner());
+		
+		
 	}
 	
 //	public void mostrarReferencias() {
@@ -244,7 +246,10 @@ public class OrdenTrabajoController {
 //	}
 	
 	public void escanear() {
-		
+		//1 obtener el idProducto del campo de texto
+		//2 obtener las unidades del scroll
+		//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error
+		//si hay suficientes, se decrementa el unidadesPorRecoger
 		
 	}
 	

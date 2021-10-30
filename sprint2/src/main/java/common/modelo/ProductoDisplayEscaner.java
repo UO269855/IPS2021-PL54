@@ -4,25 +4,26 @@ public class ProductoDisplayEscaner {
 
 	private int idProducto;
 	private String nombre;
-	private int unidadesPedido;
-	private int unidadesPorEscanear;//??
+//	private int unidadesPedido;
+//	private int unidadesPorEscanear;//??
 	
+//	/**
+//	 * Constructor
+//	 * @param idProducto
+//	 * @param nombre
+//	 * @param unidadesPedido
+//	 * @param unidadesProducto
+//	 */
+//	public ProductoDisplayEscaner(int idProducto, String nombre, int unidadesPedido, int unidadesPorEscanear) {
+//		this.idProducto = idProducto;
+//		this.nombre = nombre;
+//		this.unidadesPedido = unidadesPedido;
+//		this.unidadesPorEscanear = unidadesPorEscanear;
+//	}
 	
-	
-	
-	
-	/**
-	 * Constructor
-	 * @param idProducto
-	 * @param nombre
-	 * @param unidadesPedido
-	 * @param unidadesProducto
-	 */
-	public ProductoDisplayEscaner(int idProducto, String nombre, int unidadesPedido, int unidadesPorEscanear) {
+	public ProductoDisplayEscaner(int idProducto, String nombre) {
 		this.idProducto = idProducto;
 		this.nombre = nombre;
-		this.unidadesPedido = unidadesPedido;
-		this.unidadesPorEscanear = unidadesPorEscanear;
 	}
 	//GETTERS AND SETTERS
 	public int getIdProducto() {
@@ -37,18 +38,12 @@ public class ProductoDisplayEscaner {
 	private void setNombre(String nombre) {
 		this.nombre = nombre;
 	}
-	public int getUnidadesPorEscanear() {
-		return unidadesPorEscanear;
-	}
-	private void setUnidadesPorEscanear(int unidadesPorEscanear) {
-		this.unidadesPorEscanear = unidadesPorEscanear;
-	}
-	public int getUnidadesPedido() {
-		return unidadesPedido;
-	}
-	private void setUnidadesPedido(int unidadesPedido) {
-		this.unidadesPedido = unidadesPedido;
-	}
+//	public int getUnidadesPorEscanear() {
+//		return unidadesPorEscanear;
+//	}
+//	private void setUnidadesPorEscanear(int unidadesPorEscanear) {
+//		this.unidadesPorEscanear = unidadesPorEscanear;
+//	}
 	
 	
 	

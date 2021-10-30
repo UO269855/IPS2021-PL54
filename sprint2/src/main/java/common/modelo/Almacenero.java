@@ -13,13 +13,13 @@ public class Almacenero {
 	//un almacenero tendrá más de una orden de trabajo, por lo que usaré una lista
 	private List<Integer> listOT;
 
-	private String IDAlmacenero;
+	private int IDAlmacenero;
 	
 	
 	
 	
 	
-	public Almacenero(String IDAlmacenero) {
+	public Almacenero(int IDAlmacenero) {
 		this.IDAlmacenero = IDAlmacenero;
 		this.listOT = new ArrayList<Integer>();
 	}
@@ -38,10 +38,10 @@ public class Almacenero {
 
 
 
-	public String getIDAlmacenero() {
+	public int getIDAlmacenero() {
 		return IDAlmacenero;
 	}
-	private void setIDAlmacenero(String iDAlmacenero) {
+	private void setIDAlmacenero(int iDAlmacenero) {
 		IDAlmacenero = iDAlmacenero;
 	}
 	

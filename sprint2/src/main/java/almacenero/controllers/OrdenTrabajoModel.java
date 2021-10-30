@@ -49,7 +49,7 @@ public class OrdenTrabajoModel {
 	public ResultSet getListaPedidosArray() throws SQLException {
 		//IMPORTANTE: la historia pide que muestre el tamaño del pedido, pero 
 		//aun falta esa parte 
-		String sql="SELECT p.idpedido, p.Fecha, p.unidadesTotales " //p.unidadesTotales no está en en bbd pero lo necesito
+		String sql="SELECT p.idpedido, p.Fecha, p.unidadesTotales " 
 				+ "FROM pedido p "
 				+ "LEFT JOIN ordentrabajo ot "
 				+ "ON p.idpedido = ot.fk_idpedido "
@@ -88,11 +88,11 @@ public class OrdenTrabajoModel {
 	 * @throws SQLException 
 	 */
 	public void asignarOrden(int idAlmacenero) throws SQLException {
-		int lastOT = getLastOT();//REVISAR ESTO
-		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero, idOT) VALUES (?,?)");
+		int lastOT = getLastOT();
+		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero, fk_idorden) VALUES (?,?)");
 		pstmt.setInt(1, idAlmacenero);
 		pstmt.setInt(2, lastOT);
-		pstmt.executeQuery();
+		pstmt.executeUpdate();
 }
 	
 	/*
@@ -105,11 +105,16 @@ public class OrdenTrabajoModel {
 //		String sql = "SELECT ot.idorden "
 //				+ "FROM ordenTrabajo ot "
 //				+ "WHERE ot.idorden = (SELECT max(ot.idorden) FROM ordenTrabajo)" ;
-		String sql ="SELECT max(idorden) FROM ordenTrabajo"; 
+//		String sql ="SELECT max(idorden) FROM ordenTrabajo"; 
+		String sql = "select idorden "
+				+ "from ordenTrabajo "
+				+ "order by idorden desc";
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		ResultSet rs = pstmt.executeQuery();
-		
-		return rs.getInt(1);
+		rs.next();
+		int lastOt = rs.getInt(1);
+		System.out.println(lastOt);
+		return lastOt;
 		
 		//ERROR ACTUAL:estado del cursor incorrecto: cursor indicado no está 
 		//posicionado en una fila para sentencia UPDATE, DELETE, SET, o GET: ; 
@@ -149,27 +154,33 @@ public class OrdenTrabajoModel {
 		return rs;
 	}
 
-
-	public List<ProductoDisplayEscaner> getListaProductosEscaner(int idOrden) throws SQLException{
-		String sql = "select p.idproducto,p.nombre, pp.unidadespedido "
-				+ "from producto p, ordentrabajo ot , pedido p "
-				+ "left join productoPedido pp "
-				+ "on p.idproducto = pp.fk_idproducto "
-				+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido AND ot.idorden=?";
-		return DbUtil.executeQueryPojo(ProductoDisplayEscaner.class, sql, idOrden);
-	}
-	
-//	public ResultSet getListaProductosEscaner(int idOrden) throws SQLException{
+//POJOS NO ME FUNCIONÓ
+//	public List<ProductoDisplayEscaner> getListaProductosEscaner(int idOrden) throws SQLException{
 //		String sql = "select p.idproducto,p.nombre, pp.unidadespedido "
 //				+ "from producto p, ordentrabajo ot , pedido p "
 //				+ "left join productoPedido pp "
 //				+ "on p.idproducto = pp.fk_idproducto "
 //				+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido AND ot.idorden=?";
-//		PreparedStatement pstmt=cn.prepareStatement(sql);
-//		pstmt.setInt(1, idOrden);
-//		ResultSet rs = pstmt.executeQuery();
-//		return rs;
+//		return DbUtil.executeQueryPojo(ProductoDisplayEscaner.class, sql);
 //	}
+	
+	/**
+	 * Muestra la lista de productos de la ot seleccionada para poder escanearlo
+	 * @param idOrden
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResultSet getListaProductosEscaner(int idOrden) throws SQLException{
+		String sql = "select p.idproducto,p.nombre, pp.unidadespedido " //AÑADIR pp.unidadesPorRecoger
+				+ "from producto p, ordentrabajo ot , pedido p "
+				+ "left join productoPedido pp "
+				+ "on p.idproducto = pp.fk_idproducto "
+				+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido AND ot.idorden=?";
+		PreparedStatement pstmt=cn.prepareStatement(sql);
+		pstmt.setInt(1, idOrden);
+		ResultSet rs = pstmt.executeQuery();
+		return rs;
+	}
 
 	/** 
 	 * Escribe en la incidencia de la orden de trabajo lo que falta para completar

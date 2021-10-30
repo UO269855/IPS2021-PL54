@@ -2,7 +2,6 @@ package common.modelo;
 
 import java.sql.SQLException;
 
-import almacenero.controllers.EscanerView;
 import almacenero.controllers.OrdenTrabajoController;
 import almacenero.controllers.OrdenTrabajoModel;
 import almacenero.controllers.OrdenTrabajoView;
@@ -19,7 +18,6 @@ public class Main {
 	private static OrdenTrabajoController control;
 	private static OrdenTrabajoView view;
 	
-	private static EscanerView escanerView;
 
 	public static void main(String[] args) throws SQLException {
 		
@@ -27,8 +25,7 @@ public class Main {
 		model = new OrdenTrabajoModel();
 		view = new OrdenTrabajoView();
 		
-		escanerView = new EscanerView();
-		control = new OrdenTrabajoController(model, view, escanerView);
+		control = new OrdenTrabajoController(model, view);
 		control.initController(); 
 		
 

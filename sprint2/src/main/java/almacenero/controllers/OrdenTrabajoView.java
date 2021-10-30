@@ -36,11 +36,12 @@ public class OrdenTrabajoView extends JFrame {
 	private JTable tabPedidos;
 	private JButton btAlmacenero;
 	private JButton btComprobarOrden;
-	private JTextField textField;
+	private JTextField txEscaner;
 	private JButton btEscaner;
 	private JSpinner spinner;
 	private JScrollPane spEscaner;
 	private JLabel lbProductosOT;
+	private JTable tabEscaner;
 	
 	
 	
@@ -121,7 +122,7 @@ public class OrdenTrabajoView extends JFrame {
 		});
 		btnObtenerReferencias.setBounds(23, 418, 166, 23);
 		contentPane.add(btnObtenerReferencias);
-		contentPane.add(getTextField());
+		contentPane.add(getTxEscaner());
 		contentPane.add(getBtEscaner());
 		contentPane.add(getSpinner());
 		contentPane.add(getSpEscaner());
@@ -217,15 +218,15 @@ public class OrdenTrabajoView extends JFrame {
 		}
 		return btComprobarOrden;
 	}
-	private JTextField getTextField() {
-		if (textField == null) {
-			textField = new JTextField();
-			textField.setColumns(10);
-			textField.setBounds(464, 431, 85, 19);
+	public JTextField getTxEscaner() {
+		if (txEscaner == null) {
+			txEscaner = new JTextField();
+			txEscaner.setColumns(10);
+			txEscaner.setBounds(464, 431, 85, 19);
 		}
-		return textField;
+		return txEscaner;
 	}
-	private JButton getBtEscaner() {
+	public JButton getBtEscaner() {
 		if (btEscaner == null) {
 			btEscaner = new JButton("Escanear");
 			btEscaner.setBounds(589, 431, 105, 21);
@@ -243,6 +244,7 @@ public class OrdenTrabajoView extends JFrame {
 		if (spEscaner == null) {
 			spEscaner = new JScrollPane();
 			spEscaner.setBounds(390, 149, 270, 185);
+			spEscaner.setColumnHeaderView(getTabEscaner());
 		}
 		return spEscaner;
 	}
@@ -253,5 +255,11 @@ public class OrdenTrabajoView extends JFrame {
 			lbProductosOT.setBounds(390, 127, 185, 13);
 		}
 		return lbProductosOT;
+	}
+	public JTable getTabEscaner() {
+		if (tabEscaner == null) {
+			tabEscaner = new JTable();
+		}
+		return tabEscaner;
 	}
 }
