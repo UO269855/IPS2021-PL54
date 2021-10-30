@@ -18,7 +18,6 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 
 import common.modelo.Pedido;
 import common.modelo.Producto;
-import common.modelo.ProductoDisplayEscaner;
 
 
 public class DatabaseWrapper {
@@ -60,16 +59,16 @@ public class DatabaseWrapper {
 		try {
 			conn = Jdbc.getConnection();
 			
-			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales) VALUES (%d, %d, '%s', '%s', %d);",
-					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales());
+			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales, unidadesTotalesPorRecoger) VALUES (%d, %d, '%s', '%s', %d, %d);", //AÑADIDO unidadesTotalesPorRecoger por ALICIA
+					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales(), pedido.getUnidadesTotales());
 			
 			new QueryRunner().update(conn, sql);
 			
 			for(Producto p : productos) {
 				if (carrito.containsKey(p)) {
 					sql = String.format(
-							"INSERT INTO ProductoPedido(fk_IdProducto, fk_IdPedido, unidadespedido) VALUES (%d, %d, %d);",
-							p.getIdProducto(), pedido.getIdPedido(), carrito.get(p) ); //Aquí queda contar productos
+							"INSERT INTO ProductoPedido(fk_IdProducto, fk_IdPedido, unidadespedido, unidadesPorRecoger) VALUES (%d, %d, %d, %d);", //AÑADIDO unidadesPorRecoger POR ALICIA
+							p.getIdProducto(), pedido.getIdPedido(), carrito.get(p), carrito.get(p) ); //Aquí queda contar productos AÑADIDO EL SEGUNDO caarrito.get(p) por ALICIA
 					new QueryRunner().update(conn, sql);
 				}
 
@@ -127,31 +126,6 @@ public class DatabaseWrapper {
 		return productos;
 	}
 	
-	public static List<ProductoDisplayEscaner> getProductosEscaner(int idOrden) throws UnexpectedException, SQLException{
-		Connection conn = Jdbc.getConnection();
-		List<ProductoDisplayEscaner> productosEscaner;
-		
-		try {
-			conn = Jdbc.getConnection();
-			BeanListHandler<ProductoDisplayEscaner> beanListHandler = new BeanListHandler<ProductoDisplayEscaner>(ProductoDisplayEscaner.class);
-
-			String sql = "select p.idproducto,p.nombre, pp.unidadespedido, p.unidades, ot.incidencia "
-					+ "from producto p, ordentrabajo ot , pedido p "
-					+ "left join productoPedido pp "
-					+ "on p.idproducto = pp.fk_idproducto "
-					+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido "
-					+ "AND ot.idorden=?";
-			//los parametros aqui se ponen asi?
-			productosEscaner = new QueryRunner().query(conn, sql, beanListHandler);
-
-		} catch (SQLException e) {
-			throw new UnexpectedException(e.getMessage());
-		} finally {
-			DbUtils.closeQuietly(conn);
-		}
-		return productosEscaner;
-		
-	}
 
 	
 }
