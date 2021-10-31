@@ -59,8 +59,8 @@ public class DatabaseWrapper {
 		try {
 			conn = Jdbc.getConnection();
 			
-			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales, unidadesTotalesPorRecoger) VALUES (%d, %d, '%s', '%s', %d, %d);", //AÑADIDO unidadesTotalesPorRecoger por ALICIA
-					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales(), pedido.getUnidadesTotales());
+			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales) VALUES (%d, %d, '%s', '%s', %d);", 
+					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales());
 			
 			new QueryRunner().update(conn, sql);
 			

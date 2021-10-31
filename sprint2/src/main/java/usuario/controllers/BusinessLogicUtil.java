@@ -82,7 +82,6 @@ public class BusinessLogicUtil {
 		pedido.setFecha(LocalDate.now().toString());
 		pedido.setAlbaran(null);
 		pedido.setUnidadesTotales(total);
-		pedido.setUnidadesTotalesPorRecoger(total);//AÑADIDO POR ALICIA
 		return pedido;
 	}
 }

@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.JOptionPane;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import common.database.DbUtil;
@@ -70,11 +71,16 @@ public class OrdenTrabajoController {
 				SwingUtil.exceptionWrapper(() -> asignarAlmacenero());//en lugar de updateDetail, 
 				//al seleccionar un pedido de la OT, lo asignaria al almacenero
 				SwingUtil.exceptionWrapper(() -> mostrarReferencias());
-				
+				//habilitar el botón de  EscribirIncidencia cuando se cree y visualice la OT
+				SwingUtil.exceptionWrapper(() -> view.getBtIncidencia().setEnabled(true));
+				SwingUtil.exceptionWrapper(() -> view.getTaIncidencia().setEditable(true));
+				SwingUtil.exceptionWrapper(() -> mostrarIncidencia());
 			}
 		});
 		
-		view.getBtAlmacenero().addActionListener(e -> SwingUtil.exceptionWrapper(() -> confirmarAlmacenero()));
+		view.getBtAlmacenero().addActionListener(e -> SwingUtil.exceptionWrapper(() -> confirmarAlmacenero() ));
+		view.getBtIncidencia().addActionListener(e -> SwingUtil.exceptionWrapper(() -> anotarIncidencia() ));
+
 		
 			
 		
@@ -86,6 +92,12 @@ public class OrdenTrabajoController {
 	}
 	
 	
+	/**
+	 * Muestra en la interfaz la incidencia que contenga la OT, por si el al
+	 */
+	private void mostrarIncidencia() {
+		
+	}
 	
 	/**
 	 * Inicializa la ventana de los pedidos pendientes
@@ -116,6 +128,7 @@ public class OrdenTrabajoController {
 	public void confirmarAlmacenero() {
 		try{
 			almacenero = new Almacenero(Integer.parseInt(view.getTfAlmacenero().getText()));
+			view.getBtAlmacenero().setEnabled(false);
 		} catch(NumberFormatException e) {
 			JOptionPane.showMessageDialog(null,"El IdAlmacenero solo está formado por números", "IdAlmacenero inválido", JOptionPane.INFORMATION_MESSAGE);
 
@@ -204,19 +217,22 @@ public class OrdenTrabajoController {
 	 * @throws SQLException 
 	 */
 	public void mostrarReferencias()  {
+		//ACTIVAR EL BOTÓN DEL ESCANEADO
+		view.getBtEscaner().setEnabled(true);
+		
+		//consigue la ultima OT creada
 		int idOrden = 1;
 		try {
 			idOrden = model.getLastOT();
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		//CONSEGUIR LA ULTIMA IDORDEN CREADA
+		
+		//consigue los productos de la última OT creada
 		ResultSet listPEscaner = null;
 		try {
 			listPEscaner = model.getListaProductosEscaner(idOrden);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -225,31 +241,44 @@ public class OrdenTrabajoController {
 //		TableModel tmodel=SwingUtil.getTableModelFromPojos(listPEscaner, new String[] {"idProducto", "nombre", "unidadesPedido"}); //añadir unidadesPorRecoger
 //		view.getTabEscaner().setModel(tmodel);
 //		SwingUtil.autoAdjustColumns(view.getTabEscaner());
-		
-		
 	}
-	
-//	public void mostrarReferencias() {
-//		//consigue la orden que acabamos de introducir en el campo de texto
-//		int idOrden = Integer.parseInt(escanerView.getTaIdOrden().getText());
-//		//necesito la orden que acabo de crear
-//		
-//		ResultSet escaner = null;
-//		try {
-//			escaner = model.getListaProductosEscaner(idOrden);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		} 
-//		
-//		TableModel tmodel = DbUtil.resultSetToTableModel(escaner);
-//		escanerView.getTabEscaner().setModel(tmodel);
-//	}
 	
 	public void escanear() {
 		//1 obtener el idProducto del campo de texto
-		//2 obtener las unidades del scroll
-		//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error
-		//si hay suficientes, se decrementa el unidadesPorRecoger
+		int idProducto = 0;
+		try{
+			 idProducto = Integer.parseInt(view.getTxEscaner().getText());
+			 int idOt =  model.getLastOT();
+			 
+			 //SI NO HAY UNIDADES POR RECOGER EN LA OT: NO SE ESCANEA NADA 
+			 if(model.unidadesARecoger(idOt) == 0) {
+				 JOptionPane.showMessageDialog(null,"Ya no quedan productos por escanear", "Escaneado listo", JOptionPane.INFORMATION_MESSAGE);
+				view.getBtEscaner().setEnabled(false);
+				
+				
+			 } else {
+				//2 obtener las unidades del scroll
+					int uSpinner = (int) view.getSpUnidadesEscaner().getValue();
+					
+					//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error
+					//si hay suficientes, se decrementa el unidadesPorRecoger
+					int res = model.escanear(idProducto,idOt,uSpinner);
+					if(res == -1)
+						JOptionPane.showMessageDialog(null,"El número de unidades que intentas escanear supera al número que queda por recoger", "Unidades insuficientes", JOptionPane.INFORMATION_MESSAGE);
+					else {
+						//mostrar de nuevo la lista de productos para que se actualicen las unidadesPorRecoger
+						mostrarReferencias();
+					}
+			 }
+			 
+		//manejo de excepciones
+		} catch (NumberFormatException e) {
+			JOptionPane.showMessageDialog(null,"El IdProducto solo está formado por números", "IdProducto inválido", JOptionPane.INFORMATION_MESSAGE);
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+		}
+		
+	
 		
 	}
 	
@@ -268,7 +297,30 @@ public class OrdenTrabajoController {
 		//NOTA: en la interfaz no se ve nigun cambio tras asignar el almacenero
 	}
 	
-	
+
+	/**
+	 * Escribe una incidencia en la orden de trabajo cuando el almacenero quiera y con el mensaje que 
+	 * él decida
+	 */
+	private void anotarIncidencia() {
+		int idOrden = -1;
+		try {
+			 idOrden = model.getLastOT();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		String incidencia = view.getTaIncidencia().getText();
+		
+		try {
+			model.anotarIncidencia(idOrden,incidencia);
+			view.getTaIncidenciaVieja().setText(incidencia);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
 	
 	/**
 	 * Commprueba que el número de unidades que hay de stock sean suficientes para completar la OT.

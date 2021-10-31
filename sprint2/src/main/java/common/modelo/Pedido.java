@@ -6,7 +6,6 @@ public class Pedido {
 	private String fecha;
 	private String albaran;
 	private int unidadesTotales;
-	private int unidadesTotalesPorRecoger;//AÑADIDO POR ALICIA
 
 
 	public Pedido(int idPedido, int precioTotal, String fecha, String albaran /*String TipoUsuario*/) {
@@ -53,21 +52,6 @@ public class Pedido {
 		this.unidadesTotales = unidadesTotales;
 	}
 
-	
-	/**
-	 * AÑADIDO POR ALICIA
-	 * @return
-	 */
-	public int getUnidadesTotalesPorRecoger() {
-		return unidadesTotalesPorRecoger;
-	}
 
-	/**
-	 * AÑADIDO POR ALICIA
-	 * @param unidadesTotalesPorRecoger
-	 */
-	public void setUnidadesTotalesPorRecoger(int unidadesTotalesPorRecoger) {
-		this.unidadesTotalesPorRecoger = unidadesTotalesPorRecoger;
-	}
 	
 }

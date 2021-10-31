@@ -18,6 +18,12 @@ import java.util.Scanner;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import java.awt.ScrollPane;
+import java.awt.TextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.JTextArea;
+import java.awt.Label;
 
 /**
  * Clase que implementa la ventana donde se muestran los pedidos pendientes y se crea la OT
@@ -32,16 +38,22 @@ public class OrdenTrabajoView extends JFrame {
 	private JTextField tfAlmacenero;
 	private JLabel lbPedidosPendientes;
 	private JButton btMostrarPendientes;
-	private JScrollPane tablePanel;
+	private JScrollPane spPedidos;
 	private JTable tabPedidos;
 	private JButton btAlmacenero;
-	private JButton btComprobarOrden;
 	private JTextField txEscaner;
 	private JButton btEscaner;
-	private JSpinner spinner;
+	private JSpinner spUnidadesEscaner;
 	private JScrollPane spEscaner;
 	private JLabel lbProductosOT;
 	private JTable tabEscaner;
+	private JLabel lbIdProducto;
+	private JButton btIncidencia;
+	private JScrollPane spIncidencia;
+	private Label lbIncidencia;
+	private JTextArea taIncidencia;
+	private JScrollPane spIncidenciaVieja;
+	private JTextArea taIncidenciaVieja;
 	
 	
 	
@@ -77,9 +89,9 @@ public class OrdenTrabajoView extends JFrame {
 	 */
 	public void initialize() throws SQLException {
 		
-		setTitle("AsignarPedido");
+		setTitle("Orden de trabajo");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 768, 551);
+		setBounds(100, 100, 702, 551);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -88,9 +100,8 @@ public class OrdenTrabajoView extends JFrame {
 		contentPane.add(getTfAlmacenero());
 		contentPane.add(getLbPedidosPendientes());
 		contentPane.add(getBtMostrarPendientes());
-		contentPane.add(getTablePanel());
+		contentPane.add(getSpPedidos());
 		contentPane.add(getBtAlmacenero());
-		contentPane.add(getBtComprobarOrden());
 		
 		JButton btnObtenerReferencias = new JButton("Obtener Referencias");
 		btnObtenerReferencias.addActionListener(new ActionListener() {
@@ -120,13 +131,18 @@ public class OrdenTrabajoView extends JFrame {
 				}
 			}
 		});
-		btnObtenerReferencias.setBounds(23, 418, 166, 23);
+		btnObtenerReferencias.setBounds(41, 416, 166, 23);
 		contentPane.add(btnObtenerReferencias);
 		contentPane.add(getTxEscaner());
 		contentPane.add(getBtEscaner());
-		contentPane.add(getSpinner());
+		contentPane.add(getSpUnidadesEscaner());
 		contentPane.add(getSpEscaner());
 		contentPane.add(getLbProductosOT());
+		contentPane.add(getLbIdProducto());
+		contentPane.add(getBtIncidencia());
+		contentPane.add(getSpIncidencia());
+		contentPane.add(getLbIncidencia());
+		contentPane.add(getSpIncidenciaVieja());
 	}
 	private JLabel getLblAlmacenero() {
 		if (lblAlmacenero == null) {
@@ -134,7 +150,7 @@ public class OrdenTrabajoView extends JFrame {
 			lblAlmacenero.setLabelFor(getTfAlmacenero());
 			lblAlmacenero.setDisplayedMnemonic('a');
 			lblAlmacenero.setFont(new Font("Tahoma", Font.PLAIN, 14));
-			lblAlmacenero.setBounds(40, 26, 117, 17);
+			lblAlmacenero.setBounds(40, 29, 117, 17);
 		}
 		return lblAlmacenero;
 	}
@@ -161,7 +177,7 @@ public class OrdenTrabajoView extends JFrame {
 		if (lbPedidosPendientes == null) {
 			lbPedidosPendientes = new JLabel("Pedidos pendientes:");
 			lbPedidosPendientes.setFont(new Font("Tahoma", Font.PLAIN, 14));
-			lbPedidosPendientes.setBounds(40, 126, 141, 13);
+			lbPedidosPendientes.setBounds(40, 136, 141, 13);
 		}
 		return lbPedidosPendientes;
 	}
@@ -181,15 +197,15 @@ public class OrdenTrabajoView extends JFrame {
 	 * incluyo la tabla en un JScrollPane y anyado este en vez de la tabla para poder ver los headers de la tabla
 	 * @return tablePanel
 	 */
-	public JScrollPane getTablePanel() {
-		if (tablePanel == null) {
-			tablePanel = new JScrollPane(getTabPedidos());
-			tablePanel.setBounds(40, 149, 303, 108);
+	public JScrollPane getSpPedidos() {
+		if (spPedidos == null) {
+			spPedidos = new JScrollPane(getTabPedidos());
+			spPedidos.setBounds(40, 159, 303, 108);
 //			tablePanel.setColumnHeaderView(getTabPedidos());
 			
 			
 		}
-		return tablePanel;
+		return spPedidos;
 	}
 	public JTable getTabPedidos() {
 		if (tabPedidos == null) {
@@ -209,42 +225,35 @@ public class OrdenTrabajoView extends JFrame {
 		}
 		return btAlmacenero;
 	}
-	public JButton getBtComprobarOrden() {
-		if (btComprobarOrden == null) {
-			btComprobarOrden = new JButton("Escaner");
-			btComprobarOrden.setEnabled(false);
-			btComprobarOrden.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			btComprobarOrden.setBounds(202, 418, 141, 21);
-		}
-		return btComprobarOrden;
-	}
 	public JTextField getTxEscaner() {
 		if (txEscaner == null) {
 			txEscaner = new JTextField();
 			txEscaner.setColumns(10);
-			txEscaner.setBounds(464, 431, 85, 19);
+			txEscaner.setBounds(430, 418, 85, 19);
 		}
 		return txEscaner;
 	}
 	public JButton getBtEscaner() {
 		if (btEscaner == null) {
 			btEscaner = new JButton("Escanear");
-			btEscaner.setBounds(589, 431, 105, 21);
+			btEscaner.setEnabled(false);
+			btEscaner.setBounds(555, 418, 105, 21);
 		}
 		return btEscaner;
 	}
-	private JSpinner getSpinner() {
-		if (spinner == null) {
-			spinner = new JSpinner();
-			spinner.setBounds(559, 432, 30, 20);
+	public JSpinner getSpUnidadesEscaner() {
+		if (spUnidadesEscaner == null) {
+			spUnidadesEscaner = new JSpinner();
+			spUnidadesEscaner.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+			spUnidadesEscaner.setBounds(525, 419, 30, 20);
 		}
-		return spinner;
+		return spUnidadesEscaner;
 	}
 	private JScrollPane getSpEscaner() {
 		if (spEscaner == null) {
 			spEscaner = new JScrollPane();
-			spEscaner.setBounds(390, 149, 270, 185);
-			spEscaner.setColumnHeaderView(getTabEscaner());
+			spEscaner.setBounds(390, 207, 270, 185);
+			spEscaner.setViewportView(getTabEscaner());
 		}
 		return spEscaner;
 	}
@@ -252,7 +261,7 @@ public class OrdenTrabajoView extends JFrame {
 		if (lbProductosOT == null) {
 			lbProductosOT = new JLabel("Productos de la OT:");
 			lbProductosOT.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			lbProductosOT.setBounds(390, 127, 185, 13);
+			lbProductosOT.setBounds(390, 185, 185, 13);
 		}
 		return lbProductosOT;
 	}
@@ -261,5 +270,61 @@ public class OrdenTrabajoView extends JFrame {
 			tabEscaner = new JTable();
 		}
 		return tabEscaner;
+	}
+	private JLabel getLbIdProducto() {
+		if (lbIdProducto == null) {
+			lbIdProducto = new JLabel("IdProducto:");
+			lbIdProducto.setBounds(430, 402, 72, 13);
+		}
+		return lbIdProducto;
+	}
+	public JButton getBtIncidencia() {
+		if (btIncidencia == null) {
+			btIncidencia = new JButton("Guardar incidencia");
+			btIncidencia.setEnabled(false);
+			btIncidencia.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			btIncidencia.setBounds(510, 158, 150, 21);
+		}
+		return btIncidencia;
+	}
+	private JScrollPane getSpIncidencia() {
+		if (spIncidencia == null) {
+			spIncidencia = new JScrollPane();
+			spIncidencia.setBounds(390, 101, 270, 47);
+			spIncidencia.setViewportView(getTaIncidencia());
+		}
+		return spIncidencia;
+	}
+	
+	private Label getLbIncidencia() {
+		if (lbIncidencia == null) {
+			lbIncidencia = new Label("Incidencia nueva:");
+			lbIncidencia.setBounds(390, 78, 111, 21);
+		}
+		return lbIncidencia;
+	}
+	public JTextArea getTaIncidencia() {
+		if (taIncidencia == null) {
+			taIncidencia = new JTextArea();
+			taIncidencia.setEditable(false);
+		}
+		return taIncidencia;
+	}
+	private JScrollPane getSpIncidenciaVieja() {
+		if (spIncidenciaVieja == null) {
+			spIncidenciaVieja = new JScrollPane();
+			spIncidenciaVieja.setEnabled(false);
+			spIncidenciaVieja.setBounds(390, 29, 270, 43);
+			spIncidenciaVieja.setViewportView(getTaIncidenciaVieja());
+		}
+		return spIncidenciaVieja;
+	}
+	public JTextArea getTaIncidenciaVieja() {
+		if (taIncidenciaVieja == null) {
+			taIncidenciaVieja = new JTextArea();
+			taIncidenciaVieja.setEnabled(false);
+			taIncidenciaVieja.setEditable(false);
+		}
+		return taIncidenciaVieja;
 	}
 }
