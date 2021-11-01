@@ -275,6 +275,7 @@ public class OrdenTrabajoModel {
 		//si uPorRecoger > unidadesSpinerr --> se escanea y sigue disponible para escanear
 		int nuevasUnidades = uPorRecoger-unidadesSpinner;
 		descontarUnidadesProducto(idProducto,idOrden, nuevasUnidades);
+		descontarUnidadesOrden(idOrden, unidadesSpinner);
 		return 1;
 	}
 	

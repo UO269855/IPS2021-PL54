@@ -104,6 +104,7 @@ public class OrdenTrabajoView extends JFrame {
 		contentPane.add(getBtAlmacenero());
 		
 		JButton btnObtenerReferencias = new JButton("Obtener Referencias");
+		btnObtenerReferencias.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		btnObtenerReferencias.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				 int idOrden = 0 ;
@@ -131,7 +132,7 @@ public class OrdenTrabajoView extends JFrame {
 				}
 			}
 		});
-		btnObtenerReferencias.setBounds(41, 416, 166, 23);
+		btnObtenerReferencias.setBounds(40, 417, 166, 23);
 		contentPane.add(btnObtenerReferencias);
 		contentPane.add(getTxEscaner());
 		contentPane.add(getBtEscaner());
@@ -229,7 +230,7 @@ public class OrdenTrabajoView extends JFrame {
 		if (txEscaner == null) {
 			txEscaner = new JTextField();
 			txEscaner.setColumns(10);
-			txEscaner.setBounds(430, 418, 85, 19);
+			txEscaner.setBounds(430, 420, 85, 19);
 		}
 		return txEscaner;
 	}
@@ -274,6 +275,7 @@ public class OrdenTrabajoView extends JFrame {
 	private JLabel getLbIdProducto() {
 		if (lbIdProducto == null) {
 			lbIdProducto = new JLabel("IdProducto:");
+			lbIdProducto.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			lbIdProducto.setBounds(430, 402, 72, 13);
 		}
 		return lbIdProducto;
@@ -298,7 +300,7 @@ public class OrdenTrabajoView extends JFrame {
 	
 	private Label getLbIncidencia() {
 		if (lbIncidencia == null) {
-			lbIncidencia = new Label("Incidencia nueva:");
+			lbIncidencia = new Label("Nueva incidencia:");
 			lbIncidencia.setBounds(390, 78, 111, 21);
 		}
 		return lbIncidencia;

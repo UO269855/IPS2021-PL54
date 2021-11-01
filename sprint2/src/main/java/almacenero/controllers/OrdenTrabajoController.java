@@ -82,12 +82,6 @@ public class OrdenTrabajoController {
 		view.getBtIncidencia().addActionListener(e -> SwingUtil.exceptionWrapper(() -> anotarIncidencia() ));
 
 		
-			
-		
-		
-//		view.getBtIngresar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> mostrarReferencias() ));
-//		AL CLICAR UN BOTÓN NO, SI NO AL DAR CLIC EN LA TABLA Y CREAR LA OT
-		
 		view.getBtEscaner().addActionListener(e -> SwingUtil.exceptionWrapper(() -> escanear()));
 	}
 	
@@ -129,6 +123,7 @@ public class OrdenTrabajoController {
 		try{
 			almacenero = new Almacenero(Integer.parseInt(view.getTfAlmacenero().getText()));
 			view.getBtAlmacenero().setEnabled(false);
+			view.getTfAlmacenero().setEditable(false);
 		} catch(NumberFormatException e) {
 			JOptionPane.showMessageDialog(null,"El IdAlmacenero solo está formado por números", "IdAlmacenero inválido", JOptionPane.INFORMATION_MESSAGE);
 
@@ -217,16 +212,21 @@ public class OrdenTrabajoController {
 	 * @throws SQLException 
 	 */
 	public void mostrarReferencias()  {
-		//ACTIVAR EL BOTÓN DEL ESCANEADO
-		view.getBtEscaner().setEnabled(true);
+		
 		
 		//consigue la ultima OT creada
 		int idOrden = 1;
 		try {
 			idOrden = model.getLastOT();
+			//ACTIVAR EL BOTÓN DEL ESCANEADO mientras haya productos por recoger en la OT
+			if(model.unidadesARecoger(idOrden) != 0)
+				view.getBtEscaner().setEnabled(true);
 		} catch (SQLException e1) {
 			e1.printStackTrace();
-		}
+		} 
+		
+		
+		
 		
 		//consigue los productos de la última OT creada
 		ResultSet listPEscaner = null;
@@ -244,32 +244,33 @@ public class OrdenTrabajoController {
 	}
 	
 	public void escanear() {
-		//1 obtener el idProducto del campo de texto
+		
 		int idProducto = 0;
 		try{
+			//1 obtener el idProducto del campo de texto
 			 idProducto = Integer.parseInt(view.getTxEscaner().getText());
 			 int idOt =  model.getLastOT();
 			 
-			 //SI NO HAY UNIDADES POR RECOGER EN LA OT: NO SE ESCANEA NADA 
+			//2 obtener las unidades del scroll
+			int uSpinner = (int) view.getSpUnidadesEscaner().getValue();
+			
+			//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error.		si hay suficientes, se decrementa el unidadesPorRecoger
+			int res = model.escanear(idProducto,idOt,uSpinner);
+			
+			//4 si se terminó de recoger los productos de la OT, se avisa y deshabilita el botón
 			 if(model.unidadesARecoger(idOt) == 0) {
+				 view.getBtEscaner().setEnabled(false);
 				 JOptionPane.showMessageDialog(null,"Ya no quedan productos por escanear", "Escaneado listo", JOptionPane.INFORMATION_MESSAGE);
-				view.getBtEscaner().setEnabled(false);
-				
-				
-			 } else {
-				//2 obtener las unidades del scroll
-					int uSpinner = (int) view.getSpUnidadesEscaner().getValue();
-					
-					//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error
-					//si hay suficientes, se decrementa el unidadesPorRecoger
-					int res = model.escanear(idProducto,idOt,uSpinner);
-					if(res == -1)
-						JOptionPane.showMessageDialog(null,"El número de unidades que intentas escanear supera al número que queda por recoger", "Unidades insuficientes", JOptionPane.INFORMATION_MESSAGE);
-					else {
-						//mostrar de nuevo la lista de productos para que se actualicen las unidadesPorRecoger
-						mostrarReferencias();
-					}
 			 }
+			
+			if(res == -1)
+				JOptionPane.showMessageDialog(null,"El número de unidades que intentas escanear supera al número que queda por recoger", "Unidades insuficientes", JOptionPane.INFORMATION_MESSAGE);
+			else {
+				//mostrar de nuevo la lista de productos para que se actualicen las unidadesPorRecoger
+				mostrarReferencias();
+				
+			}
+			 
 			 
 		//manejo de excepciones
 		} catch (NumberFormatException e) {
