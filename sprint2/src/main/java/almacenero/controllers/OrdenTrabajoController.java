@@ -4,6 +4,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 import javax.swing.table.JTableHeader;
@@ -54,14 +55,15 @@ public class OrdenTrabajoController {
 	 * emergentes cuando ocurra algun problema o excepcion controlada.
 	 */
 	public void initController() {
-		view.getBtMostrarPendientes().addActionListener(e -> SwingUtil.exceptionWrapper(() -> {
-			try {
-				getListaPedidosPendientes();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}));
+		//LOS PEDIDOS PENDIENTES SE MOSTRARÁ NADA MÁS ENTRAR AL ALMACÉN (TRAS INGRESAR EL ALMACENERO)
+//		view.getBtMostrarPendientes().addActionListener(e -> SwingUtil.exceptionWrapper(() -> {
+//			try {
+//				getListaPedidosPendientes();
+//			} catch (SQLException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//		}));
 	
 		view.getTabPedidos().addMouseListener(new MouseAdapter() {
 			@Override
@@ -83,9 +85,35 @@ public class OrdenTrabajoController {
 
 		
 		view.getBtEscaner().addActionListener(e -> SwingUtil.exceptionWrapper(() -> escanear()));
+		view.getBtObtenerReferencias().addActionListener(e -> SwingUtil.exceptionWrapper(() -> obtenerReferencias()));
+		}
+	
+	
+	private void obtenerReferencias() {
+		int idOrden = 0 ;
+		 System.out.println("Introduce el id de la orden a revisar:");
+		  Scanner entradaEscaner = new Scanner (System.in);
+		  idOrden = Integer.parseInt(entradaEscaner.nextLine()); 
+		  
+		int idPedido = -1;
+		try {
+			idPedido = new OrdenTrabajoModel().getIdPedido(idOrden);
+		} catch (SQLException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		if(idPedido == -1) {
+			System.out.println("no se encuetra ningun pedido asociado a dicha orden");
+			return;
+		}
+		
+		  try {
+			new algortimoAlmacenero().execute(idPedido);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
-	
-	
 	/**
 	 * Muestra en la interfaz la incidencia que contenga la OT, por si el al
 	 */
@@ -124,9 +152,15 @@ public class OrdenTrabajoController {
 			almacenero = new Almacenero(Integer.parseInt(view.getTfAlmacenero().getText()));
 			view.getBtAlmacenero().setEnabled(false);
 			view.getTfAlmacenero().setEditable(false);
+			
+			//mostrar los pedidos pendientes
+			getListaPedidosPendientes();
+			view.getBtObtenerReferencias().setEnabled(true);
 		} catch(NumberFormatException e) {
 			JOptionPane.showMessageDialog(null,"El IdAlmacenero solo está formado por números", "IdAlmacenero inválido", JOptionPane.INFORMATION_MESSAGE);
 
+		}catch( SQLException e1 ){
+			e1.printStackTrace();
 		}
 		
 	}

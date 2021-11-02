@@ -37,7 +37,6 @@ public class OrdenTrabajoView extends JFrame {
 	private JLabel lblAlmacenero;
 	private JTextField tfAlmacenero;
 	private JLabel lbPedidosPendientes;
-	private JButton btMostrarPendientes;
 	private JScrollPane spPedidos;
 	private JTable tabPedidos;
 	private JButton btAlmacenero;
@@ -54,6 +53,7 @@ public class OrdenTrabajoView extends JFrame {
 	private JTextArea taIncidencia;
 	private JScrollPane spIncidenciaVieja;
 	private JTextArea taIncidenciaVieja;
+	private JButton btObtenerReferencias;
 	
 	
 	
@@ -89,7 +89,7 @@ public class OrdenTrabajoView extends JFrame {
 	 */
 	public void initialize() throws SQLException {
 		
-		setTitle("Orden de trabajo");
+		setTitle("Almacen");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 702, 551);
 		contentPane = new JPanel();
@@ -99,41 +99,8 @@ public class OrdenTrabajoView extends JFrame {
 		contentPane.add(getLblAlmacenero());
 		contentPane.add(getTfAlmacenero());
 		contentPane.add(getLbPedidosPendientes());
-		contentPane.add(getBtMostrarPendientes());
 		contentPane.add(getSpPedidos());
 		contentPane.add(getBtAlmacenero());
-		
-		JButton btnObtenerReferencias = new JButton("Obtener Referencias");
-		btnObtenerReferencias.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		btnObtenerReferencias.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				 int idOrden = 0 ;
-				 System.out.println("Introduce el id de la orden a revisar:");
-				  Scanner entradaEscaner = new Scanner (System.in);
-				  idOrden = Integer.parseInt(entradaEscaner.nextLine()); 
-				  
-				int idPedido = -1;
-				try {
-					idPedido = new OrdenTrabajoModel().getIdPedido(idOrden);
-				} catch (SQLException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
-				}
-				if(idPedido == -1) {
-					System.out.println("no se encuetra ningun pedido asociado a dicha orden");
-					return;
-				}
-				
-				  try {
-					new algortimoAlmacenero().execute(idPedido);
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
-		btnObtenerReferencias.setBounds(40, 417, 166, 23);
-		contentPane.add(btnObtenerReferencias);
 		contentPane.add(getTxEscaner());
 		contentPane.add(getBtEscaner());
 		contentPane.add(getSpUnidadesEscaner());
@@ -144,7 +111,9 @@ public class OrdenTrabajoView extends JFrame {
 		contentPane.add(getSpIncidencia());
 		contentPane.add(getLbIncidencia());
 		contentPane.add(getSpIncidenciaVieja());
+		contentPane.add(getBtObtenerReferencias());
 	}
+	
 	private JLabel getLblAlmacenero() {
 		if (lblAlmacenero == null) {
 			lblAlmacenero = new JLabel("Almacenero ID:");
@@ -181,15 +150,6 @@ public class OrdenTrabajoView extends JFrame {
 			lbPedidosPendientes.setBounds(40, 136, 141, 13);
 		}
 		return lbPedidosPendientes;
-	}
-	
-	public JButton getBtMostrarPendientes() {
-		if (btMostrarPendientes == null) {
-			btMostrarPendientes = new JButton("Mostrar pedidos pendientes");
-			btMostrarPendientes.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			btMostrarPendientes.setBounds(40, 73, 206, 21);
-		}
-		return btMostrarPendientes;
 	}
 	
 	
@@ -328,5 +288,14 @@ public class OrdenTrabajoView extends JFrame {
 			taIncidenciaVieja.setEditable(false);
 		}
 		return taIncidenciaVieja;
+	}
+	public JButton getBtObtenerReferencias() {
+		if (btObtenerReferencias == null) {
+			btObtenerReferencias = new JButton("Obtener referencias");
+			btObtenerReferencias.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			btObtenerReferencias.setEnabled(false);
+			btObtenerReferencias.setBounds(40, 419, 166, 21);
+		}
+		return btObtenerReferencias;
 	}
 }
