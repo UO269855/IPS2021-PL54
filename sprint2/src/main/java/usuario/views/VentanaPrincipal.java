@@ -57,10 +57,9 @@ public class VentanaPrincipal {
 	private JScrollPane panelArticulos;
 	private JPanel panelCarritoCentro;
 	private JPanel pnProductButtons;
-//	private JButton btnIncrementar;
-//	private JButton btnDecrementar;
-//	private JButton btnBorrar;
-	
+	private JButton btnDecrementar;
+	private JButton btnBorrar;
+
 	/**
 	 * Launch the application.
 	 */
@@ -154,12 +153,12 @@ public class VentanaPrincipal {
 		}
 		JPanel p = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.weightx = 1;
+		gbc.weighty = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        
+
 		for (int i = 0; i < productos.size(); i++) {
 			p.add((nuevoPanel(p,productos.get(i))), gbc);
 		}
@@ -176,10 +175,12 @@ public class VentanaPrincipal {
 
 		public void actionPerformed(ActionEvent e) {
 			JButton bt = (JButton) e.getSource();
-			añadirAPedido(Integer.parseInt(bt.getActionCommand()), (int) spinner.getValue());
+			addAPedido(Integer.parseInt(bt.getActionCommand()), (int) spinner.getValue());
 			if (!carrito.isEmpty()) {
 				getBtnTramitar().setEnabled(true);
 				getBtnSiguiente().setEnabled(true);
+				getBtnBorrar().setEnabled(true);
+				getBtnDecrementar().setEnabled(true);
 			}
 		}
 	}
@@ -210,13 +211,13 @@ public class VentanaPrincipal {
 		panel2.add(nuevoBotonSumar(pr, sb));
 		panel2.add(nuevoBotonRestar(pr));
 		panel.add(panel2, BorderLayout.EAST);
-		
+
 		GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.weightx = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        p.add(panel, gbc, 0);
-        
+		gbc.gridwidth = GridBagConstraints.REMAINDER;
+		gbc.weightx = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		p.add(panel, gbc, 0);
+
 		panel.setVisible(true);
 		panel.validate();
 		panel.repaint();
@@ -227,7 +228,7 @@ public class VentanaPrincipal {
 		JButton boton = new JButton("");
 		boton.setBackground(Color.white);
 		boton.setBorder(new LineBorder(Color.LIGHT_GRAY, 2, true));
-		boton.setText("Añadir");
+		boton.setText("Add");
 		boton.setActionCommand(String.valueOf(pr.getIdProducto()));
 		boton.addActionListener(sb);
 		return boton;
@@ -267,28 +268,44 @@ public class VentanaPrincipal {
 		return panel;
 	}
 
-	public void añadirAPedido(int codigo, int unidades) {
+	public void addAPedido(int codigo, int unidades) {
 		Producto p = getProducto(codigo);
 		Integer value = 0;
 		if (getCarrito().get(p) != null) {
 			value = getCarrito().get(p);
 		}
-		
-		
+
+
 		getCarrito().put(p, value + unidades);
 		setModelLista();
 	}
-
+	
 	public void restarAPedido(int codigo) {
 		Producto p = getProducto(codigo);
 		Integer value = getCarrito().get(p);
-		
+
 		if (getCarrito().containsKey(p)) {
 			getCarrito().put(p, value - 1);
+			if (getCarrito().get(p) == 0) {
+				getCarrito().remove(p);
+			}
 		}
-		if (getCarrito().get(p) == 0) {
-			getCarrito().remove(p);
+
+
+		setModelLista();
+	}
+
+	public void restarAPedido(String codigo) {
+		Producto p = getProducto(codigo);
+		Integer value = getCarrito().get(p);
+
+		if (getCarrito().containsKey(p)) {
+			getCarrito().put(p, value - 1);
+			if (getCarrito().get(p) == 0) {
+				getCarrito().remove(p);
+			}
 		}
+
 
 		setModelLista();
 	}
@@ -310,19 +327,29 @@ public class VentanaPrincipal {
 			}
 
 		}
+		listaCarrito.clearSelection();
 		listaCarrito.setModel(lista);
 		textFieldTotal.setText(String.valueOf(total) + "€");
 	}
 
 	public Producto getProducto(int id) {
 		for (Producto pr : productos) {
-			if (pr.getIdProducto() == id) {
+			if (pr.getIdProducto() == id ) {
+				return pr;
+			}
+		}
+		return productos.get(id);
+	}
+
+	public Producto getProducto(String id) {
+		for (Producto pr : productos) {
+			if (pr.getNombre().equals(id)) {
 				return pr;
 			}
 		}
 		return null;
 	}
-
+	
 	private JPanel getPanelFinalizar() {
 		if (panelFinalizar == null) {
 			panelFinalizar = new JPanel();
@@ -386,6 +413,8 @@ public class VentanaPrincipal {
 					textFieldTotal.setText("0 €");
 					getBtnTramitar().setEnabled(false);
 					getBtnSiguiente().setEnabled(false);
+					getBtnDecrementar().setEnabled(false);
+					getBtnBorrar().setEnabled(false);
 				}
 			});
 		}
@@ -401,7 +430,7 @@ public class VentanaPrincipal {
 				}
 			});
 			btnTramitar.setEnabled(false);
-			
+
 		}
 		return btnTramitar;
 	}
@@ -429,7 +458,6 @@ public class VentanaPrincipal {
 
 	public void limpiarCarrito() {
 		this.carrito = new Hashtable<>();
-
 	}
 
 	public Hashtable<Producto, Integer> getCarrito() {
@@ -457,73 +485,83 @@ public class VentanaPrincipal {
 	private JPanel getPnProductButtons() {
 		if (pnProductButtons == null) {
 			pnProductButtons = new JPanel();
-//			pnProductButtons.add(getBtnIncrementar());
-//			pnProductButtons.add(getBtnDecrementar());
-//			pnProductButtons.add(getBtnBorrar());
+			//			pnProductButtons.add(getBtnIncrementar());
+			pnProductButtons.add(getBtnDecrementar());
+			pnProductButtons.add(getBtnBorrar());
 		}
 		return pnProductButtons;
 	}
 
-//	private JButton getBtnIncrementar() {
-//		if (btnIncrementar == null) {
-//			btnIncrementar = new JButton("Incrementar");
-//			btnIncrementar.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e) {
-//					int selectedRow = listaCarrito.getSelectedRow();
-//					int quantity = ((int) listaCarrito.getModel().getValueAt(selectedRow, 1));
-//
-//					if (listaCarrito.getSelectedRow() >= 0) {
-//						listaCarrito.getModel().setValueAt(quantity + 1, selectedRow, 1);
-//						carrito.get(listaCarrito.getSelectedRow()).addUnidades(1);
-//					}
-//				}
-//			});
-//			btnIncrementar.setMnemonic('i');
-//			btnIncrementar.setEnabled(false);
-//		}
-//		return btnIncrementar;
-//	}
-//
-//	private JButton getBtnDecrementar() {
-//		if (btnDecrementar == null) {
-//			btnDecrementar = new JButton("Decrementar");
-//			btnDecrementar.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e) {
-//					int selectedRow = listaCarrito.getSelectedRow();
-//					int quantity = ((int) listaCarrito.getModel().getValueAt(selectedRow, 1));
-//
-//					if (listaCarrito.getSelectedRow() >= 0) {
-//						if (quantity > 1) {
-//							listaCarrito.getModel().setValueAt(quantity - 1, selectedRow, 1);
-//							carrito.get(listaCarrito.getSelectedRow()).restaUnidades();
-//							// tProducts.clearSelection();
-//						}
-//					}
-//				}
-//			});
-//			btnDecrementar.setMnemonic('d');
-//			btnDecrementar.setEnabled(false);
-//		}
-//		return btnDecrementar;
-//	}
-//
-//	private JButton getBtnBorrar() {
-//		if (btnBorrar == null) {
-//			btnBorrar = new JButton("Borrar");
-//			btnBorrar.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent e) {
-//					if (listaCarrito.getSelectedRow() >= 0) {
-//						((DefaultTableModel) listaCarrito.getModel()).removeRow(listaCarrito.getSelectedRow());
-//						btnBorrar.setEnabled(false);
-//						listaCarrito.clearSelection();
-//						carrito.remove(arg0)(listaCarrito.getSelectedRow() + 1);
-//						setModelLista();
-//					}
-//				}
-//			});
-//			btnBorrar.setMnemonic('b');
-//			btnBorrar.setEnabled(false);
-//		}
-//		return btnBorrar;
-//	}
+	//	private JButton getBtnIncrementar() {
+	//		if (btnIncrementar == null) {
+	//			btnIncrementar = new JButton("Incrementar");
+	//			btnIncrementar.addActionListener(new ActionListener() {
+	//				public void actionPerformed(ActionEvent e) {
+	//					int selectedRow = listaCarrito.getSelectedRow();
+	//					int quantity = ((int) listaCarrito.getModel().getValueAt(selectedRow, 1));
+	//
+	//					if (listaCarrito.getSelectedRow() >= 0) {
+	//						listaCarrito.getModel().setValueAt(quantity + 1, selectedRow, 1);
+	//						carrito.get(listaCarrito.getSelectedRow()).addUnidades(1);
+	//					}
+	//				}
+	//			});
+	//			btnIncrementar.setMnemonic('i');
+	//			btnIncrementar.setEnabled(false);
+	//		}
+	//		return btnIncrementar;
+	//	}
+	//
+	private JButton getBtnDecrementar() {
+		if (btnDecrementar == null) {
+			btnDecrementar = new JButton("Decrementar");
+			btnDecrementar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int selectedRow = listaCarrito.getSelectedRow();
+					if (selectedRow >= 0) {
+						String name = listaCarrito.getModel().getValueAt(selectedRow, 0).toString();
+						int quantity = carrito.get(getProducto(name));
+						if (quantity > 1) {
+							restarAPedido(name);
+							setModelLista();
+							// tProducts.clearSelection();
+						}
+					}
+				}
+			});
+			btnDecrementar.setMnemonic('d');
+			btnDecrementar.setEnabled(false);
+		}
+		return btnDecrementar;
+	}
+
+	private JButton getBtnBorrar() {
+		if (btnBorrar == null) {
+			btnBorrar = new JButton("Borrar");
+			btnBorrar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int selectedRow = listaCarrito.getSelectedRow();
+					if (selectedRow >= 0) {
+						String name = listaCarrito.getModel().getValueAt(selectedRow, 0).toString();
+						eliminarDePedido(name);
+					}
+				}
+			});
+			btnBorrar.setMnemonic('b');
+			btnBorrar.setEnabled(false);
+		}
+		return btnBorrar;
+	}
+
+	protected void eliminarDePedido(String selectedRow) {
+		Producto p = getProducto(selectedRow);
+		getCarrito().remove(p);
+		setModelLista();
+		if (carrito.size() <= 0) {
+			getBtnTramitar().setEnabled(false);
+			getBtnSiguiente().setEnabled(false);
+			getBtnDecrementar().setEnabled(false);
+			getBtnBorrar().setEnabled(false);
+		}
+	}
 }
