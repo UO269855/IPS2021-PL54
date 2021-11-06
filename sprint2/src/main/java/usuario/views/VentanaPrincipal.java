@@ -59,6 +59,8 @@ public class VentanaPrincipal {
 	private JPanel pnProductButtons;
 	private JButton btnDecrementar;
 	private JButton btnBorrar;
+	private String user;
+	private JLabel lblUsuario;
 
 	/**
 	 * Launch the application.
@@ -81,6 +83,11 @@ public class VentanaPrincipal {
 	}
 
 	public VentanaPrincipal() {
+		initialize();
+	}
+	
+	public VentanaPrincipal(String user) {
+		this.user = user;
 		initialize();
 	}
 
@@ -109,7 +116,9 @@ public class VentanaPrincipal {
 	private JPanel getPanelTítulo() {
 		if (panelTítulo == null) {
 			panelTítulo = new JPanel();
+			panelTítulo.setLayout(new GridLayout(2, 1, 0, 0));
 			panelTítulo.add(getLblVentanaPrincipal());
+			panelTítulo.add(getLblUsuario());
 		}
 		return panelTítulo;
 	}
@@ -138,6 +147,7 @@ public class VentanaPrincipal {
 	private JLabel getLblVentanaPrincipal() {
 		if (lblVentanaPrincipal == null) {
 			lblVentanaPrincipal = new JLabel("Ventana Principal");
+			lblVentanaPrincipal.setHorizontalAlignment(SwingConstants.CENTER);
 			lblVentanaPrincipal.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		}
 		return lblVentanaPrincipal;
@@ -563,5 +573,12 @@ public class VentanaPrincipal {
 			getBtnDecrementar().setEnabled(false);
 			getBtnBorrar().setEnabled(false);
 		}
+	}
+	private JLabel getLblUsuario() {
+		if (lblUsuario == null) {
+			lblUsuario = new JLabel("Bienvenido: " + user);
+			lblUsuario.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		}
+		return lblUsuario;
 	}
 }
