@@ -19,7 +19,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -32,9 +31,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 
 import common.database.DatabaseWrapper;
-import common.modelo.Pedido;
 import common.modelo.Producto;
-import usuario.controllers.BusinessLogicUtil;
 
 public class VentanaPrincipal {
 
@@ -100,7 +97,7 @@ public class VentanaPrincipal {
 		frame.setBounds(100, 100, 1000, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BorderLayout(25, 25));
-		frame.getContentPane().add(getPanelTítulo(), BorderLayout.NORTH);
+		frame.getContentPane().add(getPanelTitulo(), BorderLayout.NORTH);
 		frame.getContentPane().add(getPanelCentral(), BorderLayout.CENTER);
 		frame.getContentPane().add(getPanelCarrito(), BorderLayout.EAST);
 		this.frame.setVisible(true);
@@ -113,7 +110,7 @@ public class VentanaPrincipal {
 		}
 	}
 
-	private JPanel getPanelTítulo() {
+	private JPanel getPanelTitulo() {
 		if (panelTítulo == null) {
 			panelTítulo = new JPanel();
 			panelTítulo.setLayout(new GridLayout(2, 1, 0, 0));
@@ -269,7 +266,7 @@ public class VentanaPrincipal {
 
 		label3.setBackground(Color.white);
 		label3.setBorder(new LineBorder(Color.LIGHT_GRAY, 2, true));
-		label3.setText(pr.getPrecio() + "€");
+		label3.setText(pr.getPrecio() + "");
 
 		panel.setLayout(new BorderLayout());
 		panel.add(label, BorderLayout.NORTH);
@@ -339,7 +336,7 @@ public class VentanaPrincipal {
 		}
 		listaCarrito.clearSelection();
 		listaCarrito.setModel(lista);
-		textFieldTotal.setText(String.valueOf(total) + "€");
+		textFieldTotal.setText(String.valueOf(total) + "");
 	}
 
 	public Producto getProducto(int id) {
@@ -392,10 +389,10 @@ public class VentanaPrincipal {
 		return listaCarrito;
 	}
 
-	private JTextField getTextFieldTotal() {
+	public JTextField getTextFieldTotal() {
 		if (textFieldTotal == null) {
 			textFieldTotal = new JTextField();
-			textFieldTotal.setText("0 €");
+			textFieldTotal.setText("0 ");
 			textFieldTotal.setHorizontalAlignment(SwingConstants.TRAILING);
 			textFieldTotal.setEditable(false);
 			textFieldTotal.setColumns(10);
@@ -420,7 +417,7 @@ public class VentanaPrincipal {
 				public void actionPerformed(ActionEvent e) {
 					carrito = new Hashtable<>();
 					listaCarrito.setModel(new DefaultTableModel());
-					textFieldTotal.setText("0 €");
+					textFieldTotal.setText("0 ");
 					getBtnTramitar().setEnabled(false);
 					getBtnSiguiente().setEnabled(false);
 					getBtnDecrementar().setEnabled(false);
@@ -438,6 +435,8 @@ public class VentanaPrincipal {
 				public void actionPerformed(ActionEvent arg0) {
 					tramitar();
 				}
+				
+				
 			});
 			btnTramitar.setEnabled(false);
 
@@ -446,24 +445,13 @@ public class VentanaPrincipal {
 	}
 
 	protected void tramitar() {
-		try {
-			String value = textFieldTotal.getText().substring(0, textFieldTotal.getText().length() - 1);
-			int number = (int) (Double.parseDouble(value));
-			int total = 0;
-			for(Producto p: productos) {
-				if (getCarrito().containsKey(p)) {
-					total += getCarrito().get(p);
-				}
-			}
-			Pedido pedido = BusinessLogicUtil.createPedido(number, total);
-			DatabaseWrapper.createPedido(pedido, productos, new Hashtable<Producto, Integer>(getCarrito()), getListaCarrito().getModel());
-		} catch (UnexpectedException e) {
-			System.err.println(e);
-		}
-		JOptionPane.showMessageDialog(this.frame, "Se ha realizado su compra");
+		//JOptionPane.showMessageDialog(this.frame, "Se ha realizado su compra");
 		getListaCarrito().setModel(new DefaultTableModel());
 		getCarrito().clear();
 		limpiarCarrito();	
+		new VentanaDireccion(this);
+	    this.frame.setVisible(false);
+		
 	}
 
 	public void limpiarCarrito() {
@@ -581,4 +569,10 @@ public class VentanaPrincipal {
 		}
 		return lblUsuario;
 	}
+
+	public List<Producto> getProductos() {
+		return productos;
+	}
+	
+
 }

@@ -71,7 +71,7 @@ public class BusinessLogicUtil {
 		return result;
 	}
 
-	public static Pedido createPedido(int value, int total) {
+	public static Pedido createPedido(int value, int total, String direccion) {
 		Pedido pedido = new Pedido();
 		int number= UUID.randomUUID().hashCode();
 		if (number <= 0) {

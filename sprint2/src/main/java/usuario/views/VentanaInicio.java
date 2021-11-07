@@ -29,18 +29,18 @@ public class VentanaInicio {
 	/**
 	 * Launch the application.
 	 */
-//	public static void main(String[] args) {
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
-//				try {
-//					VentanaInicio window = new VentanaInicio();
-//					window.frame.setVisible(true);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		});
-//	}
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					VentanaInicio window = new VentanaInicio();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 
 	/**
 	 * Create the application.
@@ -71,7 +71,7 @@ public class VentanaInicio {
 	}
 	private JLabel getLblTitulo() {
 		if (lblTitulo == null) {
-			lblTitulo = new JLabel("Inicio de Sesi\u00F3n");
+			lblTitulo = new JLabel("Inicio de Sesion");
 			lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
 			lblTitulo.setFont(new Font("Tahoma", Font.PLAIN, 26));
 		}
@@ -114,7 +114,7 @@ public class VentanaInicio {
 	}
 	private JLabel getLblDatos() {
 		if (lblDatos == null) {
-			lblDatos = new JLabel("Dni, Email o nada si ud. es cliente, empresa o quiere continuar como an\u00F3nimo");
+			lblDatos = new JLabel("Dni, Email o nada si ud. es cliente, empresa o quiere continuar como anonimo");
 			lblDatos.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			lblDatos.setHorizontalAlignment(SwingConstants.CENTER);
 			lblDatos.setBounds(32, 49, 599, 13);
