@@ -29,7 +29,7 @@ public class algortimoAlmacenero {
 		List<Producto> lp = new ArrayList<Producto>();
 		while(rs.next()) {
 			System.out.println( "Pasillo: " + rs.getInt(1) + "-"  + "Columna:"+ rs.getInt(2) + "- Id: " + rs.getInt(3) + "-Descripccion:" + rs.getString(4) );
-			lp.add(new Producto(rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getString(4)));
+			 lp.add(new Producto(rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getString(4)));
 		}
 		
 	
