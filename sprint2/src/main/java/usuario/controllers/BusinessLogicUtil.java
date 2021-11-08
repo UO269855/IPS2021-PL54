@@ -71,7 +71,7 @@ public class BusinessLogicUtil {
 		return result;
 	}
 
-	public static Pedido createPedido(int value, int total, String direccion) {
+	public static Pedido createPedido(int value, int total, String direccion, String metodoPago) {
 		Pedido pedido = new Pedido();
 		int number= UUID.randomUUID().hashCode();
 		if (number <= 0) {
@@ -82,6 +82,8 @@ public class BusinessLogicUtil {
 		pedido.setFecha(LocalDate.now().toString());
 		pedido.setAlbaran(null);
 		pedido.setUnidadesTotales(total);
+		pedido.setDireccion(direccion);
+		pedido.setMetodoPago(metodoPago);
 		return pedido;
 	}
 }

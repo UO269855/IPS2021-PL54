@@ -1,7 +1,6 @@
 package usuario.views;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -35,6 +34,7 @@ public class VentanaDireccion {
 	private JPanel panelDireccion;
 	private JTextField textFieldDireccion;
 	private VentanaPrincipal principal;
+	private JButton btnVolver;
 
 	/**
 	 * Launch the application.
@@ -65,13 +65,13 @@ public class VentanaDireccion {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 624, 386);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(getPanelTitulo(), BorderLayout.NORTH);
 		frame.getContentPane().add(getPanelBoton(), BorderLayout.SOUTH);
 		frame.getContentPane().add(getPanelDireccion(), BorderLayout.CENTER);
 		this.frame.setVisible(true);
-		this.frame.setMinimumSize(new Dimension(624, 386));
+		frame.setResizable(false);
 	}
 
 	private JPanel getPanelTitulo() {
@@ -102,6 +102,7 @@ public class VentanaDireccion {
 	private JPanel getPanelBoton() {
 		if (panelBoton == null) {
 			panelBoton = new JPanel();
+			panelBoton.add(getBtnVolver());
 			panelBoton.add(getBtnNewButton());
 		}
 		return panelBoton;
@@ -111,7 +112,12 @@ public class VentanaDireccion {
 			btnNewButton = new JButton("Siguiente");
 			btnNewButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					tramitar();
+					if (getPrincipal().getUser().equals("Empresa")) {
+						tramitar();
+					}
+					else {
+						nextVentana();
+					}
 				}
 			});
 			btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -127,7 +133,7 @@ public class VentanaDireccion {
 		}
 		return panelDireccion;
 	}
-	private JTextField getTextFieldDireccion() {
+	JTextField getTextFieldDireccion() {
 		if (textFieldDireccion == null) {
 			textFieldDireccion = new JTextField();
 			textFieldDireccion.setBounds(143, 101, 332, 43);
@@ -157,27 +163,58 @@ public class VentanaDireccion {
 		return textFieldDireccion;
 	}
 
-
-
-
+	public VentanaPrincipal getPrincipal() {
+		return principal;
+	}
+	
 	protected void tramitar() {
 		try {
-			String value = principal.getTextFieldTotal().getText().substring(0, 
-					principal.getTextFieldTotal().getText().length() - 1);
+			String value = getPrincipal().getTextFieldTotal().getText().substring(0, 
+					getPrincipal().getTextFieldTotal().getText().length() - 1);
 			int number = (int) (Double.parseDouble(value));
 			int total = 0;
-			for(Producto p: principal.getProductos()) {
-				if (principal.getCarrito().containsKey(p)) {
-					total += principal.getCarrito().get(p);
+			for(Producto p: getPrincipal().getProductos()) {
+				if (getPrincipal().getCarrito().containsKey(p)) {
+					total += getPrincipal().getCarrito().get(p);
 				}
 			}
-			Pedido pedido = BusinessLogicUtil.createPedido(number, total, getTextFieldDireccion().getText());
-			DatabaseWrapper.createPedido(pedido, principal.getProductos(),
-					new Hashtable<Producto, Integer>(principal.getCarrito()), principal.getListaCarrito().getModel());
+			Pedido pedido = BusinessLogicUtil.createPedido(number, total, getTextFieldDireccion().getText(), "Empresa");
+			DatabaseWrapper.createPedido(pedido, getPrincipal().getProductos(),
+					new Hashtable<Producto, Integer>(getPrincipal().getCarrito()), getPrincipal().getListaCarrito().getModel());
 		} catch (UnexpectedException e) {
 			System.err.println(e);
 		}
+		this.frame.setVisible(false);
 		JOptionPane.showMessageDialog(this.frame, "Se ha realizado su compra");
+		
+	}
+
+
+	protected void nextVentana() {
+		new VentanaPago(this);
+		this.frame.setVisible(false);
+		
+	}
+
+	public void show() {
+		this.frame.setVisible(true);
+		
+	}
+	private JButton getBtnVolver() {
+		if (btnVolver == null) {
+			btnVolver = new JButton("Volver");
+			btnVolver.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					previous();
+				}
+			});
+			btnVolver.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		}
+		return btnVolver;
+	}
+
+	protected void previous() {
+		principal.show();
 		this.frame.dispose();
 	}
 }

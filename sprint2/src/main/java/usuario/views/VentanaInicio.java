@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -23,8 +24,10 @@ public class VentanaInicio {
 	private JPanel panelCredenciales;
 	private JTextField textFieldInicioSesion;
 	private JLabel lblTextField;
-	private JLabel lblDatos;
+	private JLabel lblDni;
 	private JButton btnSiguiente;
+	private JLabel lblEmpresa;
+	private JLabel lblAnonimo;
 
 	/**
 	 * Launch the application.
@@ -58,6 +61,7 @@ public class VentanaInicio {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(getPanelTitulo(), BorderLayout.NORTH);
 		frame.getContentPane().add(getPanelCredenciales(), BorderLayout.CENTER);
+		frame.setResizable(false);
 	}
 
 	private JPanel getPanelTitulo() {
@@ -91,15 +95,17 @@ public class VentanaInicio {
 			panelCredenciales.setLayout(null);
 			panelCredenciales.add(getTextFieldInicioSesion());
 			panelCredenciales.add(getLblTextField());
-			panelCredenciales.add(getLblDatos());
+			panelCredenciales.add(getLblDni());
 			panelCredenciales.add(getBtnSiguiente());
+			panelCredenciales.add(getLblEmpresa());
+			panelCredenciales.add(getLblAnonimo());
 		}
 		return panelCredenciales;
 	}
 	private JTextField getTextFieldInicioSesion() {
 		if (textFieldInicioSesion == null) {
 			textFieldInicioSesion = new JTextField();
-			textFieldInicioSesion.setBounds(147, 72, 356, 50);
+			textFieldInicioSesion.setBounds(144, 112, 356, 50);
 			textFieldInicioSesion.setColumns(10);
 		}
 		return textFieldInicioSesion;
@@ -108,18 +114,18 @@ public class VentanaInicio {
 		if (lblTextField == null) {
 			lblTextField = new JLabel("Credenciales");
 			lblTextField.setFont(new Font("Tahoma", Font.PLAIN, 14));
-			lblTextField.setBounds(44, 78, 99, 32);
+			lblTextField.setBounds(54, 118, 99, 32);
 		}
 		return lblTextField;
 	}
-	private JLabel getLblDatos() {
-		if (lblDatos == null) {
-			lblDatos = new JLabel("Dni, Email o nada si ud. es cliente, empresa o quiere continuar como anonimo");
-			lblDatos.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			lblDatos.setHorizontalAlignment(SwingConstants.CENTER);
-			lblDatos.setBounds(32, 49, 599, 13);
+	private JLabel getLblDni() {
+		if (lblDni == null) {
+			lblDni = new JLabel("Introduzca su dni con letra para entrar como cliente.");
+			lblDni.setFont(new Font("Tahoma", Font.PLAIN, 14));
+			lblDni.setHorizontalAlignment(SwingConstants.CENTER);
+			lblDni.setBounds(11, 47, 599, 15);
 		}
-		return lblDatos;
+		return lblDni;
 	}
 	private JButton getBtnSiguiente() {
 		if (btnSiguiente == null) {
@@ -141,15 +147,19 @@ public class VentanaInicio {
 		if (checkUsuario.contains("@")) {
 			result = "Empresa";
 		}
-		if (isDni(checkUsuario)) {
+		else if (isDni(checkUsuario)) {
 			result = "Cliente";
 		}
-		if (checkUsuario.equals("")) {
+		else if (checkUsuario.equals("")) {
 			result = "Anonimo";
 		}
-		new VentanaPrincipal(result);
-	    this.frame.setVisible(false);
-		
+		else {
+			JOptionPane.showMessageDialog(this.frame, "Introduzca unas credenciales validas");
+		}
+		if (!result.equals("")) {
+			new VentanaPrincipal(result);
+		    this.frame.setVisible(false);
+		}
 	}
 
 	private boolean isDni(String checkUsuario) {
@@ -168,5 +178,23 @@ public class VentanaInicio {
 			}
 		}
 		return result;
+	}
+	private JLabel getLblEmpresa() {
+		if (lblEmpresa == null) {
+			lblEmpresa = new JLabel("Introduzca su email para continuar como empresa.");
+			lblEmpresa.setHorizontalAlignment(SwingConstants.CENTER);
+			lblEmpresa.setFont(new Font("Tahoma", Font.PLAIN, 14));
+			lblEmpresa.setBounds(10, 67, 599, 15);
+		}
+		return lblEmpresa;
+	}
+	private JLabel getLblAnonimo() {
+		if (lblAnonimo == null) {
+			lblAnonimo = new JLabel("Pulse siguiente sin introducir datos para acceder como anonimo.");
+			lblAnonimo.setHorizontalAlignment(SwingConstants.CENTER);
+			lblAnonimo.setFont(new Font("Tahoma", Font.PLAIN, 14));
+			lblAnonimo.setBounds(11, 87, 599, 15);
+		}
+		return lblAnonimo;
 	}
 }

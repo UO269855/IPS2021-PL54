@@ -3,7 +3,6 @@ package usuario.views;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -36,15 +35,13 @@ import common.modelo.Producto;
 public class VentanaPrincipal {
 
 	protected JFrame frame;
-	private JPanel panelTítulo;
+	private JPanel panelTitulo;
 	private JPanel panelCentral;
 	private JPanel panelCarrito;
 	private JLabel lblVentanaPrincipal;
-	private RestarBoton rb;
 	private List<Producto> productos = new ArrayList<Producto>();
 	private Hashtable<Producto, Integer> carrito = new Hashtable<>();
 	private JPanel panelFinalizar;
-	private JButton btnSiguiente;
 	private JLabel lblCarrito;
 	private JTable listaCarrito;
 	private JTextField textFieldTotal;
@@ -62,18 +59,18 @@ public class VentanaPrincipal {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					VentanaPrincipal frame = new VentanaPrincipal();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+//	public static void main(String[] args) {
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				try {
+//					VentanaPrincipal frame = new VentanaPrincipal();
+//					frame.setVisible(true);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
+//	}
 
 	protected void setVisible(boolean b) {
 		//this.setVisible(b);
@@ -92,7 +89,6 @@ public class VentanaPrincipal {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		rb = new RestarBoton();
 		frame = new JFrame();
 		frame.setBounds(100, 100, 1000, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -111,13 +107,13 @@ public class VentanaPrincipal {
 	}
 
 	private JPanel getPanelTitulo() {
-		if (panelTítulo == null) {
-			panelTítulo = new JPanel();
-			panelTítulo.setLayout(new GridLayout(2, 1, 0, 0));
-			panelTítulo.add(getLblVentanaPrincipal());
-			panelTítulo.add(getLblUsuario());
+		if (panelTitulo == null) {
+			panelTitulo = new JPanel();
+			panelTitulo.setLayout(new GridLayout(2, 1, 0, 0));
+			panelTitulo.add(getLblVentanaPrincipal());
+			panelTitulo.add(getLblUsuario());
 		}
-		return panelTítulo;
+		return panelTitulo;
 	}
 
 	private JPanel getPanelCentral() {
@@ -185,7 +181,6 @@ public class VentanaPrincipal {
 			addAPedido(Integer.parseInt(bt.getActionCommand()), (int) spinner.getValue());
 			if (!carrito.isEmpty()) {
 				getBtnTramitar().setEnabled(true);
-				getBtnSiguiente().setEnabled(true);
 				getBtnBorrar().setEnabled(true);
 				getBtnDecrementar().setEnabled(true);
 			}
@@ -198,7 +193,6 @@ public class VentanaPrincipal {
 			restarAPedido(Integer.parseInt(bt.getActionCommand()));
 			if (carrito.isEmpty()) {
 				getBtnTramitar().setEnabled(false);
-				getBtnSiguiente().setEnabled(false);
 			}
 		}
 	}
@@ -211,19 +205,15 @@ public class VentanaPrincipal {
 		JSpinner spinner = new JSpinner(model);
 		spinner.setValue(1);
 		SumarBoton sb = new SumarBoton(spinner);
-		panel2.setLayout(new GridLayout(3, 1));
+		panel2.setLayout(new GridLayout(2, 1));
 		panel.setLayout(new BorderLayout(0, 0));
 		panel.add(nuevoPanel2(pr), BorderLayout.CENTER);
 		panel2.add(spinner);
 		panel2.add(nuevoBotonSumar(pr, sb));
-		panel2.add(nuevoBotonRestar(pr));
 		panel.add(panel2, BorderLayout.EAST);
 
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridwidth = GridBagConstraints.REMAINDER;
-		gbc.weightx = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		p.add(panel, gbc, 0);
+		p.setLayout(new GridLayout(5, 1));
+		p.add(panel);
 
 		panel.setVisible(true);
 		panel.validate();
@@ -238,16 +228,6 @@ public class VentanaPrincipal {
 		boton.setText("Add");
 		boton.setActionCommand(String.valueOf(pr.getIdProducto()));
 		boton.addActionListener(sb);
-		return boton;
-	}
-
-	private JButton nuevoBotonRestar(Producto pr) {
-		JButton boton = new JButton("");
-		boton.setBackground(Color.white);
-		boton.setBorder(new LineBorder(Color.LIGHT_GRAY, 2, true));
-		boton.setText("Eliminar");
-		boton.setActionCommand(String.valueOf(pr.getIdProducto()));
-		boton.addActionListener(rb);
 		return boton;
 	}
 
@@ -267,6 +247,7 @@ public class VentanaPrincipal {
 		label3.setBackground(Color.white);
 		label3.setBorder(new LineBorder(Color.LIGHT_GRAY, 2, true));
 		label3.setText(pr.getPrecio() + "");
+		label3.setFont(new Font("Tahoma", 0, 16));
 
 		panel.setLayout(new BorderLayout());
 		panel.add(label, BorderLayout.NORTH);
@@ -360,17 +341,8 @@ public class VentanaPrincipal {
 	private JPanel getPanelFinalizar() {
 		if (panelFinalizar == null) {
 			panelFinalizar = new JPanel();
-			panelFinalizar.add(getBtnSiguiente());
 		}
 		return panelFinalizar;
-	}
-
-	private JButton getBtnSiguiente() {
-		if (btnSiguiente == null) {
-			btnSiguiente = new JButton("Siguiente");
-			btnSiguiente.setEnabled(false);
-		}
-		return btnSiguiente;
 	}
 
 	private JLabel getLblCarrito() {
@@ -419,7 +391,6 @@ public class VentanaPrincipal {
 					listaCarrito.setModel(new DefaultTableModel());
 					textFieldTotal.setText("0 ");
 					getBtnTramitar().setEnabled(false);
-					getBtnSiguiente().setEnabled(false);
 					getBtnDecrementar().setEnabled(false);
 					getBtnBorrar().setEnabled(false);
 				}
@@ -446,9 +417,9 @@ public class VentanaPrincipal {
 
 	protected void tramitar() {
 		//JOptionPane.showMessageDialog(this.frame, "Se ha realizado su compra");
-		getListaCarrito().setModel(new DefaultTableModel());
-		getCarrito().clear();
-		limpiarCarrito();	
+//		getListaCarrito().setModel(new DefaultTableModel());
+//		getCarrito().clear();
+//		limpiarCarrito();	
 		new VentanaDireccion(this);
 	    this.frame.setVisible(false);
 		
@@ -557,7 +528,6 @@ public class VentanaPrincipal {
 		setModelLista();
 		if (carrito.size() <= 0) {
 			getBtnTramitar().setEnabled(false);
-			getBtnSiguiente().setEnabled(false);
 			getBtnDecrementar().setEnabled(false);
 			getBtnBorrar().setEnabled(false);
 		}
@@ -574,5 +544,12 @@ public class VentanaPrincipal {
 		return productos;
 	}
 	
+	public String getUser() {
+		return user;
+	}
+
+	public void show() {
+		this.frame.setVisible(true);
+	}
 
 }
