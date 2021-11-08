@@ -34,6 +34,7 @@ public class VentanaTarjeta {
 	private JButton btnAtras;
 	private JButton btnTramitar;
 	private JTextField textFieldNumero;
+	private JLabel lblNumero;
 
 	/**
 	 * Launch the application.
@@ -85,6 +86,7 @@ public class VentanaTarjeta {
 			panel_1 = new JPanel();
 			panel_1.setLayout(null);
 			panel_1.add(getTextFieldNumero());
+			panel_1.add(getLblNumero());
 		}
 		return panel_1;
 	}
@@ -185,5 +187,13 @@ public class VentanaTarjeta {
 			textFieldNumero.setColumns(10);
 		}
 		return textFieldNumero;
+	}
+	private JLabel getLblNumero() {
+		if (lblNumero == null) {
+			lblNumero = new JLabel("Introduzca el numero de la tarjeta");
+			lblNumero.setFont(new Font("Tahoma", Font.PLAIN, 18));
+			lblNumero.setBounds(76, 43, 296, 22);
+		}
+		return lblNumero;
 	}
 }
