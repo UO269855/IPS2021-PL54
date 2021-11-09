@@ -1,4 +1,0 @@
-//numeroTrajeta-saldo
-1234-30
-1345-50
-1212-2
