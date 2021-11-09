@@ -481,7 +481,7 @@ public class OrdenTrabajoController {
 		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
 		try {
 			String albaran = "ALBARAN\n";
-			albaran += "---------------------";
+			albaran += "---------------------\n";
 		 albaran +=	new GenerarDocumentacionAction().execute(idPedido);
 		Fichero.albaran(albaran, "" + idPedido);
 		JOptionPane.showMessageDialog(this.view, "ImprimiendoAlbaran");
