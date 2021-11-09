@@ -92,7 +92,7 @@ public class Fichero {
 	      try {
 	         // Apertura del fichero y creacion de BufferedReader para poder
 	         // hacer una lectura comoda (disponer del metodo readLine()).
-	         archivo = new File ("TarjetasCredito.txt");
+	         archivo = new File ("TarjetasFichero.txt");
 	         fr = new FileReader (archivo);
 	         br = new BufferedReader(fr);
 
