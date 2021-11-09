@@ -78,7 +78,7 @@ public class VentanaPrincipal {
 	}
 
 	public VentanaPrincipal() {
-		initialize();
+		 initialize();
 	}
 	
 	public VentanaPrincipal(String user,String nombreIntroducido) {
