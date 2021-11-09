@@ -56,6 +56,7 @@ public class VentanaPrincipal {
 	private String user;
 	private JLabel lblUsuario;
 	private String nombreIntroducido;
+	private String totalAPagar;
 	/**
 	 * Launch the application.
 	 */
@@ -421,6 +422,7 @@ public class VentanaPrincipal {
 //		getListaCarrito().setModel(new DefaultTableModel());
 //		getCarrito().clear();
 //		limpiarCarrito();	
+		totalAPagar = getTextFieldTotal().getText();
 		new VentanaDireccion(this);
 	    this.frame.setVisible(false);
 		
@@ -557,4 +559,7 @@ public class VentanaPrincipal {
 		return this.nombreIntroducido;
 	}
 
+	public String getTotalAPagar() {
+		return this.totalAPagar;
+	}
 }
