@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Random;
 
-
+import common.database.Fichero;
 import common.modelo.Pedido;
 import common.modelo.Producto;
 
@@ -31,7 +31,7 @@ public class GenerarDocumentacionAction {
 	//En teoria no necesitaria una consulta puesto que ya tendria los datos de los productos dentro de cada paquete
 	//La consulta necesaria seria para introducir los datos de los paquetes que se van a enviar
 	
-	public void execute(int numPedido) throws SQLException {
+	public String execute(int numPedido) throws SQLException {
 		
 		Connection c = DriverManager.getConnection(URL,username,password);
 		PreparedStatement pst = null;
@@ -42,11 +42,12 @@ public class GenerarDocumentacionAction {
 		
 		String albaran = generarAlbaran(numPedido);
 		 
-		System.out.println(albaran);
+		
 		pst = c.prepareStatement(sql);
 		pst.setString(1, albaran);
 		pst.setInt(2, idPedido);
 		pst.executeUpdate();
+		return albaran;
 		
 		
 		
