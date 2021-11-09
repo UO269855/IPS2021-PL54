@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.TableModel;
 
 import common.database.DbUtil;
+import common.database.Fichero;
 import common.modelo.Almacenero;
 import common.modelo.Producto;
 import giis.demo.util.ApplicationException;
@@ -78,7 +79,7 @@ public class OrdenTrabajoController {
 				//al seleccionar un pedido de la OT, lo asignaria al almacenero
 				initOrdenView();//ABRE LA NUEVA VENTANA
 				getListaOrdenes();//muestra las ordenes creadas (necesito el idPedido)
-				albaran();
+				ayudaOrdenes();
 				
 			}
 		});
@@ -103,6 +104,8 @@ public class OrdenTrabajoController {
 				SwingUtil.exceptionWrapper(() -> mostrarIncidencia());
 			}
 		});
+		
+		view.getBtFinalizar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> generarAlbaran()));
 		}
 	
 	
@@ -414,7 +417,7 @@ public class OrdenTrabajoController {
 //					System.out.println("REFERENCIAS QUE FALTAN PARA IDORDEN: " + idOrden);
 //					String incidencia = model.anotarIncidencia(productosPedidos.getString(2) ,res, idOrden,viejaIncidencia);//escribir en "incidencia" dentro de OrdenTrabajo la cantidad que falta y de quÃ©
 //					refView.getTaIncidencias().setText(refView.getTaIncidencias().getText() + incidencia);
-//					sinIncidencias = false;
+//					 sinIncidencias = false;
 //				}
 //			}
 //			
@@ -433,7 +436,7 @@ public class OrdenTrabajoController {
 //	
 //	}
 	
-	private void albaran() {
+	private void ayudaOrdenes() {
 		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
 		 String URL = "jdbc:hsqldb:hsql://localhost";
 		 String username = "SA";
@@ -472,6 +475,22 @@ public class OrdenTrabajoController {
 				e.printStackTrace();
 			}
 		
+	}
+	
+	private void generarAlbaran() {
+		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
+		try {
+			String albaran = "ALBARAN\n";
+			albaran += "---------------------";
+		 albaran +=	new GenerarDocumentacionAction().execute(idPedido);
+		Fichero.albaran(albaran, "" + idPedido);
+		JOptionPane.showMessageDialog(this.view, "ImprimiendoAlbaran");
+		view.setVisible(false);
+		almacenView.setVisible(false);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	
