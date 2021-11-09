@@ -55,7 +55,7 @@ public class VentanaPrincipal {
 	private JButton btnBorrar;
 	private String user;
 	private JLabel lblUsuario;
-
+	private String nombreIntroducido;
 	/**
 	 * Launch the application.
 	 */
@@ -80,8 +80,9 @@ public class VentanaPrincipal {
 		initialize();
 	}
 	
-	public VentanaPrincipal(String user) {
+	public VentanaPrincipal(String user,String nombreIntroducido) {
 		this.user = user;
+		this.nombreIntroducido = nombreIntroducido;
 		initialize();
 	}
 
@@ -550,6 +551,10 @@ public class VentanaPrincipal {
 
 	public void show() {
 		this.frame.setVisible(true);
+	}
+	
+	public String getNombreIntroducido() {
+		return this.nombreIntroducido;
 	}
 
 }

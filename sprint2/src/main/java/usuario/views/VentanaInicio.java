@@ -157,7 +157,7 @@ public class VentanaInicio {
 			JOptionPane.showMessageDialog(this.frame, "Introduzca unas credenciales validas");
 		}
 		if (!result.equals("")) {
-			new VentanaPrincipal(result);
+			new VentanaPrincipal(result,checkUsuario);
 		    this.frame.setVisible(false);
 		}
 	}

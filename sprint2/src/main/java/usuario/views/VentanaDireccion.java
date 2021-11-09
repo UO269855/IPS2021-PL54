@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import almacenero.controllers.ComprobacionPagos;
 import common.database.DatabaseWrapper;
 import common.modelo.Pedido;
 import common.modelo.Producto;
@@ -113,6 +114,8 @@ public class VentanaDireccion {
 			btnNewButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					if (getPrincipal().getUser().equals("Empresa")) {
+						//añadido mateo
+						new ComprobacionPagos().GenerarComprobanteEmpresa(getPrincipal().getNombreIntroducido());
 						tramitar();
 					}
 					else {
