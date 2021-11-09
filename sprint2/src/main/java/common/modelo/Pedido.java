@@ -5,15 +5,19 @@ public class Pedido {
 	private int precioTotal;
 	private String fecha;
 	private String albaran;
+	private String direccion;
+	private String metodoPago;
 	private int unidadesTotales;
 
 
-	public Pedido(int idPedido, int precioTotal, String fecha, String albaran /*String TipoUsuario*/) {
+	public Pedido(int idPedido, int precioTotal, String fecha, String albaran, String direccion, String metodoPago) {
 		super();
 		this.idPedido = idPedido;
 		this.precioTotal = precioTotal;
 		this.fecha = fecha;
 		this.albaran = albaran;
+		this.direccion = direccion;
+		this.metodoPago = metodoPago;
 	}
 	
 	public Pedido() {/**/}
@@ -43,6 +47,22 @@ public class Pedido {
 
 	public void setAlbaran(String albaran) {
 		this.albaran = albaran;
+	}
+	
+	public String getDireccion() {
+		return direccion;
+	}
+
+	public void setDireccion(String direccion) {
+		this.direccion = direccion;
+	}
+	
+	public String getMetodoPago() {
+		return metodoPago;
+	}
+
+	public void setMetodoPago(String metodoPago) {
+		this.metodoPago = metodoPago;
 	}
 	
 	public int getUnidadesTotales() {
