@@ -9,8 +9,6 @@ import java.util.List;
 
 import common.database.Database;
 import common.database.DbUtil;
-import common.modelo.ProductoDisplayEscaner;
-import giis.demo.util.Util;
 /**
  * Acceso a los datos de OrdenTrabajo y Pedido
  * (en esta clase se hacen las consultas)
@@ -23,6 +21,9 @@ public class OrdenTrabajoModel {
 	private String password = "";
 	
 	private Connection cn;
+	
+	private static int TAM_MEDIO = 10;
+	
 	
 	
 	
@@ -63,28 +64,119 @@ public class OrdenTrabajoModel {
 		return rs;
 	}
 	
+	public ResultSet getListaOrdenes(int idPedido) throws SQLException {
+		String sql="select o.idorden,o.unidadesarecoger "
+				+ "from ordentrabajo o "
+				+ "where fk_idpedido=?";
+		
+		PreparedStatement pstmt=cn.prepareStatement(sql);
+		pstmt.setInt(1, idPedido);
+		ResultSet rs = pstmt.executeQuery();
+		return rs;
+	}
+	
 
 	
+//	/**
+//	 * Añada a la tabla OrdenTrabajo una fila con una nueva OT, que tendrá un IDOT
+//	 * generado incremental (por eso no aparece como param, ya que es el primer
+//	 * atributo), y el IDPedido con el que le acabamos de asociar
+//	 *
+//	 * @throws SQLException 
+//	 */
+//	public void crearOrden(int idPedido) throws SQLException  {
+//		int unidadesARecoger = cuentaUnidadesPedido(idPedido);
+//		System.out.println("Unidades por recoger: "+unidadesARecoger);
+//		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,incidencia,albaran,unidadesARecoger)"
+//				+ " VALUES (?,?,?,?)");
+//		pstmt.setInt(1, idPedido);
+//		pstmt.setNString(2, null);
+//		pstmt.setNString(3, null);
+//		pstmt.setInt(4, unidadesARecoger); //añade a la OT el número de unidadesARecoger, que son el mismo que las uniadesTotales de pedido
+//		pstmt.executeUpdate();
+//	}
+	
 	/**
+	 * NUEVO CREA ORDEN: AHORA OPTIMIZADAS
 	 * Añada a la tabla OrdenTrabajo una fila con una nueva OT, que tendrá un IDOT
 	 * generado incremental (por eso no aparece como param, ya que es el primer
 	 * atributo), y el IDPedido con el que le acabamos de asociar
+	 * @param idAlmacenero 
 	 *
 	 * @throws SQLException 
 	 */
-	public void crearOrden(int idPedido) throws SQLException  {
-		int unidadesARecoger = cuentaUnidadesPedido(idPedido);
-		System.out.println("Unidades por recoger: "+unidadesARecoger);
-		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,incidencia,albaran,unidadesARecoger)"
-				+ " VALUES (?,?,?,?)");
-		pstmt.setInt(1, idPedido);
-		pstmt.setNString(2, null);
-		pstmt.setNString(3, null);
-		pstmt.setInt(4, unidadesARecoger); //añade a la OT el número de unidadesARecoger, que son el mismo que las uniadesTotales de pedido
-		pstmt.executeUpdate();
+	public void crearOrden(int idPedido, int idAlmacenero) throws SQLException  {
+		//ahora se crearán tantas OT como hagan falta
+		int unidadesARecoger = cuentaUnidadesPedido(idPedido);//cuenta el tamaño del pedido
+		
+		//cuando un pedido no tiene tamaño suficiente para dividirse en varias OT: se crea directamente la OT desde el pedido
+		if(unidadesARecoger <= TAM_MEDIO) {
+			PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
+					+ " VALUES (?,?,?,?,?)");
+			pstmt.setInt(1, idPedido);
+			pstmt.setInt(2, idAlmacenero);
+			pstmt.setNString(3, null);
+			pstmt.setNString(4, null);
+			pstmt.setInt(5, unidadesARecoger); //añade a la OT el número de unidadesARecoger, que son el mismo que las uniadesTotales de pedido
+			pstmt.executeUpdate();
+			
+		} else { //CREAR DIFERENTES OT
+			int tam_orden = divideOrden(unidadesARecoger, idPedido,idAlmacenero);//si le pasamos de 11 nos dará 5, y tenemos que calcular el final 6
+			
+			
+			//y si añado una fk_idorden a producti pedido???
+			
+		}
 	}
 	
 	
+	/**
+	 * @param tam_inicial
+	 * @param idPedido 
+	 * @return tam_orden, tamaño en el que se dividirá cada tarea
+	 * OJO: si hacemos 11/2 = 5. Para calcular el 6, sumamos al 5 el restante (11-5)
+	 * @throws SQLException 
+	 */
+	private int divideOrden(int tam_inicial, int idPedido, int idAlmacenero) throws SQLException {
+		int aux = tam_inicial;
+		int divisor = 2; // será el número de ordenes también que se crean
+		int tam_orden = -1;
+		
+		if(tam_inicial > TAM_MEDIO) {
+			while( (aux/divisor) > TAM_MEDIO) //irá incrementando el divisor hasta encontrar en cuantas unidades dividir
+					divisor++;                // para que las resultantes no se pasen del TAM_MEDIO
+			tam_orden = aux / divisor;
+		}
+		
+		System.out.println("el divisor es: " + divisor);
+		for (int i = 0; i < divisor; i++) {
+			if(i == divisor-1) {//si es el último elemento, le añade el resto de l adivision
+				int resto = tam_inicial % divisor;//usando el módulo
+				PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
+						+ " VALUES (?,?,?,?,?)");
+				pstmt.setInt(1, idPedido);
+				pstmt.setInt(2, idAlmacenero);
+				pstmt.setNString(3, null);
+				pstmt.setNString(4, null);
+				pstmt.setInt(5, tam_orden + resto); 
+				pstmt.executeUpdate();
+			}
+			else {
+				PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
+						+ " VALUES (?,?,?,?,?)");
+				pstmt.setInt(1, idPedido);
+				pstmt.setInt(2, idAlmacenero);
+				pstmt.setNString(3, null);
+				pstmt.setNString(4, null);
+				pstmt.setInt(5, tam_orden); //no tiene en cuenta si la división no es exacta poor ahora
+				pstmt.executeUpdate();
+			}
+		}
+		return tam_orden;
+	
+}
+
+
 	/**
 	 * Método privado que devuelve el número de unidadesTotales del pedido
 	 * @param idPedido
@@ -113,13 +205,52 @@ public class OrdenTrabajoModel {
 	 * @throws SQLException 
 	 */
 	public void asignarOrden(int idAlmacenero) throws SQLException {
-		int lastOT = getLastOT();
-		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero, fk_idorden) VALUES (?,?)");
+		int idOrden = getLastOT();
+//		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero, fk_idorden) VALUES (?,?)");
+//		pstmt.setInt(1, idAlmacenero);
+//		pstmt.setInt(2, lastOT);
+//		pstmt.executeUpdate();
+		String sql = "UPDATE ordentrabajo "
+		+ "SET fk_idalmacenero=? "
+		+ "WHERE ordentrabajo.idorden=?";
+		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, idAlmacenero);
-		pstmt.setInt(2, lastOT);
+		pstmt.setInt(2, idOrden);
 		pstmt.executeUpdate();
+		asignarAlmacenero(idAlmacenero);
 }
 	
+	private void asignarAlmacenero(int idAlmacenero) throws SQLException {
+		//COMPROBAR QUE NO EXISTE EL ALMACENERO ANTES DE CREARLO
+		if(!existsAlmacenero(idAlmacenero)) {
+			PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero) VALUES (?)");
+			pstmt.setInt(1, idAlmacenero);
+			pstmt.executeUpdate();
+		}
+		
+	}
+
+
+	/**
+	 * Comprueba si el almacenero ya existe o no en la base de datos
+	 * @param idAlmacenero
+	 * @return
+	 * @throws SQLException 
+	 */
+	private boolean existsAlmacenero(int idAlmacenero) throws SQLException {
+		String sql = "select idalmacenero "
+				+ "from almacenero "
+				+ "where almacenero.idalmacenero=?";
+		PreparedStatement pstmt=cn.prepareStatement(sql);
+		pstmt.setInt(1, idAlmacenero);
+		ResultSet rs = pstmt.executeQuery();
+		if (rs.next()) //si no hay filas --> no existe el almacenero
+			return false;
+		else
+			return true;
+	}
+
+
 	/*
 	 * Devuelve el último ID de las ordenes de trabajo para saber como llamar
 	 * a la siguiente que creamos.
@@ -195,11 +326,16 @@ public class OrdenTrabajoModel {
 	 * @throws SQLException
 	 */
 	public ResultSet getListaProductosEscaner(int idOrden) throws SQLException{
-		String sql = "select p.idproducto,p.nombre, pp.unidadespedido, pp.unidadesPorRecoger " //AÑADIR pp.unidadesPorRecoger
+		//cuando hay más de una OT por pedido, ya no sirve mostrar así
+		//ESTO MUESTRA TODOS LOS PRODUCTOS DE UN PEDIDO
+		String sql = "select p.idproducto,p.nombre, pp.unidadespedido, pp.unidadesPorRecoger " 
 				+ "from producto p, ordentrabajo ot , pedido p "
 				+ "left join productoPedido pp "
 				+ "on p.idproducto = pp.fk_idproducto "
 				+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido AND ot.idorden=?";
+		//Y SI LE AÑADO UN WHERE=PP.FK_IDORDEN = ?
+		//A LO MEJOR SOBRA ENTONCES 
+		
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, idOrden);
 		ResultSet rs = pstmt.executeQuery();

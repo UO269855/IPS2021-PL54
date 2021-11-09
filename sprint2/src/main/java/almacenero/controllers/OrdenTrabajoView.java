@@ -34,12 +34,6 @@ import java.awt.Label;
 public class OrdenTrabajoView extends JFrame {
 
 	private JPanel contentPane;
-	private JLabel lblAlmacenero;
-	private JTextField tfAlmacenero;
-	private JLabel lbPedidosPendientes;
-	private JScrollPane spPedidos;
-	private JTable tabPedidos;
-	private JButton btAlmacenero;
 	private JTextField txEscaner;
 	private JButton btEscaner;
 	private JSpinner spUnidadesEscaner;
@@ -54,6 +48,9 @@ public class OrdenTrabajoView extends JFrame {
 	private JScrollPane spIncidenciaVieja;
 	private JTextArea taIncidenciaVieja;
 	private JButton btObtenerReferencias;
+	private JLabel lbOrden;
+	private JScrollPane spOrden;
+	private JTable tabOrden;
 	
 	
 	
@@ -80,6 +77,7 @@ public class OrdenTrabajoView extends JFrame {
 	 * @throws SQLException 
 	 */
 	public OrdenTrabajoView() throws SQLException {
+		setResizable(false);
 		initialize();
 	}
 
@@ -89,18 +87,13 @@ public class OrdenTrabajoView extends JFrame {
 	 */
 	public void initialize() throws SQLException {
 		
-		setTitle("Almacen");
+		setTitle("Orden de trabajo");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 702, 551);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		contentPane.add(getLblAlmacenero());
-		contentPane.add(getTfAlmacenero());
-		contentPane.add(getLbPedidosPendientes());
-		contentPane.add(getSpPedidos());
-		contentPane.add(getBtAlmacenero());
 		contentPane.add(getTxEscaner());
 		contentPane.add(getBtEscaner());
 		contentPane.add(getSpUnidadesEscaner());
@@ -112,26 +105,8 @@ public class OrdenTrabajoView extends JFrame {
 		contentPane.add(getLbIncidencia());
 		contentPane.add(getSpIncidenciaVieja());
 		contentPane.add(getBtObtenerReferencias());
-	}
-	
-	private JLabel getLblAlmacenero() {
-		if (lblAlmacenero == null) {
-			lblAlmacenero = new JLabel("Almacenero ID:");
-			lblAlmacenero.setLabelFor(getTfAlmacenero());
-			lblAlmacenero.setDisplayedMnemonic('a');
-			lblAlmacenero.setFont(new Font("Tahoma", Font.PLAIN, 14));
-			lblAlmacenero.setBounds(40, 29, 117, 17);
-		}
-		return lblAlmacenero;
-	}
-	public JTextField getTfAlmacenero() {
-		if (tfAlmacenero == null) {
-			tfAlmacenero = new JTextField();
-			tfAlmacenero.setBounds(143, 27, 85, 19);
-			tfAlmacenero.setColumns(10);
-			tfAlmacenero.setText(getIdAlmacenero());
-		}
-		return tfAlmacenero;
+		contentPane.add(getLbOrden());
+		contentPane.add(getSpOrden());
 	}
 	
 	/**
@@ -141,50 +116,6 @@ public class OrdenTrabajoView extends JFrame {
 	private String getIdAlmacenero() {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	private JLabel getLbPedidosPendientes() {
-		if (lbPedidosPendientes == null) {
-			lbPedidosPendientes = new JLabel("Pedidos pendientes:");
-			lbPedidosPendientes.setFont(new Font("Tahoma", Font.PLAIN, 14));
-			lbPedidosPendientes.setBounds(40, 136, 141, 13);
-		}
-		return lbPedidosPendientes;
-	}
-	
-	
-	
-	/**
-	 * incluyo la tabla en un JScrollPane y anyado este en vez de la tabla para poder ver los headers de la tabla
-	 * @return tablePanel
-	 */
-	public JScrollPane getSpPedidos() {
-		if (spPedidos == null) {
-			spPedidos = new JScrollPane(getTabPedidos());
-			spPedidos.setBounds(40, 159, 303, 108);
-//			tablePanel.setColumnHeaderView(getTabPedidos());
-			
-			
-		}
-		return spPedidos;
-	}
-	public JTable getTabPedidos() {
-		if (tabPedidos == null) {
-			tabPedidos = new JTable();
-			tabPedidos.setDefaultEditor(Object.class, null); //readonly
-
-			tabPedidos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		}
-		return tabPedidos;
-	}
-	public  JButton getBtAlmacenero() {
-		if (btAlmacenero == null) {
-			btAlmacenero = new JButton("Confirmar");
-			btAlmacenero.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			btAlmacenero.setBounds(258, 25, 85, 21);
-		}
-		return btAlmacenero;
 	}
 	public JTextField getTxEscaner() {
 		if (txEscaner == null) {
@@ -213,7 +144,7 @@ public class OrdenTrabajoView extends JFrame {
 	private JScrollPane getSpEscaner() {
 		if (spEscaner == null) {
 			spEscaner = new JScrollPane();
-			spEscaner.setBounds(390, 207, 270, 185);
+			spEscaner.setBounds(40, 207, 620, 185);
 			spEscaner.setViewportView(getTabEscaner());
 		}
 		return spEscaner;
@@ -222,7 +153,7 @@ public class OrdenTrabajoView extends JFrame {
 		if (lbProductosOT == null) {
 			lbProductosOT = new JLabel("Productos de la OT:");
 			lbProductosOT.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			lbProductosOT.setBounds(390, 185, 185, 13);
+			lbProductosOT.setBounds(40, 184, 185, 13);
 		}
 		return lbProductosOT;
 	}
@@ -297,5 +228,27 @@ public class OrdenTrabajoView extends JFrame {
 			btObtenerReferencias.setBounds(40, 419, 166, 21);
 		}
 		return btObtenerReferencias;
+	}
+	private JLabel getLbOrden() {
+		if (lbOrden == null) {
+			lbOrden = new JLabel("Elige la orden a gestionar:");
+			lbOrden.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			lbOrden.setBounds(40, 36, 150, 13);
+		}
+		return lbOrden;
+	}
+	private JScrollPane getSpOrden() {
+		if (spOrden == null) {
+			spOrden = new JScrollPane();
+			spOrden.setBounds(40, 63, 327, 86);
+			spOrden.setViewportView(getTabOrden());
+		}
+		return spOrden;
+	}
+	public JTable getTabOrden() {
+		if (tabOrden == null) {
+			tabOrden = new JTable();
+		}
+		return tabOrden;
 	}
 }

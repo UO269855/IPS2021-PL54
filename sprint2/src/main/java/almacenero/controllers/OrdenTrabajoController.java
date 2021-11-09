@@ -7,20 +7,23 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import common.database.DbUtil;
 import common.modelo.Almacenero;
-import common.database.SwingUtil;
 import giis.demo.util.ApplicationException;
+import giis.demo.util.SwingUtil;
 
 /**
  * 
- * Controlador para la funcionalidad de visualizar los pedidos pendientes y obtener
+ * Controlador para la funcionalidad de visualizar los pedidos pendientess y obtener
  * ordenes de trabajo.
  * 
  * @author Alicia Fernández Pushkina -UO275727
+ *
+ */
+/**
+ * @author Ali
  *
  */
 public class OrdenTrabajoController {
@@ -28,7 +31,8 @@ public class OrdenTrabajoController {
 	
 	
 	private OrdenTrabajoModel model;
-	private OrdenTrabajoView view;
+	private OrdenTrabajoView view;//escoge el pedido
+	private AlmacenView almacenView;//gestiona cada orden y muestra lis productos
 	private String lastSelectedKey=""; //recuerda la ultima fila seleccionada para restaurarla cuando cambie la tabla de carreras
 	
 	private Almacenero almacenero;//no estoy segura de si deberia estar ene sta clase
@@ -41,9 +45,10 @@ public class OrdenTrabajoController {
 	 * @param refView, ventana donde se comprueban las OT
 	 * @throws SQLException
 	 */
-	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v) throws SQLException {
+	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v, AlmacenView a) throws SQLException {
 		this.model = m;
 		this.view = v;
+		this.almacenView = a;
 		//no hay inicializacion especifica del modelo, solo de la vista
 		this.initView();
 //		this.initRefView(); ahora la inicializamos cuando pulsamos el botón
@@ -55,37 +60,41 @@ public class OrdenTrabajoController {
 	 * emergentes cuando ocurra algun problema o excepcion controlada.
 	 */
 	public void initController() {
-		//LOS PEDIDOS PENDIENTES SE MOSTRARÁ NADA MÁS ENTRAR AL ALMACÉN (TRAS INGRESAR EL ALMACENERO)
-//		view.getBtMostrarPendientes().addActionListener(e -> SwingUtil.exceptionWrapper(() -> {
-//			try {
-//				getListaPedidosPendientes();
-//			} catch (SQLException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-//		}));
-	
-		view.getTabPedidos().addMouseListener(new MouseAdapter() {
+
+		almacenView.getTabPedidos().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				//no usa mouseClicked porque al establecer seleccion simple en la tabla de carreras
 				//el usuario podria arrastrar el raton por varias filas e interesa solo la ultima
 				SwingUtil.exceptionWrapper(() -> asignarAlmacenero());//en lugar de updateDetail, 
 				//al seleccionar un pedido de la OT, lo asignaria al almacenero
-				SwingUtil.exceptionWrapper(() -> mostrarReferencias());
-				//habilitar el botón de  EscribirIncidencia cuando se cree y visualice la OT
+				initOrdenView();//ABRE LA NUEVA VENTANA
+				getListaOrdenes();//muestra las ordenes creadas (necesito el idPedido)
+				
+			}
+		});
+		
+		almacenView.getBtAlmacenero().addActionListener(e -> SwingUtil.exceptionWrapper(() -> confirmarAlmacenero() ));
+
+		
+		//ESTAS TRES VAN PARA LA SEGUNDA VENTANA
+		view.getBtIncidencia().addActionListener(e -> SwingUtil.exceptionWrapper(() -> anotarIncidencia() ));
+		view.getBtEscaner().addActionListener(e -> SwingUtil.exceptionWrapper(() -> escanear()));
+		view.getBtObtenerReferencias().addActionListener(e -> SwingUtil.exceptionWrapper(() -> obtenerReferencias()));
+		
+		//seleccionar la orden que queremos gestionar y que muestre su contenido
+		view.getTabOrden().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				int idOrden =SwingUtil.getSelectedKeyInt(view.getTabOrden());
+				System.out.println("la orden que acabas de seleccionar es la "+ idOrden);
+				SwingUtil.exceptionWrapper(() -> mostrarReferencias(idOrden));
+//				//habilitar el botón de  EscribirIncidencia cuando se cree y visualice la OT
 				SwingUtil.exceptionWrapper(() -> view.getBtIncidencia().setEnabled(true));
 				SwingUtil.exceptionWrapper(() -> view.getTaIncidencia().setEditable(true));
 				SwingUtil.exceptionWrapper(() -> mostrarIncidencia());
 			}
 		});
-		
-		view.getBtAlmacenero().addActionListener(e -> SwingUtil.exceptionWrapper(() -> confirmarAlmacenero() ));
-		view.getBtIncidencia().addActionListener(e -> SwingUtil.exceptionWrapper(() -> anotarIncidencia() ));
-
-		
-		view.getBtEscaner().addActionListener(e -> SwingUtil.exceptionWrapper(() -> escanear()));
-		view.getBtObtenerReferencias().addActionListener(e -> SwingUtil.exceptionWrapper(() -> obtenerReferencias()));
 		}
 	
 	
@@ -118,27 +127,32 @@ public class OrdenTrabajoController {
 	 * Muestra en la interfaz la incidencia que contenga la OT, por si el al
 	 */
 	private void mostrarIncidencia() {
-		
+		//NO RELLENAMOS PORQUE DECIDÍ QUE NO S ESOBREESCRIBE LA INCIDENCIA
 	}
 	
 	/**
-	 * Inicializa la ventana de los pedidos pendientes
+	 * Inicializa la ventana de los pedidos pendientes, ES DECIR, el almacen
 	 * @throws SQLException
 	 */
 	public void initView() throws SQLException {
-		view.setVisible(true); 
-		view.initialize();
+		almacenView.setVisible(true); 
+		almacenView.initialize();
 	
 	}
 	
-//	/**
-//	 * Inicializa la ventana que comprueba las ordenes de trabajo
-//	 */
-//	public void initRefView()  {
-//		refView.setVisible(true); 
-//		refView.initialize();
-//	
-//	}
+	/**
+	 * Inicializa la ventana que comprueba las ordenes de trabajo
+	 */
+	public void initOrdenView()  {
+		
+		try {
+			view.setVisible(true); 
+			view.initialize();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	
+	}
 	
 	
 	
@@ -149,13 +163,13 @@ public class OrdenTrabajoController {
 	 */
 	public void confirmarAlmacenero() {
 		try{
-			almacenero = new Almacenero(Integer.parseInt(view.getTfAlmacenero().getText()));
-			view.getBtAlmacenero().setEnabled(false);
-			view.getTfAlmacenero().setEditable(false);
+			almacenero = new Almacenero(Integer.parseInt(almacenView.getTfAlmacenero().getText()));
+			almacenView.getBtAlmacenero().setEnabled(false);
+			almacenView.getTfAlmacenero().setEditable(false);
 			
 			//mostrar los pedidos pendientes
 			getListaPedidosPendientes();
-			view.getBtObtenerReferencias().setEnabled(true);
+//			almacenView.getBtObtenerReferencias().setEnabled(true);
 		} catch(NumberFormatException e) {
 			JOptionPane.showMessageDialog(null,"El IdAlmacenero solo está formado por números", "IdAlmacenero inválido", JOptionPane.INFORMATION_MESSAGE);
 
@@ -165,22 +179,7 @@ public class OrdenTrabajoController {
 		
 	}
 	
-	/**
-	 * La obtencion de la lista de pedidos pendientes solo necesita obtener la lista de objetos del modelo 
-	 * y usar metodo de SwingUtil para crear un tablemodel que se asigna finalmente a la tabla.
-	 * @throws SQLException 
-	 */
-//	public void getListaPedidosPendientes() throws SQLException {
-//		List<Object[]> pedidos =model.getListaPedidosArray(); // igual tengo que usar el otro método para tener lista POJO
-//		TableModel tmodel=SwingUtil.getTableModelFromPojos(pedidos, new String[] {"id", "fecha", "tamaño"});
-//		view.getTabPedidos().setModel(tmodel);
-//		SwingUtil.autoAdjustColumns(view.getTabPedidos());
-//		
-//		
-//		//Como se guarda la clave del ultimo elemento seleccionado, restaura la seleccion de los detalles
-////		this.restoreDetail(); //errores al compilar por no entender para qué sirve
-//
-//	}
+
 	
 	/**
 	 * Llama al modelo para traer la lista de pedidos pendientes y ponerla en la interfaz
@@ -189,11 +188,30 @@ public class OrdenTrabajoController {
 	public void getListaPedidosPendientes() throws SQLException {
 		ResultSet pedidos =model.getListaPedidosArray(); // 
 		TableModel tmodel = DbUtil.resultSetToTableModel(pedidos);
-		view.getTabPedidos().setModel(tmodel);
+		almacenView.getTabPedidos().setModel(tmodel);
 //		SwingUtil.autoAdjustColumns(view.getTabPedidos());
 		
 		//Como se guarda la clave del ultimo elemento seleccionado, restaura la seleccion de los detalles
 //		this.restoreDetail(); //errores al compilar
+	}
+	
+	/**
+	 * 8 noviembre
+	 * @throws SQLException 
+	 */
+	public void getListaOrdenes()  {
+		
+		try {
+			int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
+			ResultSet ordenes;
+			ordenes = model.getListaOrdenes(idPedido);
+			TableModel tmodel = DbUtil.resultSetToTableModel(ordenes);
+			view.getTabOrden().setModel(tmodel);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} // 
+		
 	}
 	
 	
@@ -220,15 +238,13 @@ public class OrdenTrabajoController {
 	 */
 	public void asignarAlmacenero() {
 		//Obtiene la clave del pedido seleccinada y la guarda para recordar la seleccion en futuras interacciones
-		int idPedido =SwingUtil.getSelectedKeyInt(view.getTabPedidos());
+		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
 		
 		try { 
 			
 			if(almacenero == null)//significa que aun no se ha "iniciado sesion"
 				JOptionPane.showMessageDialog(view,"Ingresa un IDAlmacenero válido");
 			else {
-				//almacenero.addOT(model.getLastOT() + 1); recorriendo las Ot el rendimiento abja
-				//almacenero.addOT(crearOrden(idPedido)); por ahora no se devolver el valor y tampoco hace falta, lo consulto en la BBDD, no en el almacenero
 				int id = almacenero.getIDAlmacenero();
 				crearYAsigna(idPedido,id );
 			}
@@ -243,15 +259,16 @@ public class OrdenTrabajoController {
 	 * y la cantidad de productos que faltan por escanear.
 	 * A medida que se escanean correctamente, este último campo irá disminuyendo hasta cero. 
 	 * Cuando llegue a cero, significa que no queda nada por escanear.
+	 * @param idOrden 
 	 * @throws SQLException 
 	 */
-	public void mostrarReferencias()  {
+	public void mostrarReferencias(int idOrden)  {
 		
 		
-		//consigue la ultima OT creada
-		int idOrden = 1;
+		//CAMBIAR A MOSTRAR LA DE LA ORDEN SELECCIONADA
+//		int idOrden = 1;
 		try {
-			idOrden = model.getLastOT();
+//			idOrden = model.getLastOT();
 			//ACTIVAR EL BOTÓN DEL ESCANEADO mientras haya productos por recoger en la OT
 			if(model.unidadesARecoger(idOrden) != 0)
 				view.getBtEscaner().setEnabled(true);
@@ -301,7 +318,7 @@ public class OrdenTrabajoController {
 				JOptionPane.showMessageDialog(null,"El número de unidades que intentas escanear supera al número que queda por recoger", "Unidades insuficientes", JOptionPane.INFORMATION_MESSAGE);
 			else {
 				//mostrar de nuevo la lista de productos para que se actualicen las unidadesPorRecoger
-				mostrarReferencias();
+				mostrarReferencias(idOt);
 				
 			}
 			 
@@ -325,11 +342,11 @@ public class OrdenTrabajoController {
 	 */
 	private void crearYAsigna(int idPedido, int idAlmacenero) {
 		try {
-			model.crearOrden(idPedido);
+			model.crearOrden(idPedido,idAlmacenero);
 			model.asignarOrden(idAlmacenero);
 		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-		//NOTA: en la interfaz no se ve nigun cambio tras asignar el almacenero
 	}
 	
 
@@ -338,13 +355,16 @@ public class OrdenTrabajoController {
 	 * él decida
 	 */
 	private void anotarIncidencia() {
-		int idOrden = -1;
-		try {
-			 idOrden = model.getLastOT();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 		
+//		int idOrden = -1;
+//		try {
+//			 idOrden = model.getLastOT();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+		int idOrden =SwingUtil.getSelectedKeyInt(view.getTabOrden());
+
+//		
 		String incidencia = view.getTaIncidencia().getText();
 		
 		try {
