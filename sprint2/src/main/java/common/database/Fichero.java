@@ -32,7 +32,56 @@ public class Fichero {
            }
         }
     }
-	
+	public static void contrarembolso(String direccion,String comprobanteOperacion)
+    {
+        FileWriter fichero = null;
+        PrintWriter pw = null;
+        try
+        {
+            fichero = new FileWriter("PagoContrarembolso(" + direccion+").txt");
+            pw = new PrintWriter(fichero);
+
+          
+             pw.println(comprobanteOperacion);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+           try {
+           // Nuevamente aprovechamos el finally para 
+           // asegurarnos que se cierra el fichero.
+           if (null != fichero)
+              fichero.close();
+           } catch (Exception e2) {
+              e2.printStackTrace();
+           }
+        }
+    }
+	public static void transferencia(String direccion,String comprobanteOperacion)
+    {
+        FileWriter fichero = null;
+        PrintWriter pw = null;
+        try
+        {
+            fichero = new FileWriter("PagoTransferencia(" + direccion+").txt");
+            pw = new PrintWriter(fichero);
+
+          
+             pw.println(comprobanteOperacion);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+           try {
+           // Nuevamente aprovechamos el finally para 
+           // asegurarnos que se cierra el fichero.
+           if (null != fichero)
+              fichero.close();
+           } catch (Exception e2) {
+              e2.printStackTrace();
+           }
+        }
+    }
 	
 	 public static double leerTarjeta(String numTarjeta) {
 	      File archivo = null;

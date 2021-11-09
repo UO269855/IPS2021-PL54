@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import almacenero.controllers.ComprobacionPagos;
 import common.database.DatabaseWrapper;
 import common.modelo.Pedido;
 import common.modelo.Producto;
@@ -136,7 +137,7 @@ public class VentanaPago {
 			btnOptionTransferencia = new JButton("Transferencia");
 			btnOptionTransferencia.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					//imprimir comprobante para transeferencia
+					new ComprobacionPagos().GenerarComprobanteTransferencia(previous.getTextFieldDireccion().getText());
 					tramitar("Transferencia");
 				}
 			});
@@ -163,7 +164,7 @@ public class VentanaPago {
 		}
 		this.frame.setVisible(false);
 		JOptionPane.showMessageDialog(this.frame, "Se ha realizado su compra");
-		
+		JOptionPane.showMessageDialog(this.frame, "ImprimiendoComprobante");
 	}
 
 	VentanaPrincipal getPrincipal() {
@@ -175,7 +176,7 @@ public class VentanaPago {
 			btnOptionContrareembolso = new JButton("Contrareembolso");
 			btnOptionContrareembolso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					//imprimir comprobante contrarembolso
+					new ComprobacionPagos().GenerarComprobanteContrarembolso(previous.getTextFieldDireccion().getText());
 					tramitar("Contrareembolso");
 				}
 			});
