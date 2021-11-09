@@ -24,7 +24,7 @@ public class algortimoAlmacenero {
 		Connection c = DriverManager.getConnection(URL,username,password);
 		PreparedStatement pst = c.prepareStatement(sqlObtenerProductoPedidos);
 		pst.setInt(1,numPedido);
-		ResultSet rs = pst.executeQuery();
+		 ResultSet rs = pst.executeQuery();
 		
 		List<Producto> lp = new ArrayList<Producto>();
 		while(rs.next()) {
