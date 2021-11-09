@@ -2,8 +2,13 @@ package almacenero.controllers;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
@@ -11,6 +16,7 @@ import javax.swing.table.TableModel;
 
 import common.database.DbUtil;
 import common.modelo.Almacenero;
+import common.modelo.Producto;
 import giis.demo.util.ApplicationException;
 import giis.demo.util.SwingUtil;
 
@@ -44,6 +50,7 @@ public class OrdenTrabajoController {
 	 * @param v, ventana donde se ven los pedidos pendientes
 	 * @param refView, ventana donde se comprueban las OT
 	 * @throws SQLException
+	 * @wbp.parser.entryPoint
 	 */
 	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v, AlmacenView a) throws SQLException {
 		this.model = m;
@@ -58,6 +65,7 @@ public class OrdenTrabajoController {
 	 * Cada manejador de eventos se instancia de la misma forma, para que invoque un metodo privado
 	 * de este controlador, encerrado en un manejador de excepciones generico para mostrar ventanas
 	 * emergentes cuando ocurra algun problema o excepcion controlada.
+	 * @wbp.parser.entryPoint
 	 */
 	public void initController() {
 
@@ -70,6 +78,7 @@ public class OrdenTrabajoController {
 				//al seleccionar un pedido de la OT, lo asignaria al almacenero
 				initOrdenView();//ABRE LA NUEVA VENTANA
 				getListaOrdenes();//muestra las ordenes creadas (necesito el idPedido)
+				albaran();
 				
 			}
 		});
@@ -80,7 +89,6 @@ public class OrdenTrabajoController {
 		//ESTAS TRES VAN PARA LA SEGUNDA VENTANA
 		view.getBtIncidencia().addActionListener(e -> SwingUtil.exceptionWrapper(() -> anotarIncidencia() ));
 		view.getBtEscaner().addActionListener(e -> SwingUtil.exceptionWrapper(() -> escanear()));
-		view.getBtObtenerReferencias().addActionListener(e -> SwingUtil.exceptionWrapper(() -> obtenerReferencias()));
 		
 		//seleccionar la orden que queremos gestionar y que muestre su contenido
 		view.getTabOrden().addMouseListener(new MouseAdapter() {
@@ -98,31 +106,31 @@ public class OrdenTrabajoController {
 		}
 	
 	
-	private void obtenerReferencias() {
-		int idOrden = 0 ;
-		 System.out.println("Introduce el id de la orden a revisar:");
-		  Scanner entradaEscaner = new Scanner (System.in);
-		  idOrden = Integer.parseInt(entradaEscaner.nextLine()); 
-		  
-		int idPedido = -1;
-		try {
-			idPedido = new OrdenTrabajoModel().getIdPedido(idOrden);
-		} catch (SQLException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		if(idPedido == -1) {
-			System.out.println("no se encuetra ningun pedido asociado a dicha orden");
-			return;
-		}
-		
-		  try {
-			new algortimoAlmacenero().execute(idPedido);
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
+//	private void obtenerReferencias() {
+//		int idOrden = 0 ;
+//		 System.out.println("Introduce el id de la orden a revisar:");
+//		  Scanner entradaEscaner = new Scanner (System.in);
+//		  idOrden = Integer.parseInt(entradaEscaner.nextLine()); 
+//		  
+//		int idPedido = -1;
+//		try {
+//			idPedido = new OrdenTrabajoModel().getIdPedido(idOrden);
+//		} catch (SQLException e2) {
+//			// TODO Auto-generated catch block
+//			e2.printStackTrace();
+//		}
+//		if(idPedido == -1) {
+//			System.out.println("no se encuetra ningun pedido asociado a dicha orden");
+//			return;
+//		}
+//		
+//		  try {
+//			new algortimoAlmacenero().execute(idPedido);
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//	}
 	/**
 	 * Muestra en la interfaz la incidencia que contenga la OT, por si el al
 	 */
@@ -426,6 +434,43 @@ public class OrdenTrabajoController {
 //	}
 	
 	private void albaran() {
+		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
+		 String URL = "jdbc:hsqldb:hsql://localhost";
+		 String username = "SA";
+		 String password = "";
+		 String sqlObtenerProductoPedidos =  "select producto.pos_almacen,producto.columna,producto.idproducto,producto.descripcion,producto.precio from productopedido , producto  where (productopedido.fk_idproducto = producto.idproducto and fk_idpedido = ? ) order by producto.pos_almacen,producto.columna,producto.idproducto,producto.descripcion,producto.precio";
+		
+		 ResultSet rs = null;
+			Connection c;
+			try {
+				c = DriverManager.getConnection(URL,username,password);
+				PreparedStatement pst = c.prepareStatement(sqlObtenerProductoPedidos);
+				pst.setInt(1,idPedido);
+				  rs = pst.executeQuery();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
+			List<Producto> lp = new ArrayList<Producto>();
+			try {
+				while(rs.next()) {
+					//System.out.println( "Pasillo: " + rs.getInt(1) + "-"  + "Columna:"+ rs.getInt(2) + "- Id: " + rs.getInt(3) + "-Descripccion:" + rs.getString(4) +"\n");
+					lp.add(new Producto(rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getString(4)));
+				}
+			for(Producto p:lp) {
+				view.getTaAyudasOrden().setText(view.getTaAyudasOrden().getText() + "Pasillo: " + p.getPasillo() + "-"  + "Columna:"+ p.getColumna()  + "- Id: " + p.getIdProducto()  + "-Descripccion:" + p.getDescripcion()  +"\n");
+				System.out.println("Pasillo: " + p.getPasillo() + "-"  + "Columna:"+ p.getColumna()  + "- Id: " + p.getIdProducto()  + "-Descripccion:" + p.getDescripcion()  +"\n");
+			}
+				
+
+
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		
 	}
 
