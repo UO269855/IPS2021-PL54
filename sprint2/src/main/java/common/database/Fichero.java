@@ -101,7 +101,7 @@ public class Fichero {
 	         while((linea=br.readLine())!=null) {
 	        	 String[] lineaPartida = linea.split("-");
 	        	 if(lineaPartida[0].equals(numTarjeta)) {
-	        		 cantidadDisponible = Integer.parseInt(lineaPartida[1]);
+	        		  cantidadDisponible = Integer.parseInt(lineaPartida[1]);
 	        	 }
 	         }
 	          

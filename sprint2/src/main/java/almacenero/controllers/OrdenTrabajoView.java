@@ -47,10 +47,13 @@ public class OrdenTrabajoView extends JFrame {
 	private JTextArea taIncidencia;
 	private JScrollPane spIncidenciaVieja;
 	private JTextArea taIncidenciaVieja;
-	private JButton btObtenerReferencias;
+	private JButton btFinalizar;
 	private JLabel lbOrden;
 	private JScrollPane spOrden;
 	private JTable tabOrden;
+	private JScrollPane spAyudasOrden;
+	private JTextArea taAyudasOrden;
+	
 	
 	
 	
@@ -104,9 +107,11 @@ public class OrdenTrabajoView extends JFrame {
 		contentPane.add(getSpIncidencia());
 		contentPane.add(getLbIncidencia());
 		contentPane.add(getSpIncidenciaVieja());
-		contentPane.add(getBtObtenerReferencias());
+		contentPane.add(getBtFinalizar());
 		contentPane.add(getLbOrden());
 		contentPane.add(getSpOrden());
+		contentPane.add(getSpAyudasOrden());
+		
 	}
 	
 	/**
@@ -220,14 +225,15 @@ public class OrdenTrabajoView extends JFrame {
 		}
 		return taIncidenciaVieja;
 	}
-	public JButton getBtObtenerReferencias() {
-		if (btObtenerReferencias == null) {
-			btObtenerReferencias = new JButton("Obtener referencias");
-			btObtenerReferencias.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			btObtenerReferencias.setEnabled(false);
-			btObtenerReferencias.setBounds(40, 419, 166, 21);
+	
+	public JButton getBtFinalizar() {
+		if (btFinalizar == null) {
+			btFinalizar = new JButton("Finalizar");
+			btFinalizar.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			btFinalizar.setEnabled(true);
+			btFinalizar.setBounds(555, 450, 105, 21);
 		}
-		return btObtenerReferencias;
+		return btFinalizar;
 	}
 	private JLabel getLbOrden() {
 		if (lbOrden == null) {
@@ -250,5 +256,23 @@ public class OrdenTrabajoView extends JFrame {
 			tabOrden = new JTable();
 		}
 		return tabOrden;
+	}
+	
+	private JScrollPane getSpAyudasOrden() {
+		if (spAyudasOrden == null) {
+			spAyudasOrden = new JScrollPane();
+			spAyudasOrden.setEnabled(true);
+			spAyudasOrden.setBounds(40,400, 327, 90);
+			spAyudasOrden.setViewportView(getTaAyudasOrden());
+		}
+		return spAyudasOrden;
+	}
+	public JTextArea getTaAyudasOrden() {
+		if (taAyudasOrden == null) {
+			taAyudasOrden = new JTextArea();
+			taAyudasOrden.setEnabled(true);
+			taAyudasOrden.setEditable(false);
+		}
+		return taAyudasOrden;
 	}
 }
