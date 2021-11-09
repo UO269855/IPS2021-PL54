@@ -55,7 +55,7 @@ public class VentanaPago {
 	/**
 	 * Create the application.
 	 */
-	public VentanaPago(VentanaDireccion ventana) {
+	public VentanaPago(VentanaDireccion ventana ) {
 		this.previous = ventana;
 		initialize();
 	}
@@ -136,6 +136,7 @@ public class VentanaPago {
 			btnOptionTransferencia = new JButton("Transferencia");
 			btnOptionTransferencia.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
+					//imprimir comprobante para transeferencia
 					tramitar("Transferencia");
 				}
 			});
@@ -174,6 +175,7 @@ public class VentanaPago {
 			btnOptionContrareembolso = new JButton("Contrareembolso");
 			btnOptionContrareembolso.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
+					//imprimir comprobante contrarembolso
 					tramitar("Contrareembolso");
 				}
 			});

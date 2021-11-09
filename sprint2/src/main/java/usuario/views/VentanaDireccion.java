@@ -56,7 +56,7 @@ public class VentanaDireccion {
 	/**
 	 * Create the application.
 	 */
-	public VentanaDireccion(VentanaPrincipal principal) {
+	public VentanaDireccion(VentanaPrincipal principal) {	
 		this.principal = principal;
 		initialize();
 	}

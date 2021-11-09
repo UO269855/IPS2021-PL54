@@ -12,4 +12,13 @@ public class ComprobacionPagos {
 		Fichero.main(empresa, comprobante);
 		
 	}
+	
+	
+	public boolean comprobarSaldo(String numTarjeta,double aPagar) {
+		double cantidad = Fichero.leerTarjeta(numTarjeta);
+		if(cantidad >= aPagar) {
+			return true;
+		}
+		return false;
+	}
 }

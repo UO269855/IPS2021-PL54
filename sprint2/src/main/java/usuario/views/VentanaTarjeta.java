@@ -18,6 +18,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import almacenero.controllers.ComprobacionPagos;
 import common.database.DatabaseWrapper;
 import common.modelo.Pedido;
 import common.modelo.Producto;
@@ -35,7 +36,6 @@ public class VentanaTarjeta {
 	private JButton btnTramitar;
 	private JTextField textFieldNumero;
 	private JLabel lblNumero;
-
 	/**
 	 * Launch the application.
 	 */
@@ -55,7 +55,7 @@ public class VentanaTarjeta {
 	/**
 	 * Create the application.
 	 */
-	public VentanaTarjeta(VentanaPago pago) {
+	public VentanaTarjeta(VentanaPago pago) {	
 		this.pago = pago;
 		initialize();
 	}
@@ -117,7 +117,16 @@ public class VentanaTarjeta {
 			btnTramitar = new JButton("Tramitar");
 			btnTramitar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					tramitar();
+					String numTarjeta = getTextFieldNumero().getText();
+					double aPagar = Double.parseDouble(pago.getPrincipal().getTotalAPagar());
+					if(new ComprobacionPagos().comprobarSaldo(numTarjeta,aPagar)) {
+						tramitar();
+					}else {
+						JOptionPane.showInputDialog( "La tarjeta no cuenta con el saldo necesario");
+					}
+					
+					
+					
 				}
 			});
 
