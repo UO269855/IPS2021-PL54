@@ -113,7 +113,7 @@ public class VentanaDireccion {
 			btnNewButton = new JButton("Siguiente");
 			btnNewButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					if (getPrincipal().getUser().equals("Empresa")) {
+					if (getPrincipal().getType().equals("Empresa")) {
 						//añadido mateo
 						new ComprobacionPagos().GenerarComprobanteEmpresa(getPrincipal().getNombreIntroducido());
 						tramitar();
@@ -162,6 +162,12 @@ public class VentanaDireccion {
 				}
 			});
 			textFieldDireccion.setColumns(10);
+			if (!principal.getType().equals("")) {
+				textFieldDireccion.setText(principal.getUser().getDireccion());
+				JOptionPane.showMessageDialog(this.frame, "Se ha añadido la dirección que tiene asignada en nuestra base de datos. "
+						+ "Pulse siguiente para continuar con esta o edítela antes de continuar");
+			}
+			
 		}
 		return textFieldDireccion;
 	}

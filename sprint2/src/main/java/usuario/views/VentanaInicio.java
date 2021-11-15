@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.UnexpectedException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,6 +15,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import common.database.DatabaseWrapper;
+import common.modelo.Anonimo;
+import common.modelo.User;
 
 public class VentanaInicio {
 
@@ -132,7 +137,12 @@ public class VentanaInicio {
 			btnSiguiente = new JButton("Siguiente");
 			btnSiguiente.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					mostrarVentanaPrincipal();
+					try {
+						mostrarVentanaPrincipal();
+					} catch (UnexpectedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			});
 			btnSiguiente.setFont(new Font("Tahoma", Font.PLAIN, 15));
@@ -141,23 +151,27 @@ public class VentanaInicio {
 		return btnSiguiente;
 	}
 
-	protected void mostrarVentanaPrincipal() {
+	protected void mostrarVentanaPrincipal() throws UnexpectedException {
 		String checkUsuario = textFieldInicioSesion.getText();
 		String result = "";
+		User user = null;
 		if (checkUsuario.contains("@")) {
 			result = "Empresa";
+			user = DatabaseWrapper.getEmpresa(checkUsuario);
 		}
 		else if (isDni(checkUsuario)) {
 			result = "Cliente";
+			user = DatabaseWrapper.getCliente(checkUsuario);
 		}
 		else if (checkUsuario.equals("")) {
 			result = "Anonimo";
+			user = new Anonimo();
 		}
 		else {
 			JOptionPane.showMessageDialog(this.frame, "Introduzca unas credenciales validas");
 		}
-		if (!result.equals("")) {
-			new VentanaPrincipal(result,checkUsuario);
+		if (!result.equals("") && user != null) {
+			new VentanaPrincipal(result,user);
 		    this.frame.setVisible(false);
 		}
 	}

@@ -16,6 +16,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 
+import common.modelo.Cliente;
+import common.modelo.Empresa;
 import common.modelo.Pedido;
 import common.modelo.Producto;
 
@@ -50,6 +52,52 @@ public class DatabaseWrapper {
 		}
 
 		return producto;
+	}
+	
+	// Devuelve un cliente de la BD 
+	public static Cliente getCliente(String dni) throws UnexpectedException {
+
+		Connection conn = null;
+		Cliente cliente = null;
+
+		try {
+			conn = DriverManager.getConnection(URL);
+			ResultSetHandler<Cliente> resultHandler = new BeanHandler<Cliente>(Cliente.class);
+
+			String sql = String.format("SELECT * FROM Cliente WHERE dni= '%s';", dni);
+			cliente = new QueryRunner().query(conn, sql, resultHandler);
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+
+		return cliente;
+	}
+	
+	// Devuelve un cliente de la BD 
+	public static Empresa getEmpresa(String email) throws UnexpectedException {
+
+		Connection conn = null;
+		Empresa empresa = null;
+
+		try {
+			conn = DriverManager.getConnection(URL);
+			ResultSetHandler<Empresa> resultHandler = new BeanHandler<Empresa>(Empresa.class);
+
+			String sql = String.format("SELECT * FROM Cliente WHERE dni= '%s';", email);
+			empresa = new QueryRunner().query(conn, sql, resultHandler);
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+
+		return empresa;
 	}
 
 	// Crea una orden nueva en la bd

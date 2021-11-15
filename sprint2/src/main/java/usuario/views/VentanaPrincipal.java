@@ -31,6 +31,7 @@ import javax.swing.table.DefaultTableModel;
 
 import common.database.DatabaseWrapper;
 import common.modelo.Producto;
+import common.modelo.User;
 
 public class VentanaPrincipal {
 
@@ -53,7 +54,8 @@ public class VentanaPrincipal {
 	private JPanel pnProductButtons;
 	private JButton btnDecrementar;
 	private JButton btnBorrar;
-	private String user;
+	private User user;
+	private String type;
 	private JLabel lblUsuario;
 	private String nombreIntroducido;
 	private String totalAPagar;
@@ -81,9 +83,9 @@ public class VentanaPrincipal {
 		 initialize();
 	}
 	
-	public VentanaPrincipal(String user,String nombreIntroducido) {
-		this.user = user;
-		this.nombreIntroducido = nombreIntroducido;
+	public VentanaPrincipal(String type, User usuario) {
+		this.type = type;
+		this.user = usuario;
 		initialize();
 	}
 
@@ -547,7 +549,11 @@ public class VentanaPrincipal {
 		return productos;
 	}
 	
-	public String getUser() {
+	public String getType() {
+		return type;
+	}
+	
+	public User getUser() {
 		return user;
 	}
 
