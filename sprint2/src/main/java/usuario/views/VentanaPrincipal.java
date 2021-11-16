@@ -240,6 +240,15 @@ public class VentanaPrincipal {
 		JLabel label = new JLabel("");
 		JLabel label2 = new JLabel("");
 		JLabel label3 = new JLabel("");
+		double precio = 0.0;
+		
+		if (type.equals("Empresa")) {
+			precio = pr.getPrecioEmpresa();
+		}
+		else {
+			precio = pr.getPrecioCliente();
+		}
+		
 		label.setBackground(Color.white);
 		label.setBorder(new LineBorder(Color.LIGHT_GRAY, 2, true));
 		label.setText(pr.getNombre());
@@ -250,7 +259,14 @@ public class VentanaPrincipal {
 
 		label3.setBackground(Color.white);
 		label3.setBorder(new LineBorder(Color.LIGHT_GRAY, 2, true));
-		label3.setText(pr.getPrecio() + "");
+		String cadena = "";
+		if (type.equals("Empresa")) {
+			cadena= "0%";
+		}
+		else {
+			cadena = pr.getIvaPercentage();
+		}
+		label3.setText(precio + " euros. Incluye " + cadena + " de IVA por ser " + type);
 		label3.setFont(new Font("Tahoma", 0, 16));
 
 		panel.setLayout(new BorderLayout());
@@ -310,10 +326,18 @@ public class VentanaPrincipal {
 
 		for (Producto p: productos) {
 			if (carrito.containsKey(p)) {
-				total += getCarrito().get(p) * p.getPrecio();
+				double precio = 0.0;
+
+				if (type.equals("Empresa")) {
+					precio = p.getPrecioEmpresa();
+				}
+				else {
+					precio = p.getPrecioCliente();
+				}
+				total += getCarrito().get(p) * precio;
 				row[0] = p.getNombre();
 				row[1] = getCarrito().get(p);
-				row[2] = getCarrito().get(p) * p.getPrecio();
+				row[2] = getCarrito().get(p) * precio;
 				lista.removeRow(0);
 				lista.addRow(row);
 			}
@@ -539,7 +563,13 @@ public class VentanaPrincipal {
 	}
 	private JLabel getLblUsuario() {
 		if (lblUsuario == null) {
-			lblUsuario = new JLabel("Bienvenido: " + user);
+			if (!type.equals("Anonimo")) {
+				lblUsuario = new JLabel("Bienvenido: " + user.getUsuario());
+			}
+			else {
+				lblUsuario = new JLabel("Bienvenido: Anonimo");
+			}
+			
 			lblUsuario.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		}
 		return lblUsuario;

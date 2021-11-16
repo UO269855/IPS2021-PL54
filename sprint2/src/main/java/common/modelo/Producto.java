@@ -9,6 +9,7 @@ public class Producto {
 	private int unidades;
 	private int stock;
 	private int pasillo;
+	private double iva;
 	
 
 	private int columna;
@@ -24,12 +25,13 @@ public class Producto {
 	}
 	
 	public Producto(String nombre, String descripcion, double precio,
-			int unidades, int stock) {
+			int unidades, int stock, double iva) {
 		this.nombre = nombre;
 		this.descripcion = descripcion;
 		this.precio = precio;
 		this.unidades = unidades;
 		this.stock = stock;
+		this.iva = iva;
 	}
 
 	public Producto(int pasillo ,int columna,int idProducto,String descripccion) {
@@ -40,8 +42,8 @@ public class Producto {
 		
 	}
 
-	public Producto(String nombre, String descripcion, double precio) {
-		this(nombre, descripcion, precio, 0, 10);
+	public Producto(String nombre, String descripcion, double precio, double iva) {
+		this(nombre, descripcion, precio, 0, 10, iva);
 	}
 
 
@@ -72,7 +74,11 @@ public class Producto {
 		this.descripcion = descripcion;
 	}
 
-	public double getPrecio() {
+	public double getPrecioCliente() {
+		return precio * getIva();
+	}
+	
+	public double getPrecioEmpresa() {
 		return precio;
 	}
 
@@ -96,8 +102,8 @@ public class Producto {
 		return unidades;
 	}
 	
-	public String toString() {
-		return getNombre() + " Unidades: " + getUnidades() + " Total: " + String.valueOf(getPrecio() * getUnidades()) + "€";
+	public String toString(double precio) {
+		return getNombre() + " Unidades: " + getUnidades() + " Total: " + String.valueOf(precio * getUnidades()) + "€";
 		
 	}
 
@@ -120,6 +126,15 @@ public class Producto {
 
 	public int getColumna() {
 		return columna;
+	}
+
+
+	public String getIvaPercentage() {
+		return iva + "%";
+	}
+
+	private double getIva() {
+		return (iva/100) + 1;
 	}
 
 	

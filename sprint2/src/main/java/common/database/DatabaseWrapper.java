@@ -3,7 +3,10 @@ package common.database;
 import java.rmi.UnexpectedException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -43,7 +46,7 @@ public class DatabaseWrapper {
 
 			String sql = String.format("SELECT * FROM Producto WHERE IdProducto= %d;", id_producto);
 			producto = new QueryRunner().query(conn, sql, resultHandler);
-			
+
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -53,22 +56,25 @@ public class DatabaseWrapper {
 
 		return producto;
 	}
-	
+
 	// Devuelve un cliente de la BD 
 	public static Cliente getCliente(String dni) throws UnexpectedException {
 
 		Connection conn = null;
 		Cliente cliente = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 
 		try {
-			conn = DriverManager.getConnection(URL);
-			ResultSetHandler<Cliente> resultHandler = new BeanHandler<Cliente>(Cliente.class);
+			String check = "\'" + dni + "\'";
+			conn = Jdbc.getConnection();
+			pst = conn.prepareStatement("SELECT * FROM Cliente where dni = " + check);
+			rs = pst.executeQuery();
+			while(rs.next()&& cliente == null) {
+				cliente = new Cliente(rs.getString("dni"), rs.getString("direccion"));
+			}
 
-			String sql = String.format("SELECT * FROM Cliente WHERE dni= '%s';", dni);
-			cliente = new QueryRunner().query(conn, sql, resultHandler);
-			
-
-		} catch (SQLException e) {
+		}catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtils.closeQuietly(conn);
@@ -76,22 +82,25 @@ public class DatabaseWrapper {
 
 		return cliente;
 	}
-	
+
 	// Devuelve un cliente de la BD 
-	public static Empresa getEmpresa(String email) throws UnexpectedException {
+	public static Empresa getEmpresa(String email) throws UnexpectedException{
 
 		Connection conn = null;
 		Empresa empresa = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 
 		try {
-			conn = DriverManager.getConnection(URL);
-			ResultSetHandler<Empresa> resultHandler = new BeanHandler<Empresa>(Empresa.class);
+			conn = Jdbc.getConnection();
+			String check = "\'" + email + "\'";
+			pst = conn.prepareStatement("SELECT * FROM Empresa where email = " + check);
+			rs = pst.executeQuery();
+			while(rs.next() && empresa == null) {
+				empresa = new Empresa(rs.getString("email"), rs.getString("direccion"));
+			}
 
-			String sql = String.format("SELECT * FROM Cliente WHERE dni= '%s';", email);
-			empresa = new QueryRunner().query(conn, sql, resultHandler);
-			
-
-		} catch (SQLException e) {
+		}catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			DbUtils.closeQuietly(conn);
@@ -106,12 +115,12 @@ public class DatabaseWrapper {
 
 		try {
 			conn = Jdbc.getConnection();
-			
+
 			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales, direccion, metodoPago) VALUES (%d, %d, '%s', '%s', %d, '%s', '%s');", 
 					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales(), pedido.getDireccion(), pedido.getMetodoPago());
-			
+
 			new QueryRunner().update(conn, sql);
-			
+
 			for(Producto p : productos) {
 				if (carrito.containsKey(p)) {
 					sql = String.format(
@@ -121,7 +130,7 @@ public class DatabaseWrapper {
 				}
 
 			}
-			
+
 
 		} catch (SQLException e) {
 			throw new UnexpectedException("Error",e);
@@ -129,7 +138,7 @@ public class DatabaseWrapper {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	
+
 	// Devuelve una lista de todas las órdenes ordenadas por fecha
 	public static List<Pedido> getPedidosByDate() throws UnexpectedException {
 		Connection conn = null;
@@ -144,27 +153,33 @@ public class DatabaseWrapper {
 
 		} catch (SQLException e) {
 			throw new UnexpectedException(e.getMessage());
-			
+
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 
 		return pedidos;
 	}
-	
 
 
-	
+
+
 	public static List<Producto> getProductos() throws UnexpectedException, SQLException {
 		Connection conn = Jdbc.getConnection();
-		List<Producto> productos;
-		
+		List<Producto> productos = new ArrayList<>();
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
 		try {
 			conn = Jdbc.getConnection();
-			BeanListHandler<Producto> beanListHandler = new BeanListHandler<Producto>(Producto.class);
+			pst = conn.prepareStatement("SELECT * FROM PRODUCTO");
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				Producto producto = new Producto(rs.getString("idproducto"), 
+						rs.getString("descripcion"), rs.getDouble("precio"), rs.getInt("unidades"), rs.getInt("unidades"), rs.getDouble("iva"));
+				productos.add(producto);
+			}
 
-			String sql = "SELECT * FROM PRODUCTO";
-			productos = new QueryRunner().query(conn, sql, beanListHandler);
 
 		} catch (SQLException e) {
 			throw new UnexpectedException(e.getMessage());
@@ -173,7 +188,7 @@ public class DatabaseWrapper {
 		}
 		return productos;
 	}
-	
 
-	
+
+
 }

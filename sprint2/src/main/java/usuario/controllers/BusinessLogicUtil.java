@@ -45,11 +45,19 @@ public class BusinessLogicUtil {
 	}
 	
 
-	public static String calculateSubtotal(ListModel<Producto> model) {
+	public static String calculateSubtotal(ListModel<Producto> model, String type) {
 		double res = 0;
+		double precio = 0.0;
 		
 		for(int i = 0; i< model.getSize(); i++) {
-			res += (model.getElementAt(i).getPrecio() * model.getElementAt(i).getUnidades());
+			if (type.equals("Empresa")) {
+				precio = model.getElementAt(i).getPrecioEmpresa();
+			}
+			else {
+				precio = model.getElementAt(i).getPrecioCliente();
+			}
+			
+			res += (precio * model.getElementAt(i).getUnidades());
 		}
 		return String.format(Locale.US, "%.2f", res);
 	}
@@ -63,10 +71,15 @@ public class BusinessLogicUtil {
 		return res;
 	}
 
-	public static double calculateSubtotal(List<Producto> model) {
+	public static double calculateSubtotal(List<Producto> model, String type) {
 		double result = 0.0;
 		for (Producto producto : model) {
-			result+= producto.getPrecio();
+			if (type.equals("Empresa")) {
+				result+= producto.getPrecioEmpresa();
+			}
+			else {
+				result+= producto.getPrecioCliente();
+			}
 		}
 		return result;
 	}

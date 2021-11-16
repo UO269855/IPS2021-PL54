@@ -159,20 +159,24 @@ public class VentanaInicio {
 			result = "Empresa";
 			user = DatabaseWrapper.getEmpresa(checkUsuario);
 		}
-		else if (isDni(checkUsuario)) {
-			result = "Cliente";
-			user = DatabaseWrapper.getCliente(checkUsuario);
-		}
 		else if (checkUsuario.equals("")) {
 			result = "Anonimo";
 			user = new Anonimo();
 		}
+		else if (isDni(checkUsuario)) {
+			result = "Cliente";
+			user = DatabaseWrapper.getCliente(checkUsuario);
+		}
+
 		else {
 			JOptionPane.showMessageDialog(this.frame, "Introduzca unas credenciales validas");
 		}
 		if (!result.equals("") && user != null) {
 			new VentanaPrincipal(result,user);
 		    this.frame.setVisible(false);
+		}
+		else if (user == null) {
+			JOptionPane.showMessageDialog(this.frame, "Ese usuario no existe. Introduzca unas credenciales válidas.");
 		}
 	}
 
