@@ -170,7 +170,10 @@ public class VentanaPrincipal {
 
 
 		for (int i = 0; i < productos.size(); i++) {
-			p.add((nuevoPanel(p,productos.get(i))), gbc);
+			if (productos.get(i).getStock()>=0) {
+				p.add((nuevoPanel(p,productos.get(i))), gbc);
+			}
+			
 		}
 		getPanelArticulos().setViewportView(p);
 
@@ -208,7 +211,7 @@ public class VentanaPrincipal {
 		JPanel panel = new JPanel();
 		panel.setSize(new Dimension(200, 600));
 		JPanel panel2 = new JPanel();
-		SpinnerNumberModel model = new SpinnerNumberModel(1, 0, 9, 1); 
+		SpinnerNumberModel model = new SpinnerNumberModel(1, 0, pr.getStock(), 1); 
 		JSpinner spinner = new JSpinner(model);
 		spinner.setValue(1);
 		SumarBoton sb = new SumarBoton(spinner);
@@ -270,6 +273,9 @@ public class VentanaPrincipal {
 			cadena = pr.getIvaPercentage();
 		}
 		label3.setText(precio + " euros. Incluye " + cadena + " de IVA por ser " + type);
+		if (pr.getStock() <= pr.getStockMin()) {
+			label3.setText(label3.getText() + " QUEDAN POCAS EXISTENCIAS");
+		}
 		label3.setFont(new Font("Tahoma", 0, 16));
 
 		panel.setLayout(new BorderLayout());
