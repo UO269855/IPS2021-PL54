@@ -162,10 +162,13 @@ public class VentanaDireccion {
 				}
 			});
 			textFieldDireccion.setColumns(10);
-			if (!principal.getType().equals("")) {
+			if (!principal.getType().equals("") && !principal.getType().equals("Anonimo")) {
 				textFieldDireccion.setText(principal.getUser().getDireccion());
-				JOptionPane.showMessageDialog(this.frame, "Se ha añadido la dirección que tiene asignada en nuestra base de datos. "
+				JOptionPane.showMessageDialog(this.frame, "Se ha añadido la dirección que tiene asignada en nuestra base de datos. \r"
 						+ "Pulse siguiente para continuar con esta o edítela antes de continuar");
+			}
+			else if (principal.getType().equals("Anonimo")){
+				JOptionPane.showMessageDialog(this.frame, "Introduzca su dirección para continuar");
 			}
 			
 		}
@@ -178,16 +181,14 @@ public class VentanaDireccion {
 	
 	protected void tramitar() {
 		try {
-			String value = getPrincipal().getTextFieldTotal().getText().substring(0, 
-					getPrincipal().getTextFieldTotal().getText().length() - 1);
-			int number = (int) (Double.parseDouble(value));
-			int total = 0;
+			double value = getPrincipal().getTotal();
+			int totalUnidades = 0;
 			for(Producto p: getPrincipal().getProductos()) {
 				if (getPrincipal().getCarrito().containsKey(p)) {
-					total += getPrincipal().getCarrito().get(p);
+					totalUnidades += getPrincipal().getCarrito().get(p);
 				}
 			}
-			Pedido pedido = BusinessLogicUtil.createPedido(number, total, getTextFieldDireccion().getText(), "Empresa");
+			Pedido pedido = BusinessLogicUtil.createPedido(value, totalUnidades, getTextFieldDireccion().getText(), "Empresa");
 			DatabaseWrapper.createPedido(pedido, getPrincipal().getProductos(),
 					new Hashtable<Producto, Integer>(getPrincipal().getCarrito()), getPrincipal().getListaCarrito().getModel());
 		} catch (UnexpectedException e) {

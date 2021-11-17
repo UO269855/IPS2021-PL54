@@ -8,6 +8,8 @@ public class Producto {
 	private double precio;
 	private int unidades;
 	private int stock;
+	private int stock_min;
+	private int stock_rep;
 	private int pasillo;
 	private double iva;
 	
@@ -25,12 +27,24 @@ public class Producto {
 	}
 	
 	public Producto(String nombre, String descripcion, double precio,
-			int unidades, int stock, double iva) {
+			int stock, int stock_min, double iva) {
 		this.nombre = nombre;
 		this.descripcion = descripcion;
 		this.precio = precio;
-		this.unidades = unidades;
 		this.stock = stock;
+		this.stock_min = stock_min;
+		this.iva = iva;
+	}
+	
+	public Producto(int id, String nombre, String descripcion, double precio,
+			int stock, int stock_min, int stock_rep, double iva) {
+		this.idProducto = id;
+		this.nombre = nombre;
+		this.descripcion = descripcion;
+		this.precio = precio;
+		this.stock = stock;
+		this.stock_min = stock_min;
+		this.stock_rep = stock_rep;
 		this.iva = iva;
 	}
 
@@ -87,14 +101,14 @@ public class Producto {
 		this.precio = precio;
 	}
 
-	public void setUnidades(int unidades) {
-		this.unidades = unidades;
+	public void setUnidades(int stock) {
+		this.stock = stock;
 	}	
 	
 
 	public void restaUnidades() {
-		if (unidades > 0) {
-			unidades--;
+		if (stock > 0) {
+			stock--;
 		}
 	}
 
@@ -103,12 +117,12 @@ public class Producto {
 	}
 	
 	public String toString(double precio) {
-		return getNombre() + " Unidades: " + getUnidades() + " Total: " + String.valueOf(precio * getUnidades()) + "€";
+		return getNombre() + " stock: " + getUnidades() + " Total: " + String.valueOf(precio * getUnidades()) + "€";
 		
 	}
 
 	public void addUnidades(int increment) {
-		this.unidades += increment;
+		this.stock += increment;
 	}
 	
 	public int getStock() {
@@ -116,9 +130,28 @@ public class Producto {
 	}
 
 
+	public void setStockMin(int stock) {
+		this.stock_min = stock;
+	}
+	
+	public int getStockMin() {
+		return stock_min;
+	}
+
+
+	public void setStockRep(int stock) {
+		this.stock_rep = stock;
+	}
+	
+	public int getStockRep() {
+		return stock_rep;
+	}
+
+
 	public void setStock(int stock) {
 		this.stock = stock;
 	}
+	
 	public int getPasillo() {
 		return pasillo;
 	}

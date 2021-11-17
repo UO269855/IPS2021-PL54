@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.rmi.UnexpectedException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -22,7 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
@@ -45,10 +46,7 @@ public class VentanaPrincipal {
 	private JPanel panelFinalizar;
 	private JLabel lblCarrito;
 	private JTable listaCarrito;
-	private JTextField textFieldTotal;
 	private JPanel panelCarritoGestion;
-	private JButton btnClearPedido;
-	private JButton btnTramitar;
 	private JScrollPane panelArticulos;
 	private JPanel panelCarritoCentro;
 	private JPanel pnProductButtons;
@@ -59,6 +57,11 @@ public class VentanaPrincipal {
 	private JLabel lblUsuario;
 	private String nombreIntroducido;
 	private String totalAPagar;
+	private JPanel panelBotones;
+	private JButton btnClearPedido;
+	private JButton btnTramitar;
+	private JTextPane textPaneTotal;
+	private double precioTotal;
 	/**
 	 * Launch the application.
 	 */
@@ -133,7 +136,7 @@ public class VentanaPrincipal {
 	private JPanel getPanelCarrito() {
 		if (panelCarrito == null) {
 			panelCarrito = new JPanel();
-			panelCarrito.setLayout(new BorderLayout(0, 0));
+			panelCarrito.setLayout(new BorderLayout(0, 10));
 			panelCarrito.add(getLblCarrito(), BorderLayout.NORTH);
 			panelCarrito.add(getPanelCarritoGestion(), BorderLayout.SOUTH);
 			panelCarrito.add(getPanelCarritoCentro(), BorderLayout.CENTER);
@@ -323,6 +326,8 @@ public class VentanaPrincipal {
 		DefaultTableModel lista = new DefaultTableModel(tableHeaders, getCarrito().size());
 		Object[] row = new Object[3];
 		double total = 0;
+		double noIva = 0.0;
+		double iva = 0.0;
 
 		for (Producto p: productos) {
 			if (carrito.containsKey(p)) {
@@ -334,6 +339,7 @@ public class VentanaPrincipal {
 				else {
 					precio = p.getPrecioCliente();
 				}
+				noIva += getCarrito().get(p) * p.getPrecioEmpresa();
 				total += getCarrito().get(p) * precio;
 				row[0] = p.getNombre();
 				row[1] = getCarrito().get(p);
@@ -343,9 +349,15 @@ public class VentanaPrincipal {
 			}
 
 		}
+		DecimalFormat df = new DecimalFormat("#.##");
+		iva += total - noIva;
 		listaCarrito.clearSelection();
 		listaCarrito.setModel(lista);
-		textFieldTotal.setText(String.valueOf(total) + "");
+		String text = String.valueOf(df.format(noIva)) + 
+				" Sin Iva \r" + String.valueOf(df.format(iva)) + 
+				" Iva total \r" + String.valueOf(df.format(total)) + " total";
+		textPaneTotal.setText(text);
+		precioTotal = total;
 	}
 
 	public Producto getProducto(int id) {
@@ -389,69 +401,14 @@ public class VentanaPrincipal {
 		return listaCarrito;
 	}
 
-	public JTextField getTextFieldTotal() {
-		if (textFieldTotal == null) {
-			textFieldTotal = new JTextField();
-			textFieldTotal.setText("0 ");
-			textFieldTotal.setHorizontalAlignment(SwingConstants.TRAILING);
-			textFieldTotal.setEditable(false);
-			textFieldTotal.setColumns(10);
-		}
-		return textFieldTotal;
-	}
-
 	private JPanel getPanelCarritoGestion() {
 		if (panelCarritoGestion == null) {
 			panelCarritoGestion = new JPanel();
-			panelCarritoGestion.add(getTextFieldTotal());
-			panelCarritoGestion.add(getBtnClearPedido());
-			panelCarritoGestion.add(getBtnTramitar());
+			panelCarritoGestion.setLayout(new GridLayout(0, 2, 0, 0));
+			panelCarritoGestion.add(getTextPaneTotal());
+			panelCarritoGestion.add(getPanelBotones());
 		}
 		return panelCarritoGestion;
-	}
-
-	private JButton getBtnClearPedido() {
-		if (btnClearPedido == null) {
-			btnClearPedido = new JButton("Limpiar Pedido");
-			btnClearPedido.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					carrito = new Hashtable<>();
-					listaCarrito.setModel(new DefaultTableModel());
-					textFieldTotal.setText("0 ");
-					getBtnTramitar().setEnabled(false);
-					getBtnDecrementar().setEnabled(false);
-					getBtnBorrar().setEnabled(false);
-				}
-			});
-		}
-		return btnClearPedido;
-	}
-
-	private JButton getBtnTramitar() {
-		if (btnTramitar == null) {
-			btnTramitar = new JButton("Tramitar");
-			btnTramitar.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					tramitar();
-				}
-				
-				
-			});
-			btnTramitar.setEnabled(false);
-
-		}
-		return btnTramitar;
-	}
-
-	protected void tramitar() {
-		//JOptionPane.showMessageDialog(this.frame, "Se ha realizado su compra");
-//		getListaCarrito().setModel(new DefaultTableModel());
-//		getCarrito().clear();
-//		limpiarCarrito();	
-		totalAPagar = getTextFieldTotal().getText();
-		new VentanaDireccion(this);
-	    this.frame.setVisible(false);
-		
 	}
 
 	public void limpiarCarrito() {
@@ -597,5 +554,70 @@ public class VentanaPrincipal {
 
 	public String getTotalAPagar() {
 		return this.totalAPagar;
+	}
+	private JPanel getPanelBotones() {
+		if (panelBotones == null) {
+			panelBotones = new JPanel();
+			panelBotones.setLayout(new GridLayout(0, 1, 0, 0));
+			panelBotones.add(getBtnClearPedido());
+			panelBotones.add(getBtnTramitar());
+		}
+		return panelBotones;
+	}
+	private JButton getBtnClearPedido() {
+		if (btnClearPedido == null) {
+			btnClearPedido = new JButton("Limpiar Pedido");
+			btnClearPedido.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					carrito = new Hashtable<>();
+					listaCarrito.setModel(new DefaultTableModel());
+					String text = String.valueOf(0.00) + 
+							" Sin Iva \r" + String.valueOf(0.00) + 
+							" Iva total \r" + String.valueOf(0.00) + " total";
+					textPaneTotal.setText(text);
+					getBtnTramitar().setEnabled(false);
+					getBtnDecrementar().setEnabled(false);
+					getBtnBorrar().setEnabled(false);
+				}
+			});
+		}
+		return btnClearPedido;
+	}
+	private JButton getBtnTramitar() {
+		if (btnTramitar == null) {
+			btnTramitar = new JButton("Tramitar");
+			btnTramitar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					tramitar();
+				}
+
+
+				
+				
+			});
+			btnTramitar.setEnabled(false);
+		}
+		return btnTramitar;
+	}
+	
+	private void tramitar() {
+		totalAPagar = precioTotal + "";
+		new VentanaDireccion(this);
+	    this.frame.setVisible(false);	
+	}
+	
+	private JTextPane getTextPaneTotal() {
+		if (textPaneTotal == null) {
+			textPaneTotal = new JTextPane();
+			String text = String.valueOf(0.00) + 
+					" Sin Iva \r" + String.valueOf(0.00) + 
+					" Iva total \r" + String.valueOf(0.00) + " total";
+			textPaneTotal.setText(text);
+			textPaneTotal.setEditable(false);
+		}
+		return textPaneTotal;
+	}
+	public double getTotal() {
+		return precioTotal;
 	}
 }

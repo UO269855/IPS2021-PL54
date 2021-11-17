@@ -116,7 +116,7 @@ public class DatabaseWrapper {
 		try {
 			conn = Jdbc.getConnection();
 
-			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales, direccion, metodoPago) VALUES (%d, %d, '%s', '%s', %d, '%s', '%s');", 
+			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales, direccion, metodoPago) VALUES (%d, %f, '%s', '%s', %d, '%s', '%s');", 
 					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales(), pedido.getDireccion(), pedido.getMetodoPago());
 
 			new QueryRunner().update(conn, sql);
@@ -175,8 +175,9 @@ public class DatabaseWrapper {
 			pst = conn.prepareStatement("SELECT * FROM PRODUCTO");
 			rs = pst.executeQuery();
 			while(rs.next()) {
-				Producto producto = new Producto(rs.getString("idproducto"), 
-						rs.getString("descripcion"), rs.getDouble("precio"), rs.getInt("unidades"), rs.getInt("unidades"), rs.getDouble("iva"));
+				Producto producto = new Producto(rs.getInt("idproducto"), rs.getString("nombre"), 
+						rs.getString("descripcion"), rs.getDouble("precio"), rs.getInt("stock"),  
+						rs.getInt("stock_min"), rs.getInt("stock_rep"), rs.getDouble("iva"));
 				productos.add(producto);
 			}
 
