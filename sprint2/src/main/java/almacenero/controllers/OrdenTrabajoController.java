@@ -305,6 +305,12 @@ public class OrdenTrabajoController {
 //		SwingUtil.autoAdjustColumns(view.getTabEscaner());
 	}
 	
+	
+	/**
+	 * Cada vez que se escanea un producto:
+	 * 	-se decrementa las unidades que quedan por recoger
+	 * 	-el stock actual se decrementará
+	 */
 	public void escanear() {
 		
 		int idProducto = 0;
@@ -319,14 +325,14 @@ public class OrdenTrabajoController {
 			//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error.		si hay suficientes, se decrementa el unidadesPorRecoger
 			int res = model.escanear(idProducto,idOt,uSpinner);
 			
-			//4 si se terminÃ³ de recoger los productos de la OT, se avisa y deshabilita el botÃ³n
+			//4 si se termino de recoger los productos de la OT, se avisa y deshabilita el boton
 			 if(model.unidadesARecoger(idOt) == 0) {
 				 view.getBtEscaner().setEnabled(false);
 				 JOptionPane.showMessageDialog(null,"Ya no quedan productos por escanear", "Escaneado listo", JOptionPane.INFORMATION_MESSAGE);
 			 }
 			
 			if(res == -1)
-				JOptionPane.showMessageDialog(null,"El nÃºmero de unidades que intentas escanear supera al nÃºmero que queda por recoger", "Unidades insuficientes", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null,"El numero de unidades que intentas escanear supera al numero que queda por recoger", "Unidades insuficientes", JOptionPane.INFORMATION_MESSAGE);
 			else {
 				//mostrar de nuevo la lista de productos para que se actualicen las unidadesPorRecoger
 				mostrarReferencias(idOt);
@@ -336,7 +342,7 @@ public class OrdenTrabajoController {
 			 
 		//manejo de excepciones
 		} catch (NumberFormatException e) {
-			JOptionPane.showMessageDialog(null,"El IdProducto solo estÃ¡ formado por nÃºmeros", "IdProducto invÃ¡lido", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null,"El IdProducto solo estaformado por numeros", "IdProducto invalido", JOptionPane.INFORMATION_MESSAGE);
 		} catch (SQLException e2) {
 			e2.printStackTrace();
 		}
