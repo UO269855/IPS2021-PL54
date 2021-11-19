@@ -277,20 +277,13 @@ public class OrdenTrabajoController {
 		
 		
 		//CAMBIAR A MOSTRAR LA DE LA ORDEN SELECCIONADA
-//		int idOrden = 1;
 		try {
-//			idOrden = model.getLastOT();
-			//ACTIVAR EL BOTÃ“N DEL ESCANEADO mientras haya productos por recoger en la OT
 			if(model.unidadesARecoger(idOrden) != 0)
 				view.getBtEscaner().setEnabled(true);
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		} 
-		
-		
-		
-		
-		//consigue los productos de la Ãºltima OT creada
+		//consigue los productos de la OT
 		ResultSet listPEscaner = null;
 		try {
 			listPEscaner = model.getListaProductosEscaner(idOrden);
@@ -300,9 +293,6 @@ public class OrdenTrabajoController {
 		
 		TableModel tmodel = DbUtil.resultSetToTableModel(listPEscaner);
 		view.getTabEscaner().setModel(tmodel);
-//		TableModel tmodel=SwingUtil.getTableModelFromPojos(listPEscaner, new String[] {"idProducto", "nombre", "unidadesPedido"}); //aÃ±adir unidadesPorRecoger
-//		view.getTabEscaner().setModel(tmodel);
-//		SwingUtil.autoAdjustColumns(view.getTabEscaner());
 	}
 	
 	

@@ -110,96 +110,153 @@ public class OrdenTrabajoModel {
 	 * @throws SQLException 
 	 */
 	public void crearOrden(int idPedido, int idAlmacenero) throws SQLException  {
-		//ahora se crearán tantas OT como hagan falta
 		int unidadesTotales = cuentaUnidadesPedido(idPedido);//cuenta el tamaño del pedido
 		
-		//cuando un pedido no tiene tamaño suficiente para dividirse en varias OT: 
-		//el sistema buscará ente los pedidos pendientes otro/s más apra juntarlo. NO es 
-		if(unidadesTotales < TAM_MEDIO) {
-			//CREA la orden inicial
-			PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
-					+ " VALUES (?,?,?,?,?)");
-			pstmt.setInt(1, idPedido);
-			pstmt.setInt(2, idAlmacenero);
-			pstmt.setNString(3, null);
-			pstmt.setNString(4, null);
-			pstmt.setInt(5, unidadesTotales); //añade a la OT el número de unidadesTotales, que son el mismo que las uniadesTotales de pedido
-			pstmt.executeUpdate();
+	
+		if(unidadesTotales < TAM_MEDIO) //PEDIDOS PEQUEÑOS
+			ordenPedidoPequeño(idPedido, idAlmacenero, unidadesTotales);
 			
-			int idOrden =  getLastOT();
-			System.out.println("la orden que acaba de crear es: "+idOrden);
-			asignarProductosAOT(idOrden,idPedido);
+		else if(unidadesTotales > TAM_MEDIO) //CREAR DIFERENTES OT
+			ordenPedidoGrande(idPedido, idAlmacenero, unidadesTotales);
+		
+		else if(unidadesTotales == TAM_MEDIO) //tamaño ideal
+			ordenPedidoIdeal(idPedido, idAlmacenero, unidadesTotales);
+		
+	}
+
+
+	
+	/**
+	 * Crea tantas ordenes como hagan falta para dividir el tamaño del pedido grande en ordenes 
+	 * con un tamaño parecido al TAM_MEDIO
+	 * @param idPedido
+	 * @param idAlmacenero
+	 * @param unidadesTotales
+	 */
+	private void ordenPedidoGrande(int idPedido, int idAlmacenero, int unidadesTotales) {
+		//A COMPLETAR
+	
+}
+
+
+	/**
+	 * Crea la orden tan grande como sea posible según el TAM_MEDIO cuando se seleccionó un pedido pequeño.
+	 * Fusiona distintos pedidos.
+	 * @param idPedido
+	 * @param idAlmacenero
+	 * @param unidadesTotales
+	 * @throws SQLException
+	 */
+	private void ordenPedidoPequeño(int idPedido, int idAlmacenero, int unidadesTotales) throws SQLException {
+		creaOrdenInicial(idPedido, idAlmacenero, unidadesTotales);
+		int idOrden =  getLastOT();
+		asignarOrdenAPedido(idPedido,idOrden);//asigna la orden creada al pedido que acaba de seleccionar
+		asignarProductosAOT(idOrden,idPedido);//asocia los productos del pedido a esa orden
+		
+		ResultSet pedidosAIterar = pedidosPendientesParaIterar(idPedido);//lista con los pedidos pendientes (saltandose a sí mismo)
+		
+
+		//inicializa los valores de los pedidos a iterar
+		int tamPedIter = 0;
+		int idPedidoIter = 0;
+		int tamActual= unidadesTotales;//partimos del tamaño de la OT creada con el primer pedido
+		
+		
+
+		while(pedidosAIterar.next()) {
+			idPedidoIter = pedidosAIterar.getInt(1);//idPedido iterado
+			tamPedIter = pedidosAIterar.getInt(2);//tamaño pedido iterado
 			
-			//itera sobre los PEDIDOS PENDIENTES por orden de fecha
 			//si la suma del tamaño actual + el pedido pendiente iterando es <TAM_MEDIO, se AÑADE ese pedido entero
-			//si la suma es mayor, no se escoge
-			//al llegar al final de la iteracion termina
-			String sql = "SELECT p.idpedido, p.unidadesTotales "
-					+ "FROM pedido p "
-					+ "LEFT JOIN ordentrabajo ot "
-					+ "ON p.idpedido = ot.fk_idpedido "
-					+ "WHERE ot.fk_idpedido IS NuLL "
-					+ "AND p.metodopago != 'Transferencia'"
-					+ "AND p.idpedido != ? "
-					+ "ORDER BY p.Fecha";
-			
-			PreparedStatement pstmt2=cn.prepareStatement(sql);
-			pstmt2.setInt(1, idPedido);//evita que itere sobre sí mismo
-			ResultSet rs = pstmt2.executeQuery();
-			
-			
-			//MARCARLO COMO YA NO PENDIENTE!!!!
-			PreparedStatement pstmt4=cn.prepareStatement("UPDATE pedido SET fk_idorden = ? WHERE idpedido = ? ");
-			pstmt4.setInt(1, idOrden);
-			pstmt4.setInt(2, idPedido);
-			pstmt4.executeUpdate();
-			
-			
-			int tamPedIter = 0;
-			int idPedidoIter = 0;
-			int tamActual= unidadesTotales;
-			
-			while(rs.next()) {
-				//itera sobre los pedidos pendientes
-				idPedidoIter = rs.getInt(1);//idPedido iterado
-				tamPedIter = rs.getInt(2);//coge el tamaño de cada pedido
+			if(tamActual + tamPedIter <= TAM_MEDIO) {
+				sumarTamañoPedidos(idOrden,tamActual+tamPedIter);//suma el tamaño
+				asignarProductosAOT(idOrden, idPedidoIter );//añade los productos de este pedido a la última orden creada
+				tamActual = tamActual+tamPedIter;//incrementa el tamaño de la ot actual
+				asignarOrdenAPedido(idPedidoIter,idOrden);//marca este pedido como no pendiente para que no se muestre después
 				
-				if(tamActual + tamPedIter <= TAM_MEDIO) {//se añaden esos pedidos a la misma OT
-					fusionarPedido(idOrden,tamActual+tamPedIter);//fusiona el tamaño, solo cambia el tamaño total
-					asignarProductosAOT(idOrden, idPedidoIter );//añade el bloque entero de los productos pedidos de este pedido iterandose a la última orden creada
-					tamActual = tamActual+tamPedIter;
-					
-					
-					
-					//MARCARLO COMO YA NO PENDIENTE!!!!
-					PreparedStatement pstmt3=cn.prepareStatement("UPDATE pedido SET fk_idorden = ? WHERE idpedido = ? ");
-					pstmt3.setInt(1, idOrden);
-					pstmt3.setInt(2, idPedidoIter);
-					
-					//supuestamente hasta aquí lo que funcionaría es:
-//						-que si tengo dos o más pedidos pequeños, los fusiona en la misma OT
-					
-				}
 			}
-			
-			
-			
-		} else if(unidadesTotales > TAM_MEDIO){ //CREAR DIFERENTES OT
-			
 		}
-		else if(unidadesTotales == TAM_MEDIO) {//si es del tamaño ideal--> crea una OT
-			PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
-					+ " VALUES (?,?,?,?,?)");
-			pstmt.setInt(1, idPedido);
-			pstmt.setInt(2, idAlmacenero);
-			pstmt.setNString(3, null);
-			pstmt.setNString(4, null);
-			pstmt.setInt(5, unidadesTotales); //añade a la OT el número de unidadesARecoger, que son el mismo que las uniadesTotales de pedido
-			pstmt.executeUpdate();
-		}
+	}
+
+
+	/**
+	 * Crea la orden de trabajo para los pedidos con el tamaño exacto al TAM_MEDIO preeestablecido.
+	 * @param idPedido
+	 * @param idAlmacenero
+	 * @param unidadesTotales
+	 * @throws SQLException
+	 */
+	private void ordenPedidoIdeal(int idPedido, int idAlmacenero, int unidadesTotales) throws SQLException {
+		creaOrdenInicial(idPedido, idAlmacenero, unidadesTotales);
+		int idOrden =  getLastOT();
+		asignarOrdenAPedido(idPedido,idOrden);//asigna la orden creada al pedido que acaba de seleccionar
+		asignarProductosAOT(idOrden,idPedido);//asocia los productos del pedido a esa orden
+	}
+
+
+	/**
+	 * 
+	 * Itera sobre los pedidos pendientes por orden de fecha. Salta aquellos que tengan asociada una OT y al pedido
+	 * cuyo id se pasa por parámetro, para no iterar sobre sí mismo. 
+	 * @param idPedido
+	 * @return
+	 * @throws SQLException
+	 */
+	private ResultSet pedidosPendientesParaIterar(int idPedido) throws SQLException {
+		String sql = "SELECT p.idpedido, p.unidadesTotales "
+				+ "FROM pedido p "
+				+ "LEFT JOIN ordentrabajo ot "
+				+ "ON p.idpedido = ot.fk_idpedido "
+				+ "WHERE p.fk_idorden is null "
+				+ "AND p.metodopago != 'Transferencia'"
+				+ "AND p.idpedido != ? "
+				+ "ORDER BY p.Fecha";
+		
+		PreparedStatement pstmt2=cn.prepareStatement(sql);
+		pstmt2.setInt(1, idPedido);//evita que itere sobre sí mismo
+		ResultSet rs = pstmt2.executeQuery();
+		return rs;
+	}
+
+
+	/**
+	 * Para los pedidos pequeños crea la orden inicial a partir del pedido que haya seleccionado el cliente.
+	 * Segun se itere despues, si se fusiona con otros pedidos se modificará esta OT
+	 * @param idPedido
+	 * @param idAlmacenero
+	 * @param unidadesTotales
+	 * @throws SQLException
+	 */
+	private void creaOrdenInicial(int idPedido, int idAlmacenero, int unidadesTotales) throws SQLException {
+		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
+				+ " VALUES (?,?,?,?,?)");
+		pstmt.setInt(1, idPedido);
+		pstmt.setInt(2, idAlmacenero);
+		pstmt.setNString(3, null);
+		pstmt.setNString(4, null);
+		pstmt.setInt(5, unidadesTotales); //añade a la OT el número de unidadesTotales, que son el mismo que las uniadesTotales de pedido
+		pstmt.executeUpdate();
 	}
 	
 	
+	/**
+	 * Asigna en la base de datos "idOrden" al campo Pedido.fk_idorden del pedido cuyo id se le pasa por param
+	 * Al actualizar este dato, ya no aparece listado como pedido pendiente
+	 * @param idPedido
+	 * @param idOrden
+	 * @throws SQLException 
+	 */
+	private void asignarOrdenAPedido(int idPedido, int idOrden) throws SQLException {
+		String sql = "UPDATE pedido "
+				+ "SET fk_idorden =  ? "
+				+ "WHERE idPedido = ?";
+		PreparedStatement pstmt=cn.prepareStatement(sql);
+		pstmt.setInt(1, idOrden);
+		pstmt.setInt(2, idPedido);
+		pstmt.executeUpdate();
+	}
+
+
 /**
  * Método privado para asignar los productos del pedido a la ot correspondiente
  * actualmente TODOS los productos del pedido se asignan a la misma orden. No estoy teniendon en cuenta divisiones
@@ -220,8 +277,7 @@ private void asignarProductosAOT(int idOrden, int idPedido) throws SQLException 
 }
 
 
-private void fusionarPedido(int idOrden, int tamOT) throws SQLException {
-	//CON ASIGNGAR LA PRIMERA VEZ EL ALMACENERO YA VALE
+private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 	String sql = "UPDATE ordenTrabajo "
 			+ "SET ordentrabajo.unidadesarecoger = ? "//añadir los productos
 			+ "WHERE ordentrabajo.idorden = ?";
@@ -231,7 +287,6 @@ private void fusionarPedido(int idOrden, int tamOT) throws SQLException {
 	pstmt.setInt(2, idOrden);
 	pstmt.executeUpdate();
 
-	//ESTA PRIMERA PARTE SOLO MODIFICA EL TAMAÑO DE LA ORDEN CREADa, sumandole el tamaño de los pedidos fusionados
 
 	
 }
@@ -436,13 +491,13 @@ private void fusionarPedido(int idOrden, int tamOT) throws SQLException {
 		//cuando hay más de una OT por pedido, ya no sirve mostrar así
 		//ESTO MUESTRA TODOS LOS PRODUCTOS DE UN PEDIDO
 		String sql = "select p.idproducto,p.nombre, pp.unidadespedido, pp.unidadesPorRecoger " 
-				+ "from producto p, ordentrabajo ot , pedido p "
+				+ "from producto p , pedido p "
 				+ "left join productoPedido pp "
 				+ "on p.idproducto = pp.fk_idproducto "
-				+ "where ot.fk_idpedido=p.idpedido AND p.idpedido=pp.fk_idpedido AND ot.idorden=?";
-		//Y SI LE AÑADO UN WHERE=PP.FK_IDORDEN = ?
-		//A LO MEJOR SOBRA ENTONCES 
-		
+				+ "WHERE pp.fk_idorden = ? "
+				+ "AND p.idpedido=pp.fk_idpedido ";
+//				+ "where ot.fk_idpedido=p.idpedido "
+//				+ "AND ot.idorden=?";
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, idOrden);
 		ResultSet rs = pstmt.executeQuery();
