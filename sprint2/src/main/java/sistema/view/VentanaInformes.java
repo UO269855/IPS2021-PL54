@@ -11,6 +11,7 @@ import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.DefaultComboBoxModel;
 
 public class VentanaInformes extends JFrame {
 
@@ -20,6 +21,8 @@ public class VentanaInformes extends JFrame {
 	private JButton btnMostrar;
 	private JScrollPane panelMostrador;
 	private JTable tableMostradora;
+	private JPanel panelCombo;
+	private JPanel panelBoton;
 
 	/**
 	 * Launch the application.
@@ -56,14 +59,15 @@ public class VentanaInformes extends JFrame {
 		if (panelTop == null) {
 			panelTop = new JPanel();
 			panelTop.setLayout(new GridLayout(0, 2, 0, 0));
-			panelTop.add(getCombxPedidos());
-			panelTop.add(getBtnMostrar());
+			panelTop.add(getPanelCombo());
+			panelTop.add(getPanelBoton());
 		}
 		return panelTop;
 	}
 	private JComboBox getCombxPedidos() {
 		if (combxPedidos == null) {
 			combxPedidos = new JComboBox();
+			combxPedidos.setModel(new DefaultComboBoxModel(new String[] {"opciones de ejemplo", "varias opciones", "rellenando"}));
 		}
 		return combxPedidos;
 	}
@@ -85,5 +89,19 @@ public class VentanaInformes extends JFrame {
 			tableMostradora = new JTable();
 		}
 		return tableMostradora;
+	}
+	private JPanel getPanelCombo() {
+		if (panelCombo == null) {
+			panelCombo = new JPanel();
+			panelCombo.add(getCombxPedidos());
+		}
+		return panelCombo;
+	}
+	private JPanel getPanelBoton() {
+		if (panelBoton == null) {
+			panelBoton = new JPanel();
+			panelBoton.add(getBtnMostrar());
+		}
+		return panelBoton;
 	}
 }
