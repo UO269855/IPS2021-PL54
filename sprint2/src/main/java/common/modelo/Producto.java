@@ -11,6 +11,8 @@ public class Producto {
 	private int stock_min;
 	private int stock_rep;
 	private int pasillo;
+	private String categoria;
+	private String subcategoria;
 	private double iva;
 	
 
@@ -58,6 +60,21 @@ public class Producto {
 
 	public Producto(String nombre, String descripcion, double precio, double iva) {
 		this(nombre, descripcion, precio, 0, 10, iva);
+	}
+
+
+	public Producto(int id, String nombre, String descripcion, double precio,
+			int stock, int stock_min, int stock_rep, double iva, String categoria, String subcategoria) {
+		this.idProducto = id;
+		this.nombre = nombre;
+		this.descripcion = descripcion;
+		this.precio = precio;
+		this.stock = stock;
+		this.stock_min = stock_min;
+		this.stock_rep = stock_rep;
+		this.iva = iva;
+		this.categoria = categoria;
+		this.subcategoria = subcategoria;
 	}
 
 
@@ -161,6 +178,23 @@ public class Producto {
 		return columna;
 	}
 
+	public String getCategoria() {
+		return this.categoria;
+	}
+
+
+	public void setCategoria(String categoria) {
+		this.categoria = categoria;
+	}
+	
+	public String getSubcategoria() {
+		return this.subcategoria;
+	}
+
+
+	public void setSubcategoria(String subcategoria) {
+		this.subcategoria = subcategoria;
+	}
 
 	public String getIvaPercentage() {
 		return iva + "%";

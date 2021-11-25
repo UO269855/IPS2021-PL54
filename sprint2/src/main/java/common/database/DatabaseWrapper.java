@@ -177,7 +177,8 @@ public class DatabaseWrapper {
 			while(rs.next()) {
 				Producto producto = new Producto(rs.getInt("idproducto"), rs.getString("nombre"), 
 						rs.getString("descripcion"), rs.getDouble("precio"), rs.getInt("stock"),  
-						rs.getInt("stock_min"), rs.getInt("stock_rep"), rs.getDouble("iva"));
+						rs.getInt("stock_min"), rs.getInt("stock_rep"), rs.getDouble("iva"), 
+						rs.getString("categoria"), rs.getString("subcategoria"));
 				productos.add(producto);
 			}
 
@@ -190,6 +191,35 @@ public class DatabaseWrapper {
 		return productos;
 	}
 
+	public static Hashtable<String, List<String>> getCategorias() throws UnexpectedException, SQLException {
+		Connection conn = Jdbc.getConnection();
+		Hashtable<String, List<String>> categorias = new Hashtable<>();
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 
+		try {
+			conn = Jdbc.getConnection();
+			pst = conn.prepareStatement("SELECT categoria, subcategoria FROM PRODUCTO");
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				String categoria = rs.getString("categoria");
+				String subcategoria = rs.getString("subcategoria");
+				if (categorias.containsKey(categoria) && !categorias.get(categoria).contains(subcategoria)) {
+					categorias.get(categoria).add(subcategoria);
+				}
+				else {
+					categorias.put(categoria, new ArrayList<>());
+					categorias.get(categoria).add(subcategoria);
+				}
+			}
+
+
+		} catch (SQLException e) {
+			throw new UnexpectedException(e.getMessage());
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+		return categorias;
+	}
 
 }
