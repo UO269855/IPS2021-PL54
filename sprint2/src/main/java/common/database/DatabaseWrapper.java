@@ -67,8 +67,8 @@ public class DatabaseWrapper {
 			for(Producto p : productos) {
 				if (carrito.containsKey(p)) {
 					sql = String.format(
-							"INSERT INTO ProductoPedido(fk_IdProducto, fk_IdPedido, unidadespedido, unidadesPorRecoger) VALUES (%d, %d, %d, %d);", //AÑADIDO unidadesPorRecoger POR ALICIA
-							p.getIdProducto(), pedido.getIdPedido(), carrito.get(p), carrito.get(p) ); //Aquí queda contar productos AÑADIDO EL SEGUNDO caarrito.get(p) por ALICIA
+							"INSERT INTO ProductoPedido(fk_IdProducto, fk_IdPedido, unidadespedido) VALUES (%d, %d, %d);", //modificado datos por ALICIA
+							p.getIdProducto(), pedido.getIdPedido(), carrito.get(p) ); 
 					new QueryRunner().update(conn, sql);
 				}
 

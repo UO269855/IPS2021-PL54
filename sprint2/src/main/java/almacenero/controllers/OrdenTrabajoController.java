@@ -276,10 +276,12 @@ public class OrdenTrabajoController {
 	public void mostrarReferencias(int idOrden)  {
 		
 		
-		//CAMBIAR A MOSTRAR LA DE LA ORDEN SELECCIONADA
 		try {
-			if(model.unidadesARecoger(idOrden) != 0)
+			int aux = model.unidadesARecoger(idOrden);
+			//mientrad haya productos que recoger en esa orden: botón habilitado
+			if(aux != 0) {
 				view.getBtEscaner().setEnabled(true);
+			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		} 
@@ -307,7 +309,8 @@ public class OrdenTrabajoController {
 		try{
 			//1 obtener el idProducto del campo de texto
 			 idProducto = Integer.parseInt(view.getTxEscaner().getText());
-			 int idOt =  model.getLastOT();
+//			 int idOt =  model.getLastOT(); NO SIRVE ESCOGER LA ULTIMA CREDA, HAY QUE ELEGIR LA SELECCIONADA
+			 int idOt =SwingUtil.getSelectedKeyInt(view.getTabOrden());
 			 
 			//2 obtener las unidades del scroll
 			int uSpinner = (int) view.getSpUnidadesEscaner().getValue();
@@ -315,10 +318,18 @@ public class OrdenTrabajoController {
 			//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error.		si hay suficientes, se decrementa el unidadesPorRecoger
 			int res = model.escanear(idProducto,idOt,uSpinner);
 			
+			
+			if(res == -2) {
+				 JOptionPane.showMessageDialog(null,"El producto "+ idProducto+ " no existe en la orden "+ idOt, "Producto inexistente", JOptionPane.INFORMATION_MESSAGE);
+
+			}
+			
+			
+			
 			//4 si se termino de recoger los productos de la OT, se avisa y deshabilita el boton
 			 if(model.unidadesARecoger(idOt) == 0) {
 				 view.getBtEscaner().setEnabled(false);
-				 JOptionPane.showMessageDialog(null,"Ya no quedan productos por escanear", "Escaneado listo", JOptionPane.INFORMATION_MESSAGE);
+				 JOptionPane.showMessageDialog(null,"Ya no quedan productos por escanear en la orden "+ idOt, "Escaneado listo", JOptionPane.INFORMATION_MESSAGE);
 			 }
 			
 			if(res == -1)

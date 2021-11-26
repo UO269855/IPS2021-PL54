@@ -23,13 +23,13 @@ public class Main {
 
 	public static void main(String[] args) throws SQLException {
 		
-		
 		model = new OrdenTrabajoModel();
 		view = new OrdenTrabajoView();
 		almacenView = new AlmacenView();
 		
 		control = new OrdenTrabajoController(model, view, almacenView);
-		control.initController(); 
+		control.initController();
+	
 		
 
 	}

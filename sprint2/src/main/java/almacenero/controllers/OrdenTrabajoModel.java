@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.mchange.v1.db.sql.PSManager;
+
 import common.database.Database;
 import common.database.DbUtil;
 /**
@@ -56,7 +58,7 @@ public class OrdenTrabajoModel {
 				+ "FROM pedido p "
 				+ "LEFT JOIN ordentrabajo ot "
 				+ "ON p.idpedido = ot.fk_idpedido "
-				+ "WHERE p.fk_idorden is null "			
+				+ "WHERE p.fk_idorden is null "			//si tiene más de una orden nos sirve igualmente
 				+ "AND p.metodopago != 'Transferencia' "
 				+ "ORDER BY p.Fecha";
 		
@@ -81,24 +83,7 @@ public class OrdenTrabajoModel {
 	
 
 	
-//	/**
-//	 * Añada a la tabla OrdenTrabajo una fila con una nueva OT, que tendrá un IDOT
-//	 * generado incremental (por eso no aparece como param, ya que es el primer
-//	 * atributo), y el IDPedido con el que le acabamos de asociar
-//	 *
-//	 * @throws SQLException 
-//	 */
-//	public void crearOrden(int idPedido) throws SQLException  {
-//		int unidadesARecoger = cuentaUnidadesPedido(idPedido);
-//		System.out.println("Unidades por recoger: "+unidadesARecoger);
-//		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,incidencia,albaran,unidadesARecoger)"
-//				+ " VALUES (?,?,?,?)");
-//		pstmt.setInt(1, idPedido);
-//		pstmt.setNString(2, null);
-//		pstmt.setNString(3, null);
-//		pstmt.setInt(4, unidadesARecoger); //añade a la OT el número de unidadesARecoger, que son el mismo que las uniadesTotales de pedido
-//		pstmt.executeUpdate();
-//	}
+
 	
 	/**
 	 * NUEVO CREA ORDEN: AHORA OPTIMIZADAS
@@ -129,14 +114,174 @@ public class OrdenTrabajoModel {
 	/**
 	 * Crea tantas ordenes como hagan falta para dividir el tamaño del pedido grande en ordenes 
 	 * con un tamaño parecido al TAM_MEDIO
+	 * 
+	 * 
+	 * V 0:  crea una orden para cada producto del pedido. Está bien si es el caso 8/5. Pero no sirve si 
+	 * fuera 8/1/1/2, porque tener 4 ordenes de trabajo no es lo mejor
+	 * V1: divide en ProductoOrden bien las diferentes unidades del producto como se explica en el redkanban.Faltan asignar al pedido
+	 * para que no se muestre en pendiente y que se pueddan listar los productos
 	 * @param idPedido
 	 * @param idAlmacenero
 	 * @param unidadesTotales
+	 * @throws SQLException 
 	 */
-	private void ordenPedidoGrande(int idPedido, int idAlmacenero, int unidadesTotales) {
-		//A COMPLETAR
-	
+	private void ordenPedidoGrande(int idPedido, int idAlmacenero, int unidadesTotales) throws SQLException {
+		
+		ResultSet productosPedidos = productosPedidosParaIterar(idPedido);
+		
+		
+		int idProductoIter = 0;
+		int unidadesIter = 0;
+		int idOrdenActual = 0;
+		int contador = 0;
+		int contadorProd = 0;
+		
+		
+		while(productosPedidos.next() ) { //&& O || productosPedidos.next()  RECORRE HASTA QUE NO SE LLENE A OT
+			idProductoIter = productosPedidos.getInt(1);
+			unidadesIter = productosPedidos.getInt(2);
+			contadorProd = 0; //se resetea al cambiar de producto;
+			
+			if(contador == 0) {//crea la orden
+				creaOrdenInicial(idPedido, idAlmacenero, unidadesIter);//en realidad si el primer producto tiene más unidades no sería correcto pero después se modifica
+				idOrdenActual = getLastOT();
+			}
+			
+			
+			for (int i = 0; i < unidadesIter; i++) {//recorre el producto tantas veces como unidades tenga
+				//comprobar el tamaño de la orden: si llegó a TAM_MEDIO inlcuido, crear otra orden. Si no, seguir con la misma
+				if(contador == TAM_MEDIO){//0...10, si llega a 10 ya es el unde
+					creaOrdenInicial(idPedido, idAlmacenero, unidadesIter);
+					idOrdenActual = getLastOT();
+					contador = 0;
+					contadorProd = 0;
+				}
+				
+				//añadir una unidad en cada iteracion a la ot
+				añadirUnaUnidadAOT(idPedido,idProductoIter,idOrdenActual,contadorProd);//crea una fila de productoOrden ()antes usaba i
+				asignarOrdenAPedido(idPedido,idOrdenActual);
+				sumarTamañoPedidos(idOrdenActual,contador+1);//le da el tamaño  a la orden
+				
+				
+				contador++;
+				contadorProd++;
+			}
+			
+			
+		}
+			
+			
+		
 }
+
+	
+	/**
+	 * 
+	 * Para los pedidos grandes
+	 * Asocia los productospedidos con la orden de trabajo y sus unidades correspondientes
+	 * 
+	 * @param idPedido
+	 * @param idProductoIter
+	 * @param idOrdenActual
+	 * @param i, el número de unidades que tendremos de ese producto en la orden
+	 * @throws SQLException 
+	 */
+	private void añadirUnaUnidadAOT(int idPedido, int idProductoIter, int idOrdenActual, int i) throws SQLException {
+		int aux = i+1;
+		boolean res = compruebaProductoOrdenExistente( idPedido,  idProductoIter,  idOrdenActual);
+		if(!res) {//si no existe el producto --> se cre la tabla
+			añadeProductoOrden(idPedido, idProductoIter, idOrdenActual, aux);
+		}
+		else {
+			incrementaProductoOrden(idPedido, idProductoIter, idOrdenActual, aux);
+
+		}
+	}
+
+
+	private void añadeProductoOrden(int idPedido, int idProductoIter, int idOrdenActual, int unidades) throws SQLException {
+		String sql = "INSERT INTO productoOrden(fk_idproducto, fk_idpedido,idorden, unidadesEnOrden, unidadesPorRecoger)"
+				+ " VALUES(?,?,?,?,?)";
+		
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		pstmt.setInt(1, idProductoIter);
+		pstmt.setInt(2, idPedido);
+		pstmt.setInt(3, idOrdenActual);
+		pstmt.setInt(4, unidades);
+		pstmt.setInt(5, unidades);
+
+		
+		pstmt.executeUpdate();
+	}
+	
+	private void incrementaProductoOrden(int idPedido, int idProductoIter, int idOrdenActual, int unidades) throws SQLException {
+		String sql = "UPDATE productoOrden "
+				+ "SET unidadesEnOrden = ? ,"
+				+ "unidadesPorRecoger = ? "
+				+ "WHERE fk_idproducto = ? "
+				+ "AND fk_idpedido = ? "
+				+ "AND idorden = ? ";
+		
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		pstmt.setInt(1, unidades);
+		pstmt.setInt(2, unidades);
+
+		pstmt.setInt(3, idProductoIter);
+		pstmt.setInt(4, idPedido);
+		pstmt.setInt(5, idOrdenActual);
+		
+		pstmt.executeUpdate();
+	}
+
+
+	/** SI devuelve true, ya existe un producto como este en la tabla, luego no creara otra fila igual
+	 * @param idPedido
+	 * @param idProductoIter
+	 * @param idOrdenActual
+	 * @return
+	 * @throws SQLException 
+	 */
+	private boolean compruebaProductoOrdenExistente(int idPedido, int idProductoIter, int idOrdenActual) throws SQLException {
+		String sql = "SELECT * "
+				+ "from productoOrden "
+				+ "WHERE fk_idproducto = ? "
+				+ "and fk_idpedido = ? "
+				+ "and idorden = ? "
+				;
+		
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		pstmt.setInt(1, idProductoIter);
+		pstmt.setInt(2, idPedido);
+		pstmt.setInt(3, idOrdenActual);
+		ResultSet rs = pstmt.executeQuery();
+
+		if(!rs.next())//si no hay resultado --> no exsite
+			return false;
+		else 
+			return true;
+	}
+
+
+	
+	
+	
+
+
+	/**
+	 * Devuelve los productos del pedido con formato fk_idproducto, unidadespedido
+	 * @param idPedido
+	 * @return
+	 * @throws SQLException
+	 */
+	private ResultSet productosPedidosParaIterar(int idPedido) throws SQLException {
+		String sql = "SELECT fk_idproducto,unidadespedido "
+				+ "FROM productopedido "
+				+ "WHERE fk_idpedido = ?";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		pstmt.setInt(1, idPedido);
+		ResultSet productosPedidos = pstmt.executeQuery();
+		return productosPedidos;
+	}
 
 
 	/**
@@ -152,6 +297,8 @@ public class OrdenTrabajoModel {
 		int idOrden =  getLastOT();
 		asignarOrdenAPedido(idPedido,idOrden);//asigna la orden creada al pedido que acaba de seleccionar
 		asignarProductosAOT(idOrden,idPedido);//asocia los productos del pedido a esa orden
+		//tengo que asignarle a idOrden todos los productos de idPedido
+		
 		
 		ResultSet pedidosAIterar = pedidosPendientesParaIterar(idPedido);//lista con los pedidos pendientes (saltandose a sí mismo)
 		
@@ -224,7 +371,7 @@ public class OrdenTrabajoModel {
 	 * Segun se itere despues, si se fusiona con otros pedidos se modificará esta OT
 	 * @param idPedido
 	 * @param idAlmacenero
-	 * @param unidadesTotales
+	 * @param unidadesTotales, unidades a recoger de la OT
 	 * @throws SQLException
 	 */
 	private void creaOrdenInicial(int idPedido, int idAlmacenero, int unidadesTotales) throws SQLException {
@@ -266,14 +413,32 @@ public class OrdenTrabajoModel {
  */
 private void asignarProductosAOT(int idOrden, int idPedido) throws SQLException {
 	
+	//NO SE USARÁ ESTE MÉTODO PORQUE AHRA TENEMOS LA TABLA PRODUCTOORDEN, CREADA PPOR LOS PEDIDOS GRANDES
 	//1) actualizar los productos pedidos de arriba para que el campo fk_idorden sea el parámetro
-	String sql = "UPDATE productopedido "
-			+ "SET fk_idorden = ? "
-			+ "WHERE fk_idpedido = ?";
-	PreparedStatement pstmt = cn.prepareStatement(sql);
-	pstmt.setInt(1, idOrden);
-	pstmt.setInt(2, idPedido);
-	pstmt.executeUpdate();
+//	String sql = "UPDATE productopedido "
+//			+ "SET fk_idorden = ? "
+//			+ "WHERE fk_idpedido = ?";
+//	PreparedStatement pstmt = cn.prepareStatement(sql);
+//	pstmt.setInt(1, idOrden);
+//	pstmt.setInt(2, idPedido);
+//	pstmt.executeUpdate();
+	
+	//1)saca todos los productos de este pedido
+	ResultSet productosPedidos = productosPedidosParaIterar(idPedido);
+	//2) itera por ellos
+	int idProductoIter = 0;
+	int unidadesIter = 0;
+	while(productosPedidos.next()) {
+		idProductoIter = productosPedidos.getInt(1);
+		unidadesIter = productosPedidos.getInt(2);
+		//3)cada producto lo añade a la misma orden
+		añadeProductoOrden(idPedido, idProductoIter, idOrden, unidadesIter);
+		
+	}
+	
+	
+	
+	
 }
 
 
@@ -292,51 +457,6 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 }
 
 
-//	/**
-//	 * @param tam_inicial
-//	 * @param idPedido 
-//	 * @return tam_orden, tamaño en el que se dividirá cada tarea
-//	 * OJO: si hacemos 11/2 = 5. Para calcular el 6, sumamos al 5 el restante (11-5)
-//	 * @throws SQLException 
-//	 */
-//	private int divideOrden(int tam_inicial, int idPedido, int idAlmacenero) throws SQLException {
-//		int aux = tam_inicial;
-//		int divisor = 2; // será el número de ordenes también que se crean
-//		int tam_orden = -1;
-//		
-//		if(tam_inicial > TAM_MEDIO) {
-//			while( (aux/divisor) > TAM_MEDIO) //irá incrementando el divisor hasta encontrar en cuantas unidades dividir
-//					divisor++;                // para que las resultantes no se pasen del TAM_MEDIO
-//			tam_orden = aux / divisor;
-//		}
-//		
-//		System.out.println("el divisor es: " + divisor);
-//		for (int i = 0; i < divisor; i++) {
-//			if(i == divisor-1) {//si es el último elemento, le añade el resto de l adivision
-//				int resto = tam_inicial % divisor;//usando el módulo
-//				PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
-//						+ " VALUES (?,?,?,?,?)");
-//				pstmt.setInt(1, idPedido);
-//				pstmt.setInt(2, idAlmacenero);
-//				pstmt.setNString(3, null);
-//				pstmt.setNString(4, null);
-//				pstmt.setInt(5, tam_orden + resto); 
-//				pstmt.executeUpdate();
-//			}
-//			else {
-//				PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
-//						+ " VALUES (?,?,?,?,?)");
-//				pstmt.setInt(1, idPedido);
-//				pstmt.setInt(2, idAlmacenero);
-//				pstmt.setNString(3, null);
-//				pstmt.setNString(4, null);
-//				pstmt.setInt(5, tam_orden); //no tiene en cuenta si la división no es exacta poor ahora
-//				pstmt.executeUpdate();
-//			}
-//		}
-//		return tam_orden;
-//	
-//}
 
 
 	/**
@@ -353,7 +473,6 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, idPedido);
 		ResultSet rs = pstmt.executeQuery();
-		System.out.println("llega hasta aqui");
 		while(rs.next()) {
 			return rs.getInt(1);
 		}
@@ -431,7 +550,6 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 		ResultSet rs = pstmt.executeQuery();
 		rs.next();
 		int lastOt = rs.getInt(1);
-		System.out.println(lastOt);
 		return lastOt;
 		
 		//ERROR ACTUAL:estado del cursor incorrecto: cursor indicado no está 
@@ -490,14 +608,15 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 	public ResultSet getListaProductosEscaner(int idOrden) throws SQLException{
 		//cuando hay más de una OT por pedido, ya no sirve mostrar así
 		//ESTO MUESTRA TODOS LOS PRODUCTOS DE UN PEDIDO
-		String sql = "select p.idproducto,p.nombre, pp.unidadespedido, pp.unidadesPorRecoger " 
-				+ "from producto p , pedido p "
-				+ "left join productoPedido pp "
-				+ "on p.idproducto = pp.fk_idproducto "
-				+ "WHERE pp.fk_idorden = ? "
-				+ "AND p.idpedido=pp.fk_idpedido ";
-//				+ "where ot.fk_idpedido=p.idpedido "
-//				+ "AND ot.idorden=?";
+
+		
+		
+		String sql ="select p.idproducto, p.nombre, po.unidadesenorden, po.unidadesporrecoger "
+				+ "from  productoorden po "
+				+ "left join producto p "
+				+ "on p.idproducto = po.fk_idproducto "
+				+ "where idorden = ? "
+				+ "order by p.idproducto"; //añadido nuevo
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, idOrden);
 		ResultSet rs = pstmt.executeQuery();
@@ -520,7 +639,6 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 				+ "SET incidencia=? "
 				+ "WHERE ordentrabajo.idorden=?";
 		
-		System.out.print(incidencia);
 		
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setNString(1, incidencia);
@@ -556,30 +674,29 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 	 * @param idProducto
 	 * @param idOrden
 	 * @param unidadesSpinner
-	 * @return -1:escaneo fallido	0: escaneó bien pero ya no queda más de ese producto	1:escaneó bien y aun queda por recoger
+	 * @return -1: escaneo fallido, intenta escanear más unidades del producto de las que quedan por recoger
+	 * 			1: escaneo con exito
+	 * 		   -2: escaneo fallido, el producto no existe en la orden 
 	 * @throws SQLException 
 	 */
 	public int escanear(int idProducto,int idOrden, int unidadesSpinner) throws SQLException {
-		int uPorRecoger = unidadesPorRecoger(idProducto, idOrden);
-		//si uPorRecoger < unidadesSpinner --> no se puede escanear, muestra mensaje de error
-		if(uPorRecoger < unidadesSpinner) {
+		int uPorRecoger = unidadesPorRecoger(idProducto, idOrden);//unidades por recoger de ese producto para esa orden
+		if(uPorRecoger == -1)
+			return -2;
+		System.out.println("unidadesPorRecoger de "+ idProducto + " son: "+ uPorRecoger);
+		if(uPorRecoger < unidadesSpinner) {//
 			return -1;
 		}
 		//si uPorRecoger = unidadesSpiner --> tras escanear, ya no quedará más que recoger para este producto
-		if(uPorRecoger == unidadesSpinner) {
-			int nuevasUnidades = uPorRecoger-unidadesSpinner;
-			descontarUnidadesProductoPedido(idProducto,idOrden, nuevasUnidades);
-			descontarUnidadesOrden(idOrden,unidadesSpinner);
-			//novedad historia #16188
-			descontarStock(idProducto,unidadesSpinner);
-			return 0;
-		}
+	
 		//si uPorRecoger > unidadesSpinerr --> se escanea y sigue disponible para escanear
 		int nuevasUnidades = uPorRecoger-unidadesSpinner;
-		descontarUnidadesProductoPedido(idProducto,idOrden, nuevasUnidades);
-		descontarUnidadesOrden(idOrden, unidadesSpinner);
 		
-		descontarStock(idProducto,unidadesSpinner);
+		if(descontarStock(idProducto,unidadesSpinner)) {//mientras haya stock, se descuenta
+			descontarUnidadesProductoPedido(idProducto,idOrden, nuevasUnidades);
+			descontarUnidadesOrden(idOrden, unidadesSpinner);
+		}
+		
 		return 1;
 	}
 	
@@ -589,18 +706,18 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 	 * Decrementa "unidadesSpinner" veces las unidades actuales del producto en la tienda.
 	 * @param idProducto, producto a actualizar
 	 * @param unidadesSpinner, unidades que tenemos que decrementar
+	 * @return true si se descontó bien, false si no hay stock suficiente
 	 * @throws SQLException 
 	 */
-	private void descontarStock(int idProducto, int unidadesSpinner) throws SQLException {
+	private boolean descontarStock(int idProducto, int unidadesSpinner) throws SQLException {
 		//1) obtenemos el stock actual:
 		int stockActual = getStockActual(idProducto);
 		
 		//2)si intentamos escanear unidades existentes en la tienda, es decir, que no queden números negativos
 		if(stockActual- unidadesSpinner >= 0) {
-			System.out.println("El stock sin decrementar el producto "+ idProducto + " es : " + stockActual);
 			
 			String sql = "update producto "
-					+ "set unidades = ? "
+					+ "set stock = ? "
 					+ "where idproducto=? ";
 			
 			
@@ -611,12 +728,13 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 			pstmt.executeUpdate();
 			
 			int stockFinal = getStockActual(idProducto);
+			return true;
 	
-			System.out.println("El stock tras decrementar el producto "+ idProducto + " es : " + stockFinal);
 		}
 		else {
 			//si intento escanear una cifra que no existe en el almacen, me avisa
 			JOptionPane.showMessageDialog(null,"No hay unidades suficientes de este producto en el almacen", "Falta de stock", JOptionPane.INFORMATION_MESSAGE);
+			return false;
 		}
 		//NOTA: COMO EN LA TIENDA SE IMPEDIRÁ COMPRAR MÁS UNIDADES DE LAS QUE EXISTEN EN LA TIENDA,
 		//NUNCA LLEGARÉ A TENER MÁS UNIDADES A RECOGER DE LAS QUE HAY EN STOCK
@@ -631,7 +749,7 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 	 * @throws SQLException 
 	 */
 	private int getStockActual(int idProducto) throws SQLException {
-		String sql = "SELECT unidades "
+		String sql = "SELECT stock "
 				+ "FROM producto "
 				+ "WHERE idproducto = ?";
 		
@@ -683,6 +801,7 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 		pstmt.setInt(1, idOrden);
 		ResultSet rs = pstmt.executeQuery();
 		while(rs.next()) {
+			
 			return rs.getInt(1);
 		}
 		return -1;
@@ -699,14 +818,14 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 	 * @throws SQLException 
 	 */
 	private void descontarUnidadesProductoPedido(int idProducto, int idOrden, int nuevasUnidades) throws SQLException {
-		//actualiza unidadesPorRecoger de productoPedido NO FUNCIONA
-//		String sql = "UPDATE productoPedido "
-//				+ "SET unidadesporrecoger=? "
-//				+ "where  ot.idorden = ? and pp.fk_idproducto=? "
-//				+ "and ot.fk_idpedido = pp.fk_idpedido	";
-		String sql = "update productopedido "
+	
+//		String sql = "update productopedido "
+//				+ "set unidadesporrecoger = ? "
+//				+ "where fk_idproducto=? and fk_idpedido=?";
+		String sql = "update productoorden  "
 				+ "set unidadesporrecoger = ? "
-				+ "where fk_idproducto=? and fk_idpedido=?";
+				+ "where fk_idproducto=? and fk_idpedido=? "
+				+ "and idorden = ?";
 		
 		int idPedido = getIdPedido(idOrden);//a través de idorden llegamos al idpedido para actualizar el producto
 		
@@ -714,9 +833,10 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 		pstmt.setInt(1, nuevasUnidades);
 		pstmt.setInt(2, idProducto);
 		pstmt.setInt(3, idPedido);
+		pstmt.setInt(4, idOrden);
+
 		pstmt.executeUpdate();
 		
-		//FALTA ACTUALIZAR EL TOTAL DE LA OT
 	}
 
 
@@ -725,17 +845,18 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 	 * @param idProducto
 	 * @param idOrden
 	 * @return devuelve unidadesPorRecoger, o -1 si ha habido algún error(si no hay resultados)
+	 * 
 	 * @throws SQLException
 	 */
 	private int unidadesPorRecoger(int idProducto,int idOrden) throws SQLException {
-		String sql = "select pp.unidadesporrecoger "
-				+ "from productoPedido pp, ordenTrabajo ot "
-				+ "where  ot.idorden = ? and pp.fk_idproducto=? "
-				+ "and ot.fk_idpedido = pp.fk_idpedido";
+		String sql = "select po.unidadesporrecoger "
+				+ "from productoorden po " 
+				+ "where  po.fk_idproducto=? "
+				+ "and po.idorden = ?";
 		
 		PreparedStatement pstmt=cn.prepareStatement(sql);
-		pstmt.setInt(1, idOrden);
-		pstmt.setInt(2, idProducto);
+		pstmt.setInt(1, idProducto);
+		pstmt.setInt(2, idOrden);
 		ResultSet rs = pstmt.executeQuery();
 		while(rs.next()) {
 			return rs.getInt(1);
@@ -759,7 +880,6 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 		pstmt.setNString(1, incidencia);
 		pstmt.setInt(2, idOrden);
 		pstmt.executeUpdate();
-		System.out.println("la incidencia fue: " + incidencia);
 	}
 	
 	
