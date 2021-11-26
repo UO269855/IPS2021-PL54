@@ -29,11 +29,6 @@ public class DatabaseWrapper {
 	public static final String DRIVER = "org.sqlite.JDBC";
 	public static final String URL = "jdbc:sqlite:DB.db";
 
-	// Añade un producto a la BD
-	public void addProduct(Producto producto) {
-		/* A implementar */
-	}
-
 	// Devuelve un producto de la BD con su ID
 	public static Producto getProducto(int id_producto) throws UnexpectedException {
 
