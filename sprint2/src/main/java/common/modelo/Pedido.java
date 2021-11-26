@@ -2,7 +2,7 @@ package common.modelo;
 
 public class Pedido {
 	private int idPedido;
-	private int precioTotal;
+	private double precioTotal;
 	private String fecha;
 	private String albaran;
 	private String direccion;
@@ -28,10 +28,10 @@ public class Pedido {
 	public void setIdPedido(int idPedido) {
 		this.idPedido = idPedido;
 	}
-	public int getPrecioTotal() {
+	public double getPrecioTotal() {
 		return precioTotal;
 	}
-	public void setPrecioTotal(int precioTotal) {
+	public void setPrecioTotal(double precioTotal) {
 		this.precioTotal = precioTotal;
 	}
 	public String getFecha() {
