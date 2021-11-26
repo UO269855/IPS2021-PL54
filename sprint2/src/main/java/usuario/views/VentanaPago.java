@@ -147,16 +147,14 @@ public class VentanaPago {
 	}
 	protected void tramitar(String metodopago) {
 		try {
-			String value = getPrincipal().getTextFieldTotal().getText().substring(0, 
-					getPrincipal().getTextFieldTotal().getText().length() - 1);
-			int number = (int) (Double.parseDouble(value));
-			int total = 0;
+			double value = getPrincipal().getTotal();
+			int totalUnidades = 0;
 			for(Producto p: getPrincipal().getProductos()) {
 				if (getPrincipal().getCarrito().containsKey(p)) {
-					total += getPrincipal().getCarrito().get(p);
+					totalUnidades += getPrincipal().getCarrito().get(p);
 				}
 			}
-			Pedido pedido = BusinessLogicUtil.createPedido(number, total, previous.getTextFieldDireccion().getText(), metodopago);
+			Pedido pedido = BusinessLogicUtil.createPedido(value, totalUnidades, previous.getTextFieldDireccion().getText(), metodopago);
 			DatabaseWrapper.createPedido(pedido, getPrincipal().getProductos(),
 					new Hashtable<Producto, Integer>(getPrincipal().getCarrito()), getPrincipal().getListaCarrito().getModel());
 		} catch (UnexpectedException e) {
