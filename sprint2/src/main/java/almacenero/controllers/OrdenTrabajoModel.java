@@ -881,6 +881,69 @@ private void sumarTamañoPedidos(int idOrden, int tamOT) throws SQLException {
 		pstmt.setInt(2, idOrden);
 		pstmt.executeUpdate();
 	}
+
+
+	/**
+	 * Devuelve un resultSet con la lista de los productos del catálogo de la tienda
+	 * @return
+	 * @throws SQLException 
+	 */
+	public ResultSet getListaProductos() throws SQLException {
+
+		String sql = "SELECT nombre,idproducto,unidadesApedir,stock,stock_rep,stock_min "
+				+ "FROM producto";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		ResultSet rs = pstmt.executeQuery();
+	
+		return rs;
+	}
+
+
+	public ResultSet generarInformeStock() throws SQLException {
+		//1) listar los productos
+		ResultSet productos =  getListaProductos();
+		int idProducto,stock, stock_min, stock_rep;
+		
+		//2)comprobar en cada uno si STOCK < STOCK_MIN
+		while(productos.next()) {
+			idProducto = productos.getInt(2);
+			stock = productos.getInt(4);
+			stock_rep = productos.getInt(5);
+			stock_min = productos.getInt(6);
+			
+			if(stock < stock_min) 
+				pedirUnidades(stock_rep - stock, idProducto);
+
+		}
+		return productos;
+		
+	}
+
+
+	private void pedirUnidades(int unidadesAPedir, int idProducto) throws SQLException {
+		String sql = "UPDATE producto "
+				+ "SET unidadesAPedir = ? "
+				+ "WHERE idproducto = ?";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		pstmt.setInt(1, unidadesAPedir);
+		pstmt.setInt(2, idProducto);
+		pstmt.executeUpdate();
+		
+	}
+
+
+	public ResultSet getListaProductosStock() throws SQLException {
+
+		String sql = "SELECT nombre,idproducto,unidadesApedir "
+				+ "FROM producto "
+				+ "where unidadesapedir is not null "
+				+ "ORDER BY idproducto ";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		ResultSet rs = pstmt.executeQuery();
+		
+		
+		return rs;
+	}
 	
 	
 	

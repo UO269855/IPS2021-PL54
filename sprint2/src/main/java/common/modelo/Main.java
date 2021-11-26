@@ -29,6 +29,10 @@ public class Main {
 		
 		control = new OrdenTrabajoController(model, view, almacenView);
 		control.initController();
+		
+		
+		//pruebas para el informe de stock
+		control.generarInformeStock();
 	
 		
 

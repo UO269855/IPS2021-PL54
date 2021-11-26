@@ -395,54 +395,6 @@ public class OrdenTrabajoController {
 		
 	}
 	
-	/**
-	 * Commprueba que el nÃºmero de unidades que hay de stock sean suficientes para completar la OT.
-	 * Si hubiera alguna incidencia, la anota en la ot y no se lleva a empaquetado
-	 * @throws SQLException
-	 */
-//	public boolean comprobarUnidades() throws SQLException {
-//		int idOrden=0;
-//		if(refView.getTfIDOrden().getText().equals(""))
-//			JOptionPane.showMessageDialog(refView, "La orden de trabajo no puede ser vacÃ­o");
-//		else {
-//			idOrden = Integer.parseInt(refView.getTfIDOrden().getText());
-//			
-//			//contiene: p.idproducto, p.nombre, pp.unidadespedido, p.unidades, ot.incidencia
-//			ResultSet productosPedidos = model.getListaProductosPedidos(idOrden);
-//			boolean sinIncidencias = true;
-//			refView.getTaIncidencias().setText("REFERENCIAS QUE FALTAN PARA COMPLETAR LA ORDEN "+ idOrden + ":\n");
-//			while(productosPedidos.next()) {//iterar en cada producto de la lista
-//			
-//				int unidadesPedido = productosPedidos.getInt(3);
-//				int unidadesProducto = productosPedidos.getInt(4);//el stock del producto
-//				String viejaIncidencia = productosPedidos.getString(5);
-//
-//				
-//				int res = unidadesPedido- unidadesProducto;
-//				if(res >0) {//significa que falta stock
-//
-//					System.out.println("REFERENCIAS QUE FALTAN PARA IDORDEN: " + idOrden);
-//					String incidencia = model.anotarIncidencia(productosPedidos.getString(2) ,res, idOrden,viejaIncidencia);//escribir en "incidencia" dentro de OrdenTrabajo la cantidad que falta y de quÃ©
-//					refView.getTaIncidencias().setText(refView.getTaIncidencias().getText() + incidencia);
-//					 sinIncidencias = false;
-//				}
-//			}
-//			
-//			if(sinIncidencias== true) {
-//				refView.getTaIncidencias().setText("\n Referencias suficientes para completar.");
-//				return true;
-//			}else {
-//				return false;
-//			}
-//			
-//		
-//		
-//		
-//		}
-//		return true;
-//	
-//	}
-	
 	private void ayudaOrdenes() {
 		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
 		 String URL = "jdbc:hsqldb:hsql://localhost";
@@ -508,6 +460,22 @@ public class OrdenTrabajoController {
 			
 		}
 		
+		
+	}
+	
+	
+	/**
+	 * Actualiza la base de datos diciendo las unidades a Pedir de cada producto y genera la tabla para el informe
+	 * @return el modelo para la tabla del informe
+	 * @throws SQLException
+	 */
+	public TableModel generarInformeStock() throws SQLException{
+		model.generarInformeStock();
+		
+		ResultSet productosStock = model.getListaProductosStock();
+		TableModel tmodel = DbUtil.resultSetToTableModel(productosStock);
+		
+		return tmodel;
 		
 	}
 
