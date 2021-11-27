@@ -286,7 +286,7 @@ public class VentanaPrincipal {
 			
 		}
 		JScrollPane scroll = new JScrollPane(p, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scroll.setMinimumSize(new Dimension(200,600));
+		scroll.setMinimumSize(new Dimension(300,600));
 		this.scroll = scroll;
 		p.repaint();
 		p.validate();
@@ -524,9 +524,11 @@ public class VentanaPrincipal {
 			value = getCarrito().get(p);
 		}
 
+		if (value + unidades <= p.getStock()) {
+			getCarrito().put(p, value + unidades);
+			setModelLista();
+		}
 
-		getCarrito().put(p, value + unidades);
-		setModelLista();
 	}
 	
 	public void restarAPedido(int codigo) {
