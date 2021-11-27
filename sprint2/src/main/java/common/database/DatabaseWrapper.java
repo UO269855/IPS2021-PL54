@@ -199,11 +199,10 @@ public class DatabaseWrapper {
 			while(rs.next()) {
 				String categoria = rs.getString("categoria");
 				String subcategoria = rs.getString("subcategoria");
-				if (categorias.containsKey(categoria) && !categorias.get(categoria).contains(subcategoria)) {
-					categorias.get(categoria).add(subcategoria);
-				}
-				else {
+				if (!categorias.containsKey(categoria)) {
 					categorias.put(categoria, new ArrayList<>());
+				}
+				if (categorias.containsKey(categoria) && !categorias.get(categoria).contains(subcategoria)) {
 					categorias.get(categoria).add(subcategoria);
 				}
 			}

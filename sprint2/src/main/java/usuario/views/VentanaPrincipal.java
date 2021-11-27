@@ -172,9 +172,7 @@ public class VentanaPrincipal {
 		return panel;
 	}
 	
-	private JPanel addSubCategoria(String categoria) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(0,1,0,0));
+	private JButton addSubCategoria(String categoria) {
 		JButton buttonCategoria = new JButton(categoria);
 		buttonCategoria.addActionListener(new ActionListener() {		
 			@Override
@@ -189,8 +187,7 @@ public class VentanaPrincipal {
 			}
 		});
 		buttonCategoria.setFont(new Font("Tahoma", 0, 16));
-		panel.add(buttonCategoria);
-		return panel;
+		return buttonCategoria;
 	}
 
 	private JPanel getPanelTitulo() {
