@@ -136,16 +136,14 @@ public class VentanaTarjeta {
 	}
 	protected void tramitar() {
 		try {
-			String value = pago.getPrincipal().getTextFieldTotal().getText().substring(0, 
-					pago.getPrincipal().getTextFieldTotal().getText().length() - 1);
-			int number = (int) (Double.parseDouble(value));
-			int total = 0;
+			double value = pago.getPrincipal().getTotal();
+			int totalUnidades = 0;
 			for(Producto p: pago.getPrincipal().getProductos()) {
 				if (pago.getPrincipal().getCarrito().containsKey(p)) {
-					total += pago.getPrincipal().getCarrito().get(p);
+					totalUnidades += pago.getPrincipal().getCarrito().get(p);
 				}
 			}
-			Pedido pedido = BusinessLogicUtil.createPedido(number, total, pago.getPrevious().getTextFieldDireccion().getText(), "Tarjeta");
+			Pedido pedido = BusinessLogicUtil.createPedido(value, totalUnidades, pago.getPrevious().getTextFieldDireccion().getText(), "Tarjeta");
 			DatabaseWrapper.createPedido(pedido, pago.getPrincipal().getProductos(),
 					new Hashtable<Producto, Integer>(pago.getPrincipal().getCarrito()), pago.getPrincipal().getListaCarrito().getModel());
 		} catch (UnexpectedException e) {
