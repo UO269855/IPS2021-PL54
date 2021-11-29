@@ -451,7 +451,7 @@ public class OrdenTrabajoController {
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			 }
 		}
 		
 		else {
