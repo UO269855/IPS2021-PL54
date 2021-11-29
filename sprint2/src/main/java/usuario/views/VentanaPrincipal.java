@@ -172,9 +172,7 @@ public class VentanaPrincipal {
 		return panel;
 	}
 	
-	private JPanel addSubCategoria(String categoria) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(0,1,0,0));
+	private JButton addSubCategoria(String categoria) {
 		JButton buttonCategoria = new JButton(categoria);
 		buttonCategoria.addActionListener(new ActionListener() {		
 			@Override
@@ -189,8 +187,7 @@ public class VentanaPrincipal {
 			}
 		});
 		buttonCategoria.setFont(new Font("Tahoma", 0, 16));
-		panel.add(buttonCategoria);
-		return panel;
+		return buttonCategoria;
 	}
 
 	private JPanel getPanelTitulo() {
@@ -283,13 +280,13 @@ public class VentanaPrincipal {
 		p.setMinimumSize(new Dimension(200,600));
 		p.setLayout(new GridLayout(0,1,0,0));
 		for (int i = 0; i < productos.size(); i++) {
-			if (productos.get(i).getStock()>=0) {
+			if (productos.get(i).getStock()>0) {
 				p.add((nuevoPanel(p,productos.get(i))));
 			}
 			
 		}
 		JScrollPane scroll = new JScrollPane(p, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scroll.setMinimumSize(new Dimension(200,600));
+		scroll.setMinimumSize(new Dimension(300,600));
 		this.scroll = scroll;
 		p.repaint();
 		p.validate();
@@ -316,7 +313,7 @@ public class VentanaPrincipal {
 		p.setMinimumSize(new Dimension(200,600));
 		p.setLayout(new GridLayout(0,1,0,0));
 		for (int i = 0; i < productos.size(); i++) {
-			if (productos.get(i).getStock()>=0 && productos.get(i).getCategoria().equals(categoria)) {
+			if (productos.get(i).getStock()>0 && productos.get(i).getCategoria().equals(categoria)) {
 				p.add((nuevoPanel(p,productos.get(i))));
 			}
 			
@@ -347,7 +344,7 @@ public class VentanaPrincipal {
 		p.setMinimumSize(new Dimension(200,600));
 		p.setLayout(new GridLayout(0,1,0,0));
 		for (int i = 0; i < productos.size(); i++) {
-			if (productos.get(i).getStock()>=0 && productos.get(i).getSubcategoria().equals(categoria)) {
+			if (productos.get(i).getStock()>0 && productos.get(i).getSubcategoria().equals(categoria)) {
 				p.add((nuevoPanel(p,productos.get(i))));
 			}
 			
@@ -527,9 +524,11 @@ public class VentanaPrincipal {
 			value = getCarrito().get(p);
 		}
 
+		if (value + unidades <= p.getStock()) {
+			getCarrito().put(p, value + unidades);
+			setModelLista();
+		}
 
-		getCarrito().put(p, value + unidades);
-		setModelLista();
 	}
 	
 	public void restarAPedido(int codigo) {
