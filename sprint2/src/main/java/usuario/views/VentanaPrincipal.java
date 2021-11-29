@@ -280,7 +280,7 @@ public class VentanaPrincipal {
 		p.setMinimumSize(new Dimension(200,600));
 		p.setLayout(new GridLayout(0,1,0,0));
 		for (int i = 0; i < productos.size(); i++) {
-			if (productos.get(i).getStock()>=0) {
+			if (productos.get(i).getStock()>0) {
 				p.add((nuevoPanel(p,productos.get(i))));
 			}
 			
@@ -313,7 +313,7 @@ public class VentanaPrincipal {
 		p.setMinimumSize(new Dimension(200,600));
 		p.setLayout(new GridLayout(0,1,0,0));
 		for (int i = 0; i < productos.size(); i++) {
-			if (productos.get(i).getStock()>=0 && productos.get(i).getCategoria().equals(categoria)) {
+			if (productos.get(i).getStock()>0 && productos.get(i).getCategoria().equals(categoria)) {
 				p.add((nuevoPanel(p,productos.get(i))));
 			}
 			
