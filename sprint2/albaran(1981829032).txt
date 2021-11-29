@@ -1,0 +1,6 @@
+ALBARAN
+---------------------
+Paquete: 62
+idProducto: 110- Descripcion: tiene mucha ram-Precio: 600
+idProducto: 119- Descripcion: 10 pulgadas-Precio: 200
+Precio total:800
