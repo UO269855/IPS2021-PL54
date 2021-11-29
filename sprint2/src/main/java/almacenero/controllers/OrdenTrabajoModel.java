@@ -5,14 +5,12 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import com.mchange.v1.db.sql.PSManager;
-
-import common.database.Database;
-import common.database.DbUtil;
+import common.modelo.Almacenero;
 /**
  * Acceso a los datos de OrdenTrabajo y Pedido
  * (en esta clase se hacen las consultas)
@@ -27,6 +25,7 @@ public class OrdenTrabajoModel {
 	private Connection cn;
 	
 	private static int TAM_MEDIO = 10;
+	
 	
 	
 	
@@ -375,13 +374,16 @@ public class OrdenTrabajoModel {
 	 * @throws SQLException
 	 */
 	private void creaOrdenInicial(int idPedido, int idAlmacenero, int unidadesTotales) throws SQLException {
-		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger)"
-				+ " VALUES (?,?,?,?,?)");
+		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO ordenTrabajo (fk_idpedido,fk_idalmacenero,incidencia,albaran,unidadesARecoger,fecha, unidadesTotales)"
+				+ " VALUES (?,?,?,?,?,?,?)");
 		pstmt.setInt(1, idPedido);
 		pstmt.setInt(2, idAlmacenero);
 		pstmt.setNString(3, null);
 		pstmt.setNString(4, null);
-		pstmt.setInt(5, unidadesTotales); //aÃ±ade a la OT el nÃºmero de unidadesTotales, que son el mismo que las uniadesTotales de pedido
+		pstmt.setInt(5, unidadesTotales); //anade a la OT el numero de unidadesTotales, que son el mismo que las uniadesTotales de pedido
+		pstmt.setString(6, LocalDate.now().toString());//16351
+		pstmt.setInt(7, unidadesTotales); //guardara el total de productos de la ot, ya que unidadesARecoger se decrementa
+
 		pstmt.executeUpdate();
 	}
 	
@@ -444,12 +446,14 @@ private void asignarProductosAOT(int idOrden, int idPedido) throws SQLException 
 
 private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 	String sql = "UPDATE ordenTrabajo "
-			+ "SET ordentrabajo.unidadesarecoger = ? "//aÃ±adir los productos
+			+ "SET ordentrabajo.unidadesarecoger = ? ,"
+			+ " ordentrabajo.unidadestotales = ? " //historia 16351
 			+ "WHERE ordentrabajo.idorden = ?";
 	
 	PreparedStatement pstmt=cn.prepareStatement(sql);
 	pstmt.setInt(1, tamOT);
-	pstmt.setInt(2, idOrden);
+	pstmt.setInt(2, tamOT);
+	pstmt.setInt(3, idOrden);
 	pstmt.executeUpdate();
 
 
@@ -487,10 +491,6 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 	 */
 	public void asignarOrden(int idAlmacenero) throws SQLException {
 		int idOrden = getLastOT();
-//		PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero, fk_idorden) VALUES (?,?)");
-//		pstmt.setInt(1, idAlmacenero);
-//		pstmt.setInt(2, lastOT);
-//		pstmt.executeUpdate();
 		String sql = "UPDATE ordentrabajo "
 		+ "SET fk_idalmacenero=? "
 		+ "WHERE ordentrabajo.idorden=?";
@@ -498,11 +498,11 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 		pstmt.setInt(1, idAlmacenero);
 		pstmt.setInt(2, idOrden);
 		pstmt.executeUpdate();
+		
 		asignarAlmacenero(idAlmacenero);
 }
 	
 	private void asignarAlmacenero(int idAlmacenero) throws SQLException {
-		//COMPROBAR QUE NO EXISTE EL ALMACENERO ANTES DE CREARLO
 		if(!existsAlmacenero(idAlmacenero)) {
 			PreparedStatement pstmt=cn.prepareStatement("INSERT INTO Almacenero (idAlmacenero) VALUES (?)");
 			pstmt.setInt(1, idAlmacenero);
@@ -521,14 +521,14 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 	private boolean existsAlmacenero(int idAlmacenero) throws SQLException {
 		String sql = "select idalmacenero "
 				+ "from almacenero "
-				+ "where almacenero.idalmacenero=?";
+				+ "where idalmacenero=?";
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, idAlmacenero);
 		ResultSet rs = pstmt.executeQuery();
 		if (rs.next()) //si no hay filas --> no existe el almacenero
-			return false;
-		else
 			return true;
+		else
+			return false;
 	}
 
 
@@ -650,10 +650,17 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 	}
 
 
-	public  int getIdPedido(int idOrden) throws SQLException {
-		String sql = "select fk_idpedido from ordentrabajo where idorden = ?";
+	public  int getIdPedido(int idOrden, int idproducto) throws SQLException {
+		//select fk_idpedido from productoorden where idOrden =?, and fk_idproducto = ?
+//		String sql = "select fk_idpedido from ordentrabajo where idorden = ?";
+		String sql = "select fk_idpedido "
+				+ "from productoorden "
+				+ "where idOrden =? "
+				+ "and fk_idproducto = ?";
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, idOrden);
+		pstmt.setInt(2, idproducto);
+
 		ResultSet rs = pstmt.executeQuery();
 		while(rs.next()) {
 			return rs.getInt(1);
@@ -727,7 +734,6 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 			pstmt.setInt(2, idProducto);
 			pstmt.executeUpdate();
 			
-			int stockFinal = getStockActual(idProducto);
 			return true;
 	
 		}
@@ -819,15 +825,12 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 	 */
 	private void descontarUnidadesProductoPedido(int idProducto, int idOrden, int nuevasUnidades) throws SQLException {
 	
-//		String sql = "update productopedido "
-//				+ "set unidadesporrecoger = ? "
-//				+ "where fk_idproducto=? and fk_idpedido=?";
 		String sql = "update productoorden  "
 				+ "set unidadesporrecoger = ? "
 				+ "where fk_idproducto=? and fk_idpedido=? "
 				+ "and idorden = ?";
 		
-		int idPedido = getIdPedido(idOrden);//a travÃ©s de idorden llegamos al idpedido para actualizar el producto
+		int idPedido = getIdPedido(idOrden, idProducto);//a travÃ©s de idorden llegamos al idpedido para actualizar el producto
 		
 		PreparedStatement pstmt=cn.prepareStatement(sql);
 		pstmt.setInt(1, nuevasUnidades);
@@ -943,6 +946,138 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 		
 		
 		return rs;
+	}
+
+
+	public TableOrdenTrabajo generarInformeOTEmpleadoDia(List<Almacenero> almaceneros) throws SQLException {
+		ResultSet listAlmaceneros = getListaAlmaceneros();
+
+		List<Almacenero> arrayList = arrayListAlmaceneros(almaceneros, listAlmaceneros);
+		Almacenero[] array = new Almacenero[arrayList.size()];
+		arrayList.toArray(array);
+		
+		TableOrdenTrabajo tabla = new TableOrdenTrabajo(listAlmaceneros, array);
+//		tabla.setColumnNames(listAlmaceneros, array);
+		
+		return tabla;
+	}
+
+
+	public List<Almacenero> arrayListAlmaceneros(List<Almacenero> arrayList, ResultSet rs) throws SQLException {
+		while(rs.next()) {
+			int idOrden = rs.getInt(1);
+			Almacenero a = new Almacenero(idOrden);
+			arrayList.add(a);
+			
+		}
+		return arrayList;
+		
+		
+	}
+
+
+	public ResultSet getListaAlmaceneros() throws SQLException {
+		String sql = "SELECT * from Almacenero";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		ResultSet rs = pstmt.executeQuery();
+		return rs;
+	}
+	
+	
+	/**
+	 * Devuelve un rs con las fechas en las que tenemos ots creadas
+	 * @return
+	 * @throws SQLException
+	 */
+	public ResultSet getFechasOT() throws SQLException {
+		String sql = "SELECT distinct fecha from ordentrabajo";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		ResultSet rs = pstmt.executeQuery();
+		return rs;
+	}
+  
+
+	/** 
+	 * En la clase Almacenero, guarda en su lista ordenes todas las ordenes correspondientes a él
+	 * @param almaceneros, lista con los almaceneros de la BBDD
+	 * @throws SQLException 
+	 */
+	public void listarOrdenesPorAlmacenero(List<Almacenero> almaceneros) throws SQLException {
+		
+		int idAlmacenero = 0;
+		for (int i = 0; i < almaceneros.size(); i++) { //POR CADA ALMACENERO
+			//pedimos su id
+			idAlmacenero = almaceneros.get(i).getIDAlmacenero();
+			
+			String sql = "select idorden  from ordentrabajo where fk_idalmacenero = ?";
+			PreparedStatement pstmt = cn.prepareStatement(sql);
+			pstmt.setInt(1, idAlmacenero);
+			ResultSet ordenesPorAlmacenero = pstmt.executeQuery();
+			
+			
+			asignarOrdenes(ordenesPorAlmacenero, almaceneros,i);
+		}
+		
+		
+		
+	}
+
+
+	/**
+	 * 
+	 * Asigna todas las ordenes de ordenesPorAlmacenero al almacenero cuyo id se pasa por parametro
+	 * @param ordenesPorAlmacenero
+	 * @param almaceneros
+	 * @param indexAlmacenero
+	 * @throws SQLException
+	 */
+	private void asignarOrdenes(ResultSet ordenesPorAlmacenero, List<Almacenero> almaceneros, int indexAlmacenero) throws SQLException {
+		int idOrden = 0;
+		while(ordenesPorAlmacenero.next()) {
+			idOrden = ordenesPorAlmacenero.getInt(1);
+			//le añade su orden a la lista
+			almaceneros.get(indexAlmacenero).addOrden(idOrden);
+		}
+		
+	}
+
+
+	public int numOtPorAlmaceneroYFecha(int idAlmacenero, String fecha) throws SQLException {
+		String sql = "select count(idOrden) "
+				+ "from ordenTrabajo "
+				+ "where fk_idalmacenero = ? "
+				+ "and fecha = ?";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		pstmt.setInt(1, idAlmacenero);
+		pstmt.setString(2,fecha);
+		
+		ResultSet rs = pstmt.executeQuery();
+		 while(rs.next()) 
+			 return rs.getInt(1);
+		return 0;
+	}
+
+
+	/**
+	 * Devuelve el número de productos totales de todas las ordenes que tiene el almacenero en esa fecha
+	 * @param idAlmacenero
+	 * @param fecha
+	 * @return
+	 * @throws SQLException 
+	 */
+	public int numPFecha(int idAlmacenero, String fecha) throws SQLException {
+		String sql = "select sum(unidadesTotales) "
+				+ "from ordenTrabajo "
+				+ "where fk_idalmacenero = ? "
+				+ "and fecha = ?";
+		PreparedStatement pstmt = cn.prepareStatement(sql);
+		pstmt.setInt(1, idAlmacenero);
+		pstmt.setString(2,fecha);
+		
+		ResultSet rs = pstmt.executeQuery();
+		while(rs.next()) 
+			 return rs.getInt(1);
+		return 0;
 	}
 	
 	
