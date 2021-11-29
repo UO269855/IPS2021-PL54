@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 
 import common.database.DbUtil;
@@ -40,10 +43,10 @@ public class OrdenTrabajoController {
 	private OrdenTrabajoModel model;
 	private OrdenTrabajoView view;//escoge el pedido
 	private AlmacenView almacenView;//gestiona cada orden y muestra lis productos
-	private String lastSelectedKey=""; //recuerda la ultima fila seleccionada para restaurarla cuando cambie la tabla de carreras
 	
 	private Almacenero almacenero;//no estoy segura de si deberia estar ene sta clase
-
+	private List<Almacenero> almaceneros;
+	private VentanaInformeOrden ordenView;
 	
 	/**
 	 * Constructor de la clase que inicializa las tres clases
@@ -57,9 +60,22 @@ public class OrdenTrabajoController {
 		this.model = m;
 		this.view = v;
 		this.almacenView = a;
+		
+		this.almaceneros = new ArrayList<Almacenero>();
 		//no hay inicializacion especifica del modelo, solo de la vista
 		this.initView();
-//		this.initRefView(); ahora la inicializamos cuando pulsamos el botÃ³n
+	}
+	
+	public OrdenTrabajoController(OrdenTrabajoModel m, OrdenTrabajoView v, AlmacenView a, VentanaInformeOrden o) throws SQLException {
+		this.model = m;
+		this.view = v;
+		this.almacenView = a;
+		this.ordenView = o;
+		//no hay inicializacion especifica del modelo, solo de la vista
+//		this.initView();
+		
+		ordenView.setVisible(true); 
+//		ordenView.initialize();
 	}
 	/**
 	 * Inicializacion del controlador: anyade los manejadores de eventos a los objetos del UI.
@@ -254,7 +270,7 @@ public class OrdenTrabajoController {
 		try { 
 			
 			if(almacenero == null)//significa que aun no se ha "iniciado sesion"
-				JOptionPane.showMessageDialog(view,"Ingresa un IDAlmacenero vÃ¡lido");
+				JOptionPane.showMessageDialog(view,"Ingresa un IDAlmacenero valido");
 			else {
 				int id = almacenero.getIDAlmacenero();
 				crearYAsigna(idPedido,id );
@@ -309,11 +325,11 @@ public class OrdenTrabajoController {
 		try{
 			//1 obtener el idProducto del campo de texto
 			 idProducto = Integer.parseInt(view.getTxEscaner().getText());
-//			 int idOt =  model.getLastOT(); NO SIRVE ESCOGER LA ULTIMA CREDA, HAY QUE ELEGIR LA SELECCIONADA
 			 int idOt =SwingUtil.getSelectedKeyInt(view.getTabOrden());
 			 
 			//2 obtener las unidades del scroll
 			int uSpinner = (int) view.getSpUnidadesEscaner().getValue();
+			System.out.println("uspinner: "+ uSpinner);
 			
 			//3 comprobar si es posible escanear esas unidades: si no hay suficientes--> mostrar error.		si hay suficientes, se decrementa el unidadesPorRecoger
 			int res = model.escanear(idProducto,idOt,uSpinner);
@@ -323,19 +339,15 @@ public class OrdenTrabajoController {
 				 JOptionPane.showMessageDialog(null,"El producto "+ idProducto+ " no existe en la orden "+ idOt, "Producto inexistente", JOptionPane.INFORMATION_MESSAGE);
 
 			}
-			
-			
-			
-			//4 si se termino de recoger los productos de la OT, se avisa y deshabilita el boton
-			 if(model.unidadesARecoger(idOt) == 0) {
-				 view.getBtEscaner().setEnabled(false);
-				 JOptionPane.showMessageDialog(null,"Ya no quedan productos por escanear en la orden "+ idOt, "Escaneado listo", JOptionPane.INFORMATION_MESSAGE);
-			 }
-			
 			if(res == -1)
 				JOptionPane.showMessageDialog(null,"El numero de unidades que intentas escanear supera al numero que queda por recoger", "Unidades insuficientes", JOptionPane.INFORMATION_MESSAGE);
 			else {
 				//mostrar de nuevo la lista de productos para que se actualicen las unidadesPorRecoger
+				//4 si se termino de recoger los productos de la OT, se avisa y deshabilita el boton
+				 if(model.unidadesARecoger(idOt) == 0) {
+					 view.getBtEscaner().setEnabled(false);
+					 JOptionPane.showMessageDialog(null,"Ya no quedan productos por escanear en la orden "+ idOt, "Escaneado listo", JOptionPane.INFORMATION_MESSAGE);
+				 }
 				mostrarReferencias(idOt);
 				
 			}
@@ -474,10 +486,152 @@ public class OrdenTrabajoController {
 		
 		ResultSet productosStock = model.getListaProductosStock();
 		TableModel tmodel = DbUtil.resultSetToTableModel(productosStock);
-		
-		return tmodel;
+//		JTable tab = new JTable(tmodel); SI LE DEVUELVO UN JTABLE
+		return tmodel; //RETURN TAB
 		
 	}
+
+	
+//	public TableOrdenTrabajo generarInformeOTEmpleadoDia() throws SQLException {
+//		this.almaceneros = new ArrayList<Almacenero>();
+//		TableOrdenTrabajo  tmodel = model.generarInformeOTEmpleadoDia(almaceneros);
+//		return tmodel;
+//	}
+//	
+	 public JTable tablaInformeOT() throws SQLException {
+		  DefaultTableModel tableModel = new DefaultTableModel();
+	      JTable table = new JTable(tableModel);
+	      
+	      //gaurdamos los almaceneros de la base de datos
+	      ResultSet listAlmaceneros = model.getListaAlmaceneros();
+	      this.almaceneros = new ArrayList<Almacenero>();
+	      this.almaceneros = model.arrayListAlmaceneros(almaceneros, listAlmaceneros) ;
+	      
+	      //en cada almacenero guardamos sus ordenes correspondientes
+	      model.listarOrdenesPorAlmacenero(almaceneros);
+	      
+	      //guardamos las distintas fechas en las que existen OT
+	      ResultSet fechas = model.getFechasOT();
+
+	      
+	      //aádimos las columnas: "FECHA", "ALMACENERO1","ALMACENERO2",...
+	      anadirColunmnas(tableModel,this.almaceneros);
+	      
+	      
+	     
+	      anadirFilasOT(tableModel,fechas);
+	      return table;
+
+		 
+	 }
+	 
+	 private  void anadirColunmnas(DefaultTableModel tableModel, List<Almacenero> almaceneros) throws SQLException {
+		 tableModel.addColumn("FECHA");
+//		 while(rs.next()){
+//			String id = String.valueOf(rs.getInt(1));
+//			tableModel.addColumn(id);
+////			tableModel.addColumn("FECHA");
+////			tableModel.addColumn("ALMACENERO 1");
+////			tableModel.addColumn("ALMACENERO 2");
+//		}
+		 
+		 for (int i = 0; i < almaceneros.size(); i++) {
+			 String id = String.valueOf(  almaceneros.get(i).getIDAlmacenero());
+			tableModel.addColumn(id);
+		}
+	 }
+	 
+		private  void anadirFilasOT(DefaultTableModel tableModel, ResultSet rs) throws SQLException {
+//			tableModel.insertRow(0, new Object[] { "19/11/2021",25, 23 });
+//			  tableModel.insertRow(1, new Object[] { "20/11/2021",15, 22 });
+//			  tableModel.insertRow(2, new Object[] { "21/11/2021",14, 20 });
+//			  tableModel.insertRow(2, new Object[] { fecha,almaceneros.get(1).getNumOTFecha(fecha), almaceneros.get(2).getNumOTFecha(fecha)});
+			  
+			//itera por cada fecha con formato '2021-11-27'
+			String fecha = "";
+			
+			
+			Object [] o = new Object[almaceneros.size()]; //se crea del tamaño: numAlmacenero + 1 para la fecha
+			int[] numOtFecha = new int[almaceneros.size() ];
+			int cont = 0;
+			while(rs.next()) {
+				fecha = rs.getString(1);
+				for (int i = 0; i < almaceneros.size(); i++) {
+					numOtFecha[i] = model.numOtPorAlmaceneroYFecha(almaceneros.get(i).getIDAlmacenero(), fecha);
+					System.out.println(almaceneros.get(i).getIDAlmacenero() + ": " + numOtFecha[i]);
+
+				}
+				//tras iterar los almaceneros de esa fecha:
+				//PROBLEMA: con más de dos almaceneros no me funciona..
+				o = new Object[] { fecha,numOtFecha[0], numOtFecha[1] };
+				tableModel.insertRow(cont, o);
+				cont++;
+			}
+			 
+			  
+		}
+
+		/**
+		 * Crea la tabla que contendrá el informe:numero total de productos en una OT, por fecha y cliente
+		 * @return
+		 * @throws SQLException 
+		 */
+		public JTable tablaInformeProductosOT() throws SQLException {
+			 DefaultTableModel tableModel = new DefaultTableModel();
+		      JTable table = new JTable(tableModel);
+		      
+		      //gaurdamos los almaceneros de la base de datos
+		      ResultSet listAlmaceneros = model.getListaAlmaceneros();
+		      this.almaceneros = new ArrayList<Almacenero>();
+		      this.almaceneros = model.arrayListAlmaceneros(almaceneros, listAlmaceneros) ;
+		      
+		      //en cada almacenero guardamos sus ordenes correspondientes
+		      model.listarOrdenesPorAlmacenero(almaceneros);
+		      
+		      //guardamos las distintas fechas en las que existen OT
+		      ResultSet fechas = model.getFechasOT();
+
+		      
+		      //aádimos las columnas: "FECHA", "ALMACENERO1","ALMACENERO2",...
+		      anadirColunmnas(tableModel,this.almaceneros);
+		      
+		      
+//		     
+		      anadirFilasProductosOT(tableModel,fechas);
+		      return table;
+		}
+
+		/**
+		 * Añade las filas con el numero total de los productos de todas las ot
+		 * @param tableModel
+		 * @param fechas
+		 * @throws SQLException 
+		 */
+		private void anadirFilasProductosOT(DefaultTableModel tableModel, ResultSet rs) throws SQLException {
+			//itera por cada fecha con formato '2021-11-27'
+			String fecha = "";
+			
+			
+			Object [] o = new Object[almaceneros.size()]; //se crea del tamaño: numAlmacenero + 1 para la fecha
+			int[] numPFecha = new int[almaceneros.size() ];
+			int cont = 0;
+			while(rs.next()) {
+				fecha = rs.getString(1);
+				for (int i = 0; i < almaceneros.size(); i++) {
+					numPFecha[i] = model.numPFecha(almaceneros.get(i).getIDAlmacenero(), fecha);
+					System.out.println(almaceneros.get(i).getIDAlmacenero() + ": " + numPFecha[i]);
+
+				}
+				//tras iterar los almaceneros de esa fecha:
+				//PROBLEMA: con más de dos almaceneros no me funciona..
+				o = new Object[] { fecha,numPFecha[0], numPFecha[1] };
+				tableModel.insertRow(cont, o);
+				cont++;
+			}
+			
+		}
+
+		
 
 	
 	
