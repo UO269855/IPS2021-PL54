@@ -22,6 +22,7 @@ import common.modelo.Almacenero;
 import common.modelo.Producto;
 import giis.demo.util.ApplicationException;
 import giis.demo.util.SwingUtil;
+import sistema.view.VentanaInformes;
 
 /**
  * 
@@ -46,6 +47,8 @@ public class OrdenTrabajoController {
 	private Almacenero almacenero;//no estoy segura de si deberia estar ene sta clase
 	private List<Almacenero> almaceneros;
 	private VentanaInformeOrden ordenView;
+	
+	private VentanaInformes ventanaInformes;
 	
 	/**
 	 * Constructor de la clase que inicializa las tres clases
@@ -76,6 +79,19 @@ public class OrdenTrabajoController {
 		ordenView.setVisible(true); 
 //		ordenView.initialize();
 	}
+	
+	
+
+	
+
+	/**
+	 * Constructor creado para enlazar con la clase VentanaInformes de Mateo
+	 * @param m
+	 */
+	public OrdenTrabajoController(OrdenTrabajoModel m) {
+		this.model = m;
+	}
+
 	/**
 	 * Inicializacion del controlador: anyade los manejadores de eventos a los objetos del UI.
 	 * Cada manejador de eventos se instancia de la misma forma, para que invoque un metodo privado
@@ -480,13 +496,13 @@ public class OrdenTrabajoController {
 	 * @return el modelo para la tabla del informe
 	 * @throws SQLException
 	 */
-	public TableModel generarInformeStock() throws SQLException{
+	public JTable generarInformeStock() throws SQLException{
 		model.generarInformeStock();
 		
 		ResultSet productosStock = model.getListaProductosStock();
 		TableModel tmodel = DbUtil.resultSetToTableModel(productosStock);
-//		JTable tab = new JTable(tmodel); SI LE DEVUELVO UN JTABLE
-		return tmodel; //RETURN TAB
+		JTable tab = new JTable(tmodel);// SI LE DEVUELVO UN JTABLE
+		return tab; //RETURN TAB
 		
 	}
 
@@ -562,7 +578,14 @@ public class OrdenTrabajoController {
 				}
 				//tras iterar los almaceneros de esa fecha:
 				//PROBLEMA: con más de dos almaceneros no me funciona..
-				o = new Object[] { fecha,numOtFecha[0], numOtFecha[1] };
+				
+				if(almaceneros.size() == 3)
+					o = new Object[] { fecha,numOtFecha[0], numOtFecha[1], numOtFecha[2]};
+				else if(almaceneros.size() == 4)
+					o = new Object[] { fecha,numOtFecha[0], numOtFecha[1], numOtFecha[2], numOtFecha[3]};
+				else if(almaceneros.size() == 5)
+					o = new Object[] { fecha,numOtFecha[0], numOtFecha[1], numOtFecha[2], numOtFecha[3], numOtFecha[4]};
+
 				tableModel.insertRow(cont, o);
 				cont++;
 			}
@@ -623,7 +646,12 @@ public class OrdenTrabajoController {
 				}
 				//tras iterar los almaceneros de esa fecha:
 				//PROBLEMA: con más de dos almaceneros no me funciona..
-				o = new Object[] { fecha,numPFecha[0], numPFecha[1] };
+				if(almaceneros.size() == 3)
+					o = new Object[] { fecha,numPFecha[0], numPFecha[1], numPFecha[2] };
+				else if (almaceneros.size() == 4)
+					o = new Object[] { fecha,numPFecha[0], numPFecha[1], numPFecha[2], numPFecha[3] };
+				else if (almaceneros.size() == 5)
+					o = new Object[] { fecha,numPFecha[0], numPFecha[1], numPFecha[2], numPFecha[3], numPFecha[4]};
 				tableModel.insertRow(cont, o);
 				cont++;
 			}
