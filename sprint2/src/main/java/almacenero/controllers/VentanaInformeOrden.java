@@ -92,7 +92,7 @@ public class VentanaInformeOrden extends JFrame {
 		contentPane.add(getLbInforme());
 		
 	}
-	private void añadirTabla(JScrollPane scrollPane) {
+	private void anadirTabla(JScrollPane scrollPane) {
 		DefaultTableModel tableModel = new DefaultTableModel();
       JTable table = new JTable(tableModel);
       tableModel.addColumn("Languages");

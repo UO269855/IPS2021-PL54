@@ -111,8 +111,8 @@ public class DatabaseWrapper {
 		try {
 			conn = Jdbc.getConnection();
 
-			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales, direccion, metodoPago) VALUES (%d, %f, '%s', '%s', %d, '%s', '%s');", 
-					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales(), pedido.getDireccion(), pedido.getMetodoPago());
+			String sql = String.format(Locale.US, "INSERT INTO Pedido(idpedido, PrecioPedido,Fecha,Albaran, unidadesTotales, direccion, metodoPago, tipocliente) VALUES (%d, %f, '%s', '%s', %d, '%s', '%s', '%s');", 
+					pedido.getIdPedido(), pedido.getPrecioTotal(), pedido.getFecha(), "NULL", pedido.getUnidadesTotales(), pedido.getDireccion(), pedido.getMetodoPago(), pedido.getTipoCliente());
 
 			new QueryRunner().update(conn, sql);
 
@@ -214,6 +214,60 @@ public class DatabaseWrapper {
 			DbUtils.closeQuietly(conn);
 		}
 		return categorias;
+	}
+
+	public static List<String[]> getPedidosInformeTipoCliente() throws UnexpectedException, SQLException {
+		Connection conn = Jdbc.getConnection();
+		List<String[]> datosInforme = new ArrayList<>();
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			conn = Jdbc.getConnection();
+			pst = conn.prepareStatement("select fecha, metodopago, sum(preciopedido) as total from pedido group by fecha, metodopago");
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				String[] temp = new String[3];
+				temp[0] = rs.getString("fecha");
+				temp[1] = rs.getString("metodopago");
+				temp[2] = rs.getString("total");
+				datosInforme.add(temp);
+			}
+
+
+		} catch (SQLException e) {
+			throw new UnexpectedException(e.getMessage());
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+		return datosInforme;
+	}
+	
+	public static List<String[]> getPedidosInformeTipoPago() throws UnexpectedException, SQLException {
+		Connection conn = Jdbc.getConnection();
+		List<String[]> datosInforme = new ArrayList<>();
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			conn = Jdbc.getConnection();
+			pst = conn.prepareStatement("select fecha, tipopago, sum(preciopedido) as total from pedido group by fecha, metodopago");
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				String[] temp = new String[3];
+				temp[0] = rs.getString("fecha");
+				temp[1] = rs.getString("tipopago");
+				temp[2] = rs.getString("total");
+				datosInforme.add(temp);
+			}
+
+
+		} catch (SQLException e) {
+			throw new UnexpectedException(e.getMessage());
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+		return datosInforme;
 	}
 
 }

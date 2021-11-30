@@ -7,6 +7,7 @@ public class Pedido {
 	private String albaran;
 	private String direccion;
 	private String metodoPago;
+	private String tipoCliente;
 	private int unidadesTotales;
 
 
@@ -63,6 +64,14 @@ public class Pedido {
 
 	public void setMetodoPago(String metodoPago) {
 		this.metodoPago = metodoPago;
+	}
+	
+	public String getTipoCliente() {
+		return tipoCliente;
+	}
+
+	public void setTipoCliente(String tipoCliente) {
+		this.tipoCliente = tipoCliente;
 	}
 	
 	public int getUnidadesTotales() {

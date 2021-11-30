@@ -84,7 +84,7 @@ public class BusinessLogicUtil {
 		return result;
 	}
 
-	public static Pedido createPedido(double precio, int totalUnidades, String direccion, String metodoPago) {
+	public static Pedido createPedido(double precio, int totalUnidades, String direccion, String metodoPago, String tipocliente) {
 		Pedido pedido = new Pedido();
 		int number= UUID.randomUUID().hashCode();
 		if (number <= 0) {
@@ -97,6 +97,7 @@ public class BusinessLogicUtil {
 		pedido.setUnidadesTotales(totalUnidades);
 		pedido.setDireccion(direccion);
 		pedido.setMetodoPago(metodoPago);
+		pedido.setTipoCliente(tipocliente);
 		return pedido;
 	}
 }

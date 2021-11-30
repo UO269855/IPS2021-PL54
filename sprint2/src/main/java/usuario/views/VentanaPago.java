@@ -154,7 +154,7 @@ public class VentanaPago {
 					totalUnidades += getPrincipal().getCarrito().get(p);
 				}
 			}
-			Pedido pedido = BusinessLogicUtil.createPedido(value, totalUnidades, previous.getTextFieldDireccion().getText(), metodopago);
+			Pedido pedido = BusinessLogicUtil.createPedido(value, totalUnidades, previous.getTextFieldDireccion().getText(), metodopago, getPrincipal().getType());
 			DatabaseWrapper.createPedido(pedido, getPrincipal().getProductos(),
 					new Hashtable<Producto, Integer>(getPrincipal().getCarrito()), getPrincipal().getListaCarrito().getModel());
 		} catch (UnexpectedException e) {

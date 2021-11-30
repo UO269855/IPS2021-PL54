@@ -188,7 +188,7 @@ public class VentanaDireccion {
 					totalUnidades += getPrincipal().getCarrito().get(p);
 				}
 			}
-			Pedido pedido = BusinessLogicUtil.createPedido(value, totalUnidades, getTextFieldDireccion().getText(), "Empresa");
+			Pedido pedido = BusinessLogicUtil.createPedido(value, totalUnidades, getTextFieldDireccion().getText(), "Empresa", getPrincipal().getType());
 			DatabaseWrapper.createPedido(pedido, getPrincipal().getProductos(),
 					new Hashtable<Producto, Integer>(getPrincipal().getCarrito()), getPrincipal().getListaCarrito().getModel());
 		} catch (UnexpectedException e) {
