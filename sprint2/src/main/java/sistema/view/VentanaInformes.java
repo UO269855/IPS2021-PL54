@@ -64,7 +64,7 @@ public class VentanaInformes extends JFrame {
 		}
 		return panelTop;
 	}
-	private JComboBox getCombxPedidos() {
+	 private JComboBox getCombxPedidos() {
 		if (combxPedidos == null) {
 			combxPedidos = new JComboBox();
 			combxPedidos.setModel(new DefaultComboBoxModel(new String[] {"informe paquetes por dia"}));

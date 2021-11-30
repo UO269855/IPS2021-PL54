@@ -120,7 +120,7 @@ public class OrdenTrabajoController {
 			}
 		});
 		
-		view.getBtFinalizar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> generarAlbaran()));
+		view.getBtFinalizar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> new VentanaEmpaquetado().setVisible(true)));
 		}
 	
 	
@@ -447,6 +447,7 @@ public class OrdenTrabajoController {
 		
 	}
 	
+<<<<<<< HEAD
 	private void generarAlbaran() {
 		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
 		
@@ -473,6 +474,9 @@ public class OrdenTrabajoController {
 		
 		
 	}
+=======
+
+>>>>>>> 15984
 	
 	
 	/**
