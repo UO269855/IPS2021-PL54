@@ -1,0 +1,10 @@
+ALBARAN
+---------------------
+PEDIDO: 1325409715
+PRECIO TOTAL: 4
+UNIDADES TOTALES: 4
+FECHA: 2021-11-30
+DIRECCION DE ENVIO: dadad
+idProducto: 112- Descripcion: sin azucar
+idProducto: 113- Descripcion: sin azucar
+

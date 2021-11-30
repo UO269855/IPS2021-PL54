@@ -105,7 +105,7 @@ public class OrdenTrabajoController {
 			}
 		});
 		
-		view.getBtFinalizar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> new VentanaEmpaquetado().setVisible(true)));
+		view.getBtFinalizar().addActionListener(e -> SwingUtil.exceptionWrapper(() -> new VentanaEmpaquetado(Integer.parseInt(almacenView.getTfAlmacenero().toString())).setVisible(true)));
 		}
 	
 	

@@ -6,12 +6,18 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import almacenero.controllers.GenerarInformePaquetes;
+
 import java.awt.GridLayout;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.awt.event.ActionEvent;
 
 public class VentanaInformes extends JFrame {
 
@@ -20,9 +26,9 @@ public class VentanaInformes extends JFrame {
 	private JComboBox combxPedidos;
 	private JButton btnMostrar;
 	private JScrollPane panelMostrador;
-	private JTable tableMostradora;
 	private JPanel panelCombo;
 	private JPanel panelBoton;
+	private JPanel panel;
 
 	/**
 	 * Launch the application.
@@ -67,29 +73,43 @@ public class VentanaInformes extends JFrame {
 	 private JComboBox getCombxPedidos() {
 		if (combxPedidos == null) {
 			combxPedidos = new JComboBox();
-			combxPedidos.setModel(new DefaultComboBoxModel(new String[] {"informe paquetes por dia"}));
+			combxPedidos.setModel(new DefaultComboBoxModel(new String[] {"informe paquetes por dia","informe ventas tipo cliente","informe ventas metodo pago"}));
 		}
 		return combxPedidos;
 	}
 	private JButton getBtnMostrar() {
 		if (btnMostrar == null) {
 			btnMostrar = new JButton("MOSTRAR");
+			btnMostrar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(getCombxPedidos().getModel().getSelectedItem().toString().equals("informe paquetes por dia")) {
+						try {
+							
+							getPanel().add(new GenerarInformePaquetes().execute());
+							getPanel().validate();
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}else if(getCombxPedidos().getModel().getSelectedItem().toString().equals("informe ventas tipo cliente")){
+						//panelMostrador.setColumnHeaderView(new InformeVentaController().tablaInformeTipoCliente());
+					}else if(getCombxPedidos().getModel().getSelectedItem().toString().equals("informe ventas metodo pago")){
+						//panelMostrador.setColumnHeaderView(new InformeVentaController().tablaInformeTipoPago());
+					}
+				}
+			});
 		}
 		return btnMostrar;
 	}
 	private JScrollPane getPanelMostrador() {
 		if (panelMostrador == null) {
 			panelMostrador = new JScrollPane();
-			panelMostrador.setColumnHeaderView(getTableMostradora());
+			panelMostrador.setViewportView(getPanel());
+			
 		}
 		return panelMostrador;
 	}
-	private JTable getTableMostradora() {
-		if (tableMostradora == null) {
-			tableMostradora = new JTable();
-		}
-		return tableMostradora;
-	}
+	
 	private JPanel getPanelCombo() {
 		if (panelCombo == null) {
 			panelCombo = new JPanel();
@@ -103,5 +123,13 @@ public class VentanaInformes extends JFrame {
 			panelBoton.add(getBtnMostrar());
 		}
 		return panelBoton;
+	}
+	private JPanel getPanel() {
+		if (panel == null) {
+			panel = new JPanel();
+			panel.setLayout(new GridLayout(0, 1, 0, 0));
+		}
+		
+			return panel;
 	}
 }

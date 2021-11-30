@@ -20,6 +20,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -54,6 +55,7 @@ public class VentanaEmpaquetado extends JFrame {
 	private JTable table;
 	private List<String> listaProductosEscaneado;
 	private int idPedidoPaquete ;
+	private int idAlmacenero;
 
 	/**
 	 * Launch the application.
@@ -62,7 +64,7 @@ public class VentanaEmpaquetado extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaEmpaquetado frame = new VentanaEmpaquetado();
+					VentanaEmpaquetado frame = new VentanaEmpaquetado(3333);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -74,7 +76,7 @@ public class VentanaEmpaquetado extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaEmpaquetado() {
+	public VentanaEmpaquetado(int idAlmacenero ) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 421, 565);
 		setResizable(false);
@@ -87,6 +89,7 @@ public class VentanaEmpaquetado extends JFrame {
 		pnlPrincipal.add(getPanelCenter(), BorderLayout.CENTER);
 		pnlPrincipal.add(getPanelBot(), BorderLayout.SOUTH);
 		this.listaProductosEscaneado = new ArrayList<String>();
+		this.idAlmacenero = idAlmacenero;
 		
 		//AQUI SE INCLUYEN LOS METODOS QUE INICIALIZAN LA VENTANA
 		try {
@@ -171,11 +174,13 @@ public class VentanaEmpaquetado extends JFrame {
 		}
 		
 		Connection c = DriverManager.getConnection(URL,username,password);
-		PreparedStatement pst = c.prepareStatement("insert into paquete values (?,?,?)");
+		PreparedStatement pst = c.prepareStatement("insert into paquete values (?,?,?,?,?)");
 		
 		pst.setInt(1, idPaquete);
 		
 		pst.setInt(3, idPedidoPaquete);
+		pst.setInt(4, idAlmacenero);
+		pst.setString(5, LocalDate.now().toString());
 		for (int i = 0; i < listaIds.size(); i++) {
 			pst.setInt(2, Integer.parseInt(listaIds.get(i)));
 			System.out.println(idPaquete  + " " + Integer.parseInt(listaIds.get(i)) + " " + idPedidoPaquete);
