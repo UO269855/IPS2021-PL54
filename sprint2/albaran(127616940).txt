@@ -1,0 +1,11 @@
+ALBARAN
+---------------------
+PEDIDO: 127616940
+PRECIO TOTAL: 20
+UNIDADES TOTALES: 17
+FECHA: 2021-11-28
+DIRECCION DE ENVIO: ads
+idProducto: 112- Descripcion: sin azucar
+idProducto: 116- Descripcion: con aromas
+idProducto: 117- Descripcion: buena para la vista
+
