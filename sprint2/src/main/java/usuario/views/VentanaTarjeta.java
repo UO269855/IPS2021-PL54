@@ -108,10 +108,21 @@ public class VentanaTarjeta {
 	private JButton getBtnAtras() {
 		if (btnAtras == null) {
 			btnAtras = new JButton("Atras");
+			btnAtras.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					previous();
+				}
+			});
 			btnAtras.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		}
 		return btnAtras;
 	}
+	
+	protected void previous() {
+		pago.show();
+		this.frame.dispose();
+	}
+	
 	private JButton getBtnTramitar() {
 		if (btnTramitar == null) {
 			btnTramitar = new JButton("Tramitar");

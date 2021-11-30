@@ -209,4 +209,8 @@ public class VentanaPago {
 	public VentanaDireccion getPrevious() {
 		return previous;
 	}
+
+	public void show() {
+		this.frame.setVisible(true);
+	}
 }

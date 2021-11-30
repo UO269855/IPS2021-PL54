@@ -221,19 +221,42 @@ public class DatabaseWrapper {
 		List<String[]> datosInforme = new ArrayList<>();
 		PreparedStatement pst = null;
 		ResultSet rs = null;
+		List<String> clientes = new ArrayList<>();
+		List<String> fechas = new ArrayList<>();
 
 		try {
 			conn = Jdbc.getConnection();
-			pst = conn.prepareStatement("select fecha, metodopago, sum(preciopedido) as total from pedido group by fecha, metodopago");
+			pst = conn.prepareStatement("select distinct tipocliente as cliente from pedido");
 			rs = pst.executeQuery();
 			while(rs.next()) {
-				String[] temp = new String[3];
-				temp[0] = rs.getString("fecha");
-				temp[1] = rs.getString("metodopago");
-				temp[2] = rs.getString("total");
-				datosInforme.add(temp);
+				clientes.add(rs.getString("cliente"));
 			}
-
+			pst = conn.prepareStatement("select distinct fecha as fechas from pedido order by fecha desc");
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				fechas.add(rs.getString("fechas"));
+			}
+			for (String fecha : fechas) {	
+				String[] datos =  new String[clientes.size() + 1];
+				datos[0] = fecha;
+				int i = 1;
+				for (String cliente : clientes) {
+					String sql = String.format("select fecha, tipocliente, sum(preciopedido) as total from pedido group by fecha, tipocliente order by fecha desc");
+					pst = conn.prepareStatement(sql);
+					rs = pst.executeQuery();	
+					while(rs.next()) {
+						String fechaTemp = rs.getString("fecha");
+						String clienteTemp = rs.getString("tipocliente");
+						String suma = String.valueOf(rs.getInt("total"));
+						if (fecha.equals(fechaTemp) && cliente.equals(clienteTemp)) {
+							datos[i] = suma;
+							i++;
+						}
+					}
+					
+				}
+				datosInforme.add(datos);
+			}
 
 		} catch (SQLException e) {
 			throw new UnexpectedException(e.getMessage());
@@ -242,25 +265,48 @@ public class DatabaseWrapper {
 		}
 		return datosInforme;
 	}
-	
+
 	public static List<String[]> getPedidosInformeTipoPago() throws UnexpectedException, SQLException {
 		Connection conn = Jdbc.getConnection();
 		List<String[]> datosInforme = new ArrayList<>();
 		PreparedStatement pst = null;
 		ResultSet rs = null;
+		List<String> metodos = new ArrayList<>();
+		List<String> fechas = new ArrayList<>();
 
 		try {
 			conn = Jdbc.getConnection();
-			pst = conn.prepareStatement("select fecha, tipopago, sum(preciopedido) as total from pedido group by fecha, metodopago");
+			pst = conn.prepareStatement("select distinct metodopago as metodos from pedido");
 			rs = pst.executeQuery();
 			while(rs.next()) {
-				String[] temp = new String[3];
-				temp[0] = rs.getString("fecha");
-				temp[1] = rs.getString("tipopago");
-				temp[2] = rs.getString("total");
-				datosInforme.add(temp);
+				metodos.add(rs.getString("metodos"));
 			}
-
+			pst = conn.prepareStatement("select distinct fecha as fechas from pedido order by fecha desc");
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				fechas.add(rs.getString("fechas"));
+			}
+			for (String fecha : fechas) {	
+				String[] datos =  new String[metodos.size() + 1];
+				datos[0] = fecha;
+				int i = 1;
+				for (String metodo : metodos) {
+					String sql = String.format("select fecha, metodopago, sum(preciopedido) as total from pedido group by fecha, metodopago order by fecha desc");
+					pst = conn.prepareStatement(sql);
+					rs = pst.executeQuery();	
+					while(rs.next()) {
+						String fechaTemp = rs.getString("fecha");
+						String metodoTemp = rs.getString("metodopago");
+						String suma = String.valueOf(rs.getInt("total"));
+						if (fecha.equals(fechaTemp) && metodo.equals(metodoTemp)) {
+							datos[i] = suma;
+							i++;
+						}
+					}
+					
+				}
+				datosInforme.add(datos);
+			}
 
 		} catch (SQLException e) {
 			throw new UnexpectedException(e.getMessage());
