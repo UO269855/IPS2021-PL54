@@ -63,59 +63,32 @@ public class GenerarDocumentacionAction {
 	 */
 	private String generarAlbaran(int numPedido) throws SQLException {
 		
-		int idPaquete = new Random().nextInt(100);
-		while(contienePaquete(idPaquete)) {
-			idPaquete = new Random().nextInt(100);
-		}
 		
 		
-		String albaran = "Paquete: "+ idPaquete  +"\n"; 
+		
+		String albaran = ""; 
 		int precioTotal = 0;
 		Connection c = DriverManager.getConnection(URL,username,password);
 		PreparedStatement pst = c.prepareStatement(sqlObtenerProductoPedidos);
 		pst.setInt(1, numPedido);
 		ResultSet rs = pst.executeQuery();
 		
-		
-		//crear paquete
-		PreparedStatement pstCrearP = c.prepareStatement("insert into paquete values (?,?,?)");
-		pstCrearP.setInt(1, idPaquete);
-		
-		
+	
 		while(rs.next()) {
 			//Completar alabran
-			albaran += "idProducto: " + rs.getString(2) + "-" + " Descripcion: " + rs.getString(3) + "-" + "Precio: " + rs.getString(4) +  "\n";
+			albaran += "idProducto: " + rs.getString(2) + "-" + " Descripcion: " + rs.getString(3) + "\n";
 			precioTotal += rs.getInt(4);
 			
-			
-			
-			//añadir producto al paquete
-			pstCrearP.setInt(2, rs.getInt(2));
-			pstCrearP.setInt(3, numPedido);
-			pstCrearP.executeUpdate();
-			
-			
-			
+		
 		}
-		albaran += "Precio total:" + precioTotal;
+		
 		return albaran;
 	}
 	
 	
 	
 	
-	private boolean contienePaquete(int n) throws SQLException {
-		Connection c = DriverManager.getConnection(URL,username,password);
-		PreparedStatement pst = c.prepareStatement("select idpaquete from paquete");
-		ResultSet rs = pst.executeQuery();
-		
-		while(rs.next()) {
-			if(n == rs.getInt(1)) {
-				return true;
-			}
-		}
-		return false;
-	}
+	
 	
 	
 

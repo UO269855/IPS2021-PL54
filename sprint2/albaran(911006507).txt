@@ -1,0 +1,6 @@
+ALBARAN
+---------------------
+Paquete: 13
+idProducto: 108- Descripcion: bebida-Precio: 1
+idProducto: 109- Descripcion: comida-Precio: 1
+Precio total:2

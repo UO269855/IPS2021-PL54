@@ -1,0 +1,5 @@
+ALBARAN
+---------------------
+Paquete: 4
+idProducto: 119- Descripcion: 10 pulgadas-Precio: 200
+Precio total:200
