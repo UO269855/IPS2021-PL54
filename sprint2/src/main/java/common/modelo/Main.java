@@ -12,7 +12,6 @@ import almacenero.controllers.OrdenTrabajoModel;
 import almacenero.controllers.OrdenTrabajoView;
 import almacenero.controllers.TableOrdenTrabajo;
 import almacenero.controllers.VentanaInformeOrden;
-import sistema.view.VentanaInformes;
 
 /**
  * Programa que lanza el codigo para obtener una orden de trabajo y después comprueba 
@@ -36,10 +35,9 @@ public class Main {
 		model = new OrdenTrabajoModel();
 		view = new OrdenTrabajoView();
 		almacenView = new AlmacenView();
-		informeView = new VentanaInformeOrden();//CLASE DE PRUEBA PARA ALICIA
+		informeView = new VentanaInformeOrden();
 		
 		control = new OrdenTrabajoController(model, view, almacenView);
-
 //		control = new OrdenTrabajoController(model, view, almacenView, informeView);
 		control.initController();
 		

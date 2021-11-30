@@ -902,11 +902,6 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 	}
 
 
-	/**
-	 * idproducto = 2,unidadesApedir = 3,stock =4,stock_rep =5 ,stock_min =6 
-	 * @return
-	 * @throws SQLException
-	 */
 	public ResultSet generarInformeStock() throws SQLException {
 		//1) listar los productos
 		ResultSet productos =  getListaProductos();
@@ -921,8 +916,6 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 			
 			if(stock < stock_min) 
 				pedirUnidades(stock_rep - stock, idProducto);
-			else//si no hace falta pedir stock --> resetear unidadesAPedir a cero
-				pedirUnidades(0, idProducto);
 
 		}
 		return productos;
@@ -946,9 +939,7 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 
 		String sql = "SELECT nombre,idproducto,unidadesApedir "
 				+ "FROM producto "
-//				+ "where unidadesapedir is not null "
-				+ "where unidadesapedir > 0"
-
+				+ "where unidadesapedir is not null "
 				+ "ORDER BY idproducto ";
 		PreparedStatement pstmt = cn.prepareStatement(sql);
 		ResultSet rs = pstmt.executeQuery();
