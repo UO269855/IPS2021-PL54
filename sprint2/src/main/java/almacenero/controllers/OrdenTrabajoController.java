@@ -447,36 +447,8 @@ public class OrdenTrabajoController {
 		
 	}
 	
-<<<<<<< HEAD
-	private void generarAlbaran() {
-		int idPedido =SwingUtil.getSelectedKeyInt(almacenView.getTabPedidos());
-		
-		if(view.getTaIncidenciaVieja().getText().isEmpty()) {
-			try {
-				String albaran = "ALBARAN\n";
-				albaran += "---------------------\n";
-			 albaran +=	new GenerarDocumentacionAction().execute(idPedido);
-			Fichero.albaran(albaran, "" + idPedido);
-			JOptionPane.showMessageDialog(this.view, "ImprimiendoAlbaran");
-			view.setVisible(false);
-			almacenView.setVisible(false);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		else {
-			JOptionPane.showMessageDialog(this.view, "Hay una incidencia y no se puede llevar a empaquetado.");
-			view.setVisible(false);
-			
-		}
-		
-		
-	}
-=======
 
->>>>>>> 15984
+
 	
 	
 	/**
