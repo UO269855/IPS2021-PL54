@@ -1,5 +1,0 @@
-ALBARAN
----------------------
-Paquete: 42
-idProducto: 107- Descripcion: bebida-Precio: 2
-Precio total:2
