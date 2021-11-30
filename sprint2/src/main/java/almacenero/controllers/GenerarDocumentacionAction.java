@@ -66,7 +66,7 @@ public class GenerarDocumentacionAction {
 		
 		
 		
-		String albaran = ""; 
+		 String albaran = ""; 
 		int precioTotal = 0;
 		Connection c = DriverManager.getConnection(URL,username,password);
 		PreparedStatement pst = c.prepareStatement(sqlObtenerProductoPedidos);
