@@ -1083,4 +1083,3 @@ private void sumarTamanoPedidos(int idOrden, int tamOT) throws SQLException {
 	
 	
 }
-
