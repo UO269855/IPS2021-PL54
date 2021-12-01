@@ -11,6 +11,8 @@ import javax.swing.table.TableModel;
 
 import common.database.DbUtil;
 import common.database.Fichero;
+import common.modelo.Anonimo;
+import common.modelo.User;
 import common.modelo.Producto;
 import giis.demo.util.SwingUtil;
 
@@ -64,7 +66,7 @@ public class VentanaEmpaquetado extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaEmpaquetado frame = new VentanaEmpaquetado(3333);
+					VentanaEmpaquetado frame = new VentanaEmpaquetado(7777);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -156,9 +158,35 @@ public class VentanaEmpaquetado extends JFrame {
 		
 	}
 	
+	private String generarEtiqueta() throws SQLException {
+		int idPedido = Integer.parseInt(getComboBox().getSelectedItem().toString().split(":")[1]);
+		Connection c = DriverManager.getConnection(URL,username,password);
+		PreparedStatement pst = c.prepareStatement("select * from pedido where idpedido = ?");
+		pst.setInt(1, idPedido);
+		
+		 ResultSet rs = pst.executeQuery();
+		 int direccion = 0;
+		 
+		 if(rs.next()) {
+			  direccion = rs.getInt("idpedido");
+			  
+		 }
+		String cadena = "ETIQUETA"+"\n";
+		 	   cadena += "|||||||||||||||||" + " --- Direccion de envio:" + direccion +"\n";
+		       cadena += "|||||||||||||||||"  + " --- Id Pedido:" + idPedido +"\n";
+		       cadena += "|||||||||||||||||\n";
+		       cadena += "|||||||||||||||||\n";
+		       cadena += "|||||||||||||||||\n";
+		       cadena +="5||9 3 3 4||5 7 3 \n";
+		return cadena;
+	}
+	
 	private void finalizarEmpaquetado() {
 		try {
 			generarPaquete(listaProductosEscaneado);
+			JOptionPane.showMessageDialog(this, "Se ha cerrado el primer paquete");
+			String etiqueta = generarEtiqueta();
+			JOptionPane.showMessageDialog(this, etiqueta);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -285,6 +313,8 @@ public class VentanaEmpaquetado extends JFrame {
 						mostrarPedido();
 						btnMostrar.setEnabled(false);
 						getComboBox().setEnabled(false);
+						getBtnEscanear().setEnabled(true);
+						getBtnFinalizar().setEnabled(true);
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -320,6 +350,7 @@ public class VentanaEmpaquetado extends JFrame {
 	private JButton getBtnEscanear() {
 		if (btnEscanear == null) {
 			btnEscanear = new JButton("ESCANEAR");
+			btnEscanear.setEnabled(false);
 			btnEscanear.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					escanear();
@@ -331,6 +362,7 @@ public class VentanaEmpaquetado extends JFrame {
 	private JButton getBtnFinalizar() {
 		if (btnFinalizar == null) {
 			btnFinalizar = new JButton("FINALIZAR");
+			btnFinalizar.setEnabled(false);
 			btnFinalizar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(comprobarCompleto()) {
@@ -344,13 +376,32 @@ public class VentanaEmpaquetado extends JFrame {
 						}
 					}else {
 						System.out.println("faltan escaneos");
-						finalizarEmpaquetado();
+						if(comprobarAlguno()) {
+							finalizarEmpaquetado();
+						}else {
+							mostrarNoEmpaquetar();
+						}
+						
 					}
 					
 				}
 			});
 		}
 		return btnFinalizar;
+	}
+	
+	private void mostrarNoEmpaquetar() {
+		JOptionPane.showMessageDialog(this, "No es posible empaquetar si no has escaneado nada");
+	}
+	private boolean comprobarAlguno() {
+		boolean alguno = false;
+		for(int i = 0; i < getTable().getRowCount(); i++) {
+			
+			if(getTable().getModel().getValueAt(i, 0).toString().trim().equals("Escaneado")) {
+				alguno = true;
+			}
+		}
+		return alguno;
 	}
 	
 	private boolean comprobarCompleto() {
